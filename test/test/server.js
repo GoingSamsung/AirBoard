@@ -1,6 +1,17 @@
 const express = require('express')
 const app = express()
-const server = require('http').Server(app)
+const fs = require('fs');
+const https = require('https');
+const server = https.createServer(
+	{
+		key: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/cert.pem'),
+    ca: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/chain.pem'),
+    requestCert: false,
+    rejectUnauthorized: false,
+	},
+	app
+);
 const io = require('socket.io')(server)
 const { v4: uuidV4 } = require('uuid')
 
@@ -37,4 +48,4 @@ io.on('connection', socket => {
   })
 })
 
-server.listen(3000)
+server.listen(443)
