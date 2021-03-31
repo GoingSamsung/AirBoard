@@ -19,6 +19,10 @@ app.set('view engine', 'ejs')
 app.use(express.static('public'))
 
 app.get('/', (req, res) => {
+  res.render('home');
+})
+
+app.get('/newroom', (req, res) => {
   // uuid를 통해 방 고유번호로 redirect
   res.redirect(`/${uuidV4()}`)
 })
