@@ -10,6 +10,8 @@
   </head>
   <body>
     <a href="/">AirBoard</a><br>
-    <button id="new_room" onclick = "location.href = '/newroom'">새 회의</button>
+    <form action="/newroom" id="new_room" method="GET">
+        <input type="submit" value="새 회의">
+    </form>
   </body>
 </html>

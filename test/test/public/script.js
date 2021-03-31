@@ -1,5 +1,8 @@
 const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
+const sendButton = document.getElementById('chatMessageSendBtn')
+const chatInput = document.getElementById('chatInput')
+var user_name = prompt('대화명을 입력해주세요.', '');
 const myPeer = new Peer()
   /*undefined, {
   host: '/',
@@ -15,9 +18,6 @@ navigator.mediaDevices.getUserMedia({
   addVideoStream(myVideo, stream)
 
   myPeer.on('call', call => {
-    //call에 대한 answer
-    //Unlike data connections, when receiving a call event,
-    //the call must be answered or no connection is established.
     call.answer(stream)
     const video = document.createElement('video')
     call.on('stream', userVideoStream => {
@@ -26,7 +26,6 @@ navigator.mediaDevices.getUserMedia({
   })
 
   socket.on('user-connected', userId => {
-    //server.js에서 받아
     connectToNewUser(userId, stream)
   })
 })
@@ -36,8 +35,7 @@ socket.on('user-disconnected', userId => {
 })
 
 myPeer.on('open', id => {
-  socket.emit('join-room', ROOM_ID, id)
-  //server.js로 보내
+  socket.emit('join-room', ROOM_ID, id, user_name)
 })
 
 function connectToNewUser(userId, stream) {
@@ -58,6 +56,29 @@ function addVideoStream(video, stream) {
   video.addEventListener('loadedmetadata', () => {
     video.play()
   })
-
   videoGrid.append(video)
 }
+
+var chatWindow = document.getElementById('chatWindow'); 
+socket.on('updateMessage', function(data)
+{ if(data.name === 'SERVER'){ var info = document.getElementById('info'); 
+info.innerHTML = data.message; setTimeout(() => { info.innerText = ''; }, 1000); }
+else{ 
+  var chatMessageEl = drawChatMessage(data); 
+  chatWindow.appendChild(chatMessageEl); } }); 
+  function drawChatMessage(data){ var wrap = document.createElement('p'); 
+  var message = document.createElement('span'); var name = document.createElement('span'); 
+  name.innerText = data.name + ': '; message.innerText = data.message; 
+  name.classList.add('output__user__name'); 
+  message.classList.add('output__user__message'); 
+  wrap.classList.add('output__user'); wrap.dataset.id = socket.id; wrap.appendChild(name); 
+  wrap.appendChild(message); return wrap; }
+
+socket.on('updateMessage', function(data){ 
+  if(data.name === 'SERVER'){ var info = document.getElementById('info'); 
+  info.innerHTML = data.message; }else{ } });
+
+sendButton.addEventListener('click', function(){ 
+  var message = chatInput.value; 
+  if(!message) return false; 
+  socket.emit('sendMessage', { message }); chatInput.value = ''; });

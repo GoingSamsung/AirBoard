@@ -32,21 +32,20 @@ app.get('/:room', (req, res) => {
 })
 
 io.on('connection', socket => {
-  //io는 socket.io 패키지를 import한 변수
-  socket.on('join-room', (roomId, userId) => {
-    //scripts.js에 있는 emit('join room')을 받음
-    //socket은 커넥션이 성공했을 때 커넥션에 대한 정보를 담고 있는 변수
+  socket.on('sendMessage', function(data){ data.name = socket.userName; io.sockets.emit('updateMessage', data); });
+
+  socket.on('join-room', (roomId, userId, userName) => {
+    socket.userName=userName
+
+    var msg= userName + '님이 접속하셨습니다.'
+    socket.emit('updateMessage', { name : 'SERVER', message : msg });
+
     socket.join(roomId)
-    //그냥 room에 바인딩
     socket.to(roomId).broadcast.emit('user-connected', userId)
-    //scripts.js에 있는 user-connected로 보내
-    //밑이랑 동일
 
     socket.on('disconnect', () => {
-      //끊겼을 때 이벤트 리스너
-      //나를 제외한 다른 클라이언트들에게 이벤트 보내기 socket.broadcast.emit('이벤트명',{메세지});
-      //broadcast없으면 나를 포함
-      //sockets(socket_id).emit하면 특정 소켓한테 이벤트 보냄
+      var exit_msg = userName + '님이 퇴장하셨습니다.'
+      socket.emit('updateMessage', { name : 'SERVER', message : exit_msg });
       socket.to(roomId).broadcast.emit('user-disconnected', userId)
     })
   })
