@@ -23,7 +23,6 @@ app.get('/', (req, res) => {
 })
 
 app.get('/newroom', (req, res) => {
-  // uuid를 통해 방 고유번호로 redirect
   res.redirect(`/${uuidV4()}`)
 })
 
@@ -38,14 +37,14 @@ io.on('connection', socket => {
     socket.userName=userName
 
     var msg= userName + '님이 접속하셨습니다.'
-    socket.emit('updateMessage', { name : 'SERVER', message : msg });
+    socket.to(roomId).emit('updateMessage', { name : 'SERVER', message : msg, roomId: roomId });
 
     socket.join(roomId)
     socket.to(roomId).broadcast.emit('user-connected', userId)
 
     socket.on('disconnect', () => {
       var exit_msg = userName + '님이 퇴장하셨습니다.'
-      socket.emit('updateMessage', { name : 'SERVER', message : exit_msg });
+      socket.to(roomId).emit('updateMessage', { name : 'SERVER', message : msg, roomId: roomId });
       socket.to(roomId).broadcast.emit('user-disconnected', userId)
     })
   })

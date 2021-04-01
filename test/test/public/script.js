@@ -26,6 +26,7 @@ navigator.mediaDevices.getUserMedia({
   })
 
   socket.on('user-connected', userId => {
+    console.log("userId")
     connectToNewUser(userId, stream)
   })
 })
@@ -63,7 +64,7 @@ var chatWindow = document.getElementById('chatWindow');
 socket.on('updateMessage', function(data)
 { if(data.name === 'SERVER'){ var info = document.getElementById('info'); 
 info.innerHTML = data.message; setTimeout(() => { info.innerText = ''; }, 1000); }
-else{ 
+else if(ROOM_ID==data.ROOM_ID){ //사용자의 ROOM_ID와 화상 회의방의 ROOM_ID가 같은가?
   var chatMessageEl = drawChatMessage(data); 
   chatWindow.appendChild(chatMessageEl); } }); 
   function drawChatMessage(data){ var wrap = document.createElement('p'); 
@@ -74,11 +75,11 @@ else{
   wrap.classList.add('output__user'); wrap.dataset.id = socket.id; wrap.appendChild(name); 
   wrap.appendChild(message); return wrap; }
 
-socket.on('updateMessage', function(data){ 
+socket.on('updateMessage', function(data){ //입장 메시지인데 아직 불완전함.
   if(data.name === 'SERVER'){ var info = document.getElementById('info'); 
   info.innerHTML = data.message; }else{ } });
 
 sendButton.addEventListener('click', function(){ 
   var message = chatInput.value; 
   if(!message) return false; 
-  socket.emit('sendMessage', { message }); chatInput.value = ''; });
+  socket.emit('sendMessage', { message, ROOM_ID }); chatInput.value = ''; });
