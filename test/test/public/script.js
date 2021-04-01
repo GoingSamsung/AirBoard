@@ -16,17 +16,17 @@ navigator.mediaDevices.getUserMedia({
   audio: true
 }).then(stream => {
   stream.user_name=user_name
-  addVideoStream(myVideo, stream)
+  addVideoStream(myVideo, stream , 1)
 
   myPeer.on('call', call => {
     call.answer(stream)
     const video = document.createElement('video')
     call.on('stream', userVideoStream => {
-      addVideoStream(video, userVideoStream)
+      addVideoStream(video, userVideoStream, call)
     })
   })
 
-  socket.on('user-connected', userId => {
+  socket.on('user-connected', (userId, userName) => {
     connectToNewUser(userId, stream)
   })
 })
@@ -43,7 +43,7 @@ function connectToNewUser(userId, stream) {
   const call = myPeer.call(userId, stream)
   const video = document.createElement('video')
   call.on('stream', userVideoStream => {
-    addVideoStream(video, userVideoStream)
+    addVideoStream(video, userVideoStream, call)
   })
   call.on('close', () => {
     video.remove()
@@ -52,13 +52,13 @@ function connectToNewUser(userId, stream) {
   peers[userId] = call
 }
 
-function addVideoStream(video, stream) {
+function addVideoStream(video, stream, x) {
+  console.log(x)
   var user_box = document.createElement('user_box')
   var video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
   var bold = document.createElement('b')
   var video_user_name_text = document.createTextNode(stream.user_name)
   video.srcObject = stream
-  console.log(stream)
   video.addEventListener('loadedmetadata', () => {
     video.play()
   })

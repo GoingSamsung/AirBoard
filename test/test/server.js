@@ -40,14 +40,13 @@ io.on('connection', socket => {
     socket.to(roomId).emit('updateMessage', { name : 'SERVER', message : msg, roomId: roomId });
 
     socket.join(roomId)
-    socket.to(roomId).broadcast.emit('user-connected', userId)
+    socket.to(roomId).broadcast.emit('user-connected', (userId, userName))
 
     socket.on('disconnect', () => {
       var exit_msg = userName + '님이 퇴장하셨습니다.'
       socket.to(roomId).emit('updateMessage', { name : 'SERVER', message : msg, roomId: roomId });
-      socket.to(roomId).broadcast.emit('user-disconnected', userId)
+      socket.to(roomId).broadcast.emit('user-disconnected', userId, userName)
     })
   })
 })
-
 server.listen(443)
