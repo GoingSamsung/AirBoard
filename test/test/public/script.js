@@ -15,6 +15,7 @@ navigator.mediaDevices.getUserMedia({
   video: true,
   audio: true
 }).then(stream => {
+  stream.user_name=user_name
   addVideoStream(myVideo, stream)
 
   myPeer.on('call', call => {
@@ -26,7 +27,6 @@ navigator.mediaDevices.getUserMedia({
   })
 
   socket.on('user-connected', userId => {
-    console.log("userId")
     connectToNewUser(userId, stream)
   })
 })
@@ -53,17 +53,20 @@ function connectToNewUser(userId, stream) {
 }
 
 function addVideoStream(video, stream) {
+  var user_box = document.createElement('user_box')
   var video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
   var bold = document.createElement('b')
-  var video_user_name_text = document.createTextNode(user_name)
+  var video_user_name_text = document.createTextNode(stream.user_name)
   video.srcObject = stream
+  console.log(stream)
   video.addEventListener('loadedmetadata', () => {
     video.play()
   })
-  videoGrid.append(video)
-  videoGrid.append(video_user_name)
   video_user_name.appendChild(bold)
   bold.appendChild(video_user_name_text)
+  user_box.appendChild(video_user_name)
+  user_box.appendChild(video)
+  videoGrid.append(user_box)
 }
 
 var chatWindow = document.getElementById('chatWindow'); 
