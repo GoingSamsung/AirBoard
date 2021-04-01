@@ -53,13 +53,17 @@ function connectToNewUser(userId, stream) {
 }
 
 function addVideoStream(video, stream) {
-  var video_user_name = document.getElementById('video-user-name')
-  video_user_name.innerHTML = '<b>' +user_name + '</b>' //room.ejs에 유저 이름 표시함
+  var video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
+  var bold = document.createElement('b')
+  var video_user_name_text = document.createTextNode(user_name)
   video.srcObject = stream
   video.addEventListener('loadedmetadata', () => {
     video.play()
   })
   videoGrid.append(video)
+  videoGrid.append(video_user_name)
+  video_user_name.appendChild(bold)
+  bold.appendChild(video_user_name_text)
 }
 
 var chatWindow = document.getElementById('chatWindow'); 
