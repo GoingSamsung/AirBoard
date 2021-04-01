@@ -73,7 +73,7 @@ var chatWindow = document.getElementById('chatWindow');
 socket.on('updateMessage', function(data)
 { if(data.name === 'SERVER'){ var info = document.getElementById('info'); 
 info.innerHTML = data.message; setTimeout(() => { info.innerText = ''; }, 1000); }
-else if(ROOM_ID==data.ROOM_ID){ //사용자의 ROOM_ID와 화상 회의방의 ROOM_ID가 같은가?
+else if(ROOM_ID==data.ROOM_ID){ //사용자의 ROOM_ID와 화상 회의방의 ROOM_ID가 같은가??
   var chatMessageEl = drawChatMessage(data); 
   chatWindow.appendChild(chatMessageEl); } }); 
   function drawChatMessage(data){ var wrap = document.createElement('p'); 
