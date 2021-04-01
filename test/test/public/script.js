@@ -53,6 +53,8 @@ function connectToNewUser(userId, stream) {
 }
 
 function addVideoStream(video, stream) {
+  var video_user_name = document.getElementById('video-user-name')
+  video_user_name.innerHTML = '<b>' +user_name + '</b>' //room.ejs에 유저 이름 표시함
   video.srcObject = stream
   video.addEventListener('loadedmetadata', () => {
     video.play()

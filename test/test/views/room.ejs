@@ -23,13 +23,23 @@
 
       video {
         width: 100%;
-        height: 100%;
         object-fit: cover;
+        z-index: -1;
+        position:relative;
+      }
+      #video-user-name {        
+        position: absolute; top: 0%; width: 100%;
+      }
+      .video-box {
+        width: 100%; height: 100%; overflow: hidden;margin: 0px auto; position: relative;position: relative;
       }
     </style>
   </head>
   <body>
+    <div class="video-box">
     <div id="video-grid"></div>
+    <div id="video-user-name"></div>
+    </div>
     <div>
     <div id="info"></div>
     <div id="chatWindow"></div> <div> <input id="chatInput" type="text"> <button id="chatMessageSendBtn">전송</button> </div>
