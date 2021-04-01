@@ -53,6 +53,7 @@ function connectToNewUser(userId, stream) {
 }
 
 function addVideoStream(video, stream) {
+console.log(stream)
   var user_box = document.createElement('user_box')
   var video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
   var bold = document.createElement('b')
