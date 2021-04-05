@@ -15,6 +15,15 @@ const server = https.createServer(
 const io = require('socket.io')(server)
 const { v4: uuidV4 } = require('uuid')
 
+//mongoose 연결
+const db = mongoose.connection;
+db.on('error', console.error);
+db.once('open', function(){
+    // CONNECTED TO MONGODB SERVER
+    console.log("Connected to mongod server");
+});
+mongoose.connect('mongodb://localhost:27017/room_user_db');
+
 app.set('view engine', 'ejs')
 app.use(express.static('public'))
 
@@ -36,6 +45,18 @@ io.on('connection', socket => {
   socket.on('join-room', (roomId, userId, userName) => {
     socket.userName=userName
 
+    const user = new User({
+      userName:userName,
+      id : userId,
+      roomid:roomId
+    });
+    user.save((err, user)=>{
+      if(err){
+          return console.error(err);
+      }
+      console.log(user);
+  });
+
     var msg= userName + '님이 접속하셨습니다.'
     socket.to(roomId).emit('updateMessage', { name : 'SERVER', message : msg, roomId: roomId });
 
@@ -43,6 +64,10 @@ io.on('connection', socket => {
     socket.to(roomId).broadcast.emit('user-connected', userId, userName)
 
     socket.on('disconnect', () => {
+      User.deleteOne({userid : userId}).then((result)=>{
+        console.log("delete user id : "+userId+"user name : "+userName);
+        console.log(result);
+      });
       var exit_msg = userName + '님이 퇴장하셨습니다.'
       socket.to(roomId).emit('updateMessage', { name : 'SERVER', message : msg, roomId: roomId });
       socket.to(roomId).broadcast.emit('user-disconnected', userId)
