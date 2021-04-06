@@ -15,6 +15,8 @@ const server = https.createServer(
 const io = require('socket.io')(server)
 const { v4: uuidV4 } = require('uuid')
 
+const mongoose = require('mongoose');
+const User = require('./models/user');
 //mongoose 연결
 const db = mongoose.connection;
 db.on('error', console.error);
@@ -55,7 +57,7 @@ io.on('connection', socket => {
           return console.error(err);
       }
       console.log(user);
-  });
+    });
 
     var msg= userName + '님이 접속하셨습니다.'
     socket.to(roomId).emit('updateMessage', { name : 'SERVER', message : msg, roomId: roomId });
