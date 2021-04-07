@@ -19,8 +19,8 @@ const mongoose = require('mongoose');
 const User = require('./models/user');
 //mongoose 연결
 //mongoose.connect('mongodb://localhost:27017/room_user_db');
-mongoose.connect('mongodb://gyuseok:1234@49.50.161.223:27017/testdb'
-,{ useNewUrlParser: true } )
+mongoose.connect('mongodb://user:password@49.50.161.223:27017/room_user_db'
+   ,{ useNewUrlParser: true } )
 const db = mongoose.connection;
 db.on('error', console.error);
 db.once('open', function(){
