@@ -18,9 +18,7 @@ const { v4: uuidV4 } = require('uuid')
 const mongoose = require('mongoose');
 const User = require('./models/user');
 //mongoose 연결
-//mongoose.connect('mongodb://localhost:27017/room_user_db');
-mongoose.connect('mongodb://user:password@49.50.161.223:27017/room_user_db'
-   ,{ useNewUrlParser: true } )
+mongoose.connect('mongodb://localhost:27017/room_user_db');
 const db = mongoose.connection;
 db.on('error', console.error);
 db.once('open', function(){
