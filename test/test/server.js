@@ -57,18 +57,17 @@ app.get('/:room', (req, res) => {
 
 io.on('connection', socket => {
   socket.on('sendMessage', function(data){ data.name = socket.userName; io.sockets.emit('updateMessage', data); });
-  socket.on('getName', async (streamId) =>{ // 건들고잇는부분
-    users = await User.findOne({streamId:streamId}, null, {})
-    socket.emit('setName', streamId, users.userName)
+  socket.on('getName', async (userId) =>{ // 건들고잇는부분
+    users = await User.findOne({userId:userId}, null, {})
+    socket.emit('setName', userId, users.userName)
   })
-  socket.on('join-room', (roomId, userId, userName, streamId) => {
+  socket.on('join-room', (roomId, userId, userName) => {
     socket.userName=userName
     socket.userId = userId
     const user = new User({
       userName:userName,
       userId : userId,
       roomid:roomId,
-      streamId: streamId
     });
     user.save((err, user)=>{
       if(err){

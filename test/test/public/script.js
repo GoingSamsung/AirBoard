@@ -3,7 +3,6 @@ const videoGrid = document.getElementById('video-grid')
 const sendButton = document.getElementById('chatMessageSendBtn')
 const chatInput = document.getElementById('chatInput')
 var user_name = prompt('대화명을 입력해주세요.', '');
-
 const myPeer = new Peer({
 
 })
@@ -17,7 +16,7 @@ const peers = {}
 navigator.mediaDevices.getUserMedia({
   video: true,
   audio: true,
-}).then(stream => {
+}).then(async(stream) => {
   const user_box = document.createElement('user_box')
   var video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
   var bold = document.createElement('b')
@@ -27,11 +26,6 @@ navigator.mediaDevices.getUserMedia({
   user_box.appendChild(video_user_name)
   user_box.appendChild(myVideo)
   addVideoStream(myVideo, stream, user_box)
-
-  myPeer.on('open', id => {
-    socket.emit('join-room', ROOM_ID, id, user_name,stream.id)
-  })
-
   myPeer.on('call', call => {
     call.answer(stream)
     const video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
@@ -40,9 +34,9 @@ navigator.mediaDevices.getUserMedia({
     const video = document.createElement('video')
     const user_box = document.createElement('user_box')
     call.on('stream', userVideoStream => {
-      bold.id = userVideoStream.id
+      bold.id = call.peer
       addVideoStream(video, userVideoStream, user_box)  //원래 있던 유저들 보여주기
-      socket.emit('getName', userVideoStream.id)
+      socket.emit('getName', call.peer)
       video_user_name.appendChild(bold)
       bold.appendChild(video_user_name_text)
       user_box.appendChild(video_user_name)
@@ -59,14 +53,14 @@ socket.on('user-disconnected', userId => {
   if (peers[userId]) peers[userId].close()
 })
 
-socket.on('setName', (streamId, userName) => {
-  const bold = document.getElementById(streamId)
+socket.on('setName', (userId, userName) => {
+  const bold = document.getElementById(userId)
   bold.innerHTML = userName
 })
-/*
+
 myPeer.on('open', id => {
-    socket.emit('join-room', ROOM_ID, id, user_name,stream_id)
-})*/
+  socket.emit('join-room', ROOM_ID, id, user_name)
+})
 
 function connectToNewUser(userId, userName, stream) { //기존 유저 입장에서 새로운 유저가 들어왔을 때
   const call = myPeer.call(userId, stream)
