@@ -3,20 +3,21 @@ const videoGrid = document.getElementById('video-grid')
 const sendButton = document.getElementById('chatMessageSendBtn')
 const chatInput = document.getElementById('chatInput')
 var user_name = prompt('대화명을 입력해주세요.', '');
-var stream_id
-var flag = 0
+
 const myPeer = new Peer({
 
 })
-
+function printz(x)
+{
+  console.log(x)
+}
 const myVideo = document.createElement('video')
 myVideo.muted = true
 const peers = {}
 navigator.mediaDevices.getUserMedia({
   video: true,
   audio: true,
-}).then(async(stream) => {
-  await waitSetStreamId(stream.id)
+}).then(stream => {
   const user_box = document.createElement('user_box')
   var video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
   var bold = document.createElement('b')
@@ -26,6 +27,10 @@ navigator.mediaDevices.getUserMedia({
   user_box.appendChild(video_user_name)
   user_box.appendChild(myVideo)
   addVideoStream(myVideo, stream, user_box)
+
+  myPeer.on('open', id => {
+    socket.emit('join-room', ROOM_ID, id, user_name,stream.id)
+  })
 
   myPeer.on('call', call => {
     call.answer(stream)
@@ -49,11 +54,7 @@ navigator.mediaDevices.getUserMedia({
     connectToNewUser(userId, userName, stream)
   })
 })
-async function waitSetStreamId(x)
-{
-  stream_id = x
-  flag = 1
-}
+
 socket.on('user-disconnected', userId => {
   if (peers[userId]) peers[userId].close()
 })
@@ -62,15 +63,10 @@ socket.on('setName', (streamId, userName) => {
   const bold = document.getElementById(streamId)
   bold.innerHTML = userName
 })
-
+/*
 myPeer.on('open', id => {
-  if(flag) {
-    setTimeout(500)
     socket.emit('join-room', ROOM_ID, id, user_name,stream_id)
-  }
-  else
-    socket.emit('join-room', ROOM_ID, id, user_name,stream_id)
-})
+})*/
 
 function connectToNewUser(userId, userName, stream) { //기존 유저 입장에서 새로운 유저가 들어왔을 때
   const call = myPeer.call(userId, stream)
