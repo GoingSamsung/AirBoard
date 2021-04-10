@@ -4,6 +4,7 @@ const sendButton = document.getElementById('chatMessageSendBtn')
 const chatInput = document.getElementById('chatInput')
 var user_name = prompt('대화명을 입력해주세요.', '');
 var stream_id
+var flag = 0
 const myPeer = new Peer({
 
 })
@@ -51,6 +52,7 @@ navigator.mediaDevices.getUserMedia({
 async function waitSetStreamId(x)
 {
   stream_id = x
+  flag = 1
 }
 socket.on('user-disconnected', userId => {
   if (peers[userId]) peers[userId].close()
@@ -62,7 +64,12 @@ socket.on('setName', (streamId, userName) => {
 })
 
 myPeer.on('open', id => {
-  socket.emit('join-room', ROOM_ID, id, user_name,stream_id)
+  if(flag) {
+    setTimeout(500)
+    socket.emit('join-room', ROOM_ID, id, user_name,stream_id)
+  }
+  else
+    socket.emit('join-room', ROOM_ID, id, user_name,stream_id)
 })
 
 function connectToNewUser(userId, userName, stream) { //기존 유저 입장에서 새로운 유저가 들어왔을 때
