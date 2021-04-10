@@ -14,8 +14,8 @@ const peers = {}
 navigator.mediaDevices.getUserMedia({
   video: true,
   audio: true,
-}).then(stream => {
-  stream_id = stream.id
+}).then(async(stream) => {
+  await waitSetStreamId(stream.id)
   const user_box = document.createElement('user_box')
   var video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
   var bold = document.createElement('b')
@@ -48,7 +48,10 @@ navigator.mediaDevices.getUserMedia({
     connectToNewUser(userId, userName, stream)
   })
 })
-
+async function waitSetStreamId(x)
+{
+  stream_id = x
+}
 socket.on('user-disconnected', userId => {
   if (peers[userId]) peers[userId].close()
 })
