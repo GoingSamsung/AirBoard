@@ -37,6 +37,14 @@
       .video-box {
         width: 100%; height: 100%; overflow: hidden;margin: 0px auto; position: relative;position: relative;
       }
+      .whiteboard {
+        display: block;
+        width:100%;
+        height: 50%;
+        margin:0;
+        padding:0;
+        border:solid 1px black;
+      }
     </style>
   </head>
   <body>
@@ -45,8 +53,12 @@
     </div>
     <div>
     <div id="info"></div>
-    <div id="chatWindow"></div> <div> <input id="chatInput" type="text"> <button id="chatMessageSendBtn">전송</button> </div>
-  </div>
-  </body>
+    <div id="chatWindow"></div>
+      <div>
+        <input id="chatInput" type="text">
+          <button id="chatMessageSendBtn">전송</button>
+      </div>
+    </div>
+    <canvas class='whiteboard' id='<%= roomId %>'></canvas>
   </body>
 </html>

@@ -42,6 +42,9 @@ navigator.mediaDevices.getUserMedia({
       user_box.appendChild(video_user_name)
       user_box.appendChild(video)
     })
+    call.on('close', () => {    
+      user_box.remove()
+    })
   })
 
   socket.on('user-connected', (userId, userName) => {
@@ -106,7 +109,7 @@ else if(ROOM_ID==data.ROOM_ID){ //사용자의 ROOM_ID와 화상 회의방의 RO
   wrap.classList.add('output__user'); wrap.dataset.id = socket.id; wrap.appendChild(name); 
   wrap.appendChild(message); return wrap; }
 
-socket.on('updateMessage', function(data){ //입장 메시지인데 아직 불완전함.
+socket.on('updateMessage', function(data){ //입장 메시지
   if(data.name === 'SERVER'){ var info = document.getElementById('info'); 
   info.innerHTML = data.message; }else{ } });
 
@@ -115,3 +118,53 @@ sendButton.addEventListener('click', function(){
   if(!message) return false; 
   socket.emit('sendMessage', { message, ROOM_ID }); chatInput.value = ''; });
 
+//---캔버스 코드 시작---
+document.addEventListener("DOMContentLoaded", ()=> {
+  var mouse = {
+    click: false,
+    move: false,
+    pos: {x:0, y:0},
+    pos_prev: false
+  }
+  var canvas = document.getElementById(ROOM_ID)
+  var context = canvas.getContext('2d')
+  var width = window.innerWidth
+  var height = window.innerHeight
+  var socket = io.connect()
+
+  canvas.width = width
+  canvas.height = height
+
+  canvas.onmousedown = (e) => {mouse.click = true}
+  canvas.onmouseup = (e) => {mouse.click = false}
+
+  canvas.onmousemove = (e) => {
+    mouse.pos.x = e.clientX / width
+    mouse.pos.y = e.clientY / height
+    mouse.move = true
+  }
+
+  socket.on('drawLine', data => {
+    var line = data.line
+    printz(data.roomId)
+    if(ROOM_ID == data.roomId) {
+    context.beginPath()
+    context.lineWidth = 2
+    context.moveTo(line[0].x*width, line[0].y*height)
+    context.lineTo(line[1].x*width, line[1].y*height)
+    context.stroke()
+    }
+  })
+
+  function mainLoop() {
+    if(mouse.click && mouse.move && mouse.pos_prev) {
+      socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID})
+      mouse.move = false
+    }
+    mouse.pos_prev = {x: mouse.pos.x, y: mouse.pos.y}
+    setTimeout(mainLoop, 25)
+  }
+  mainLoop()
+})
+
+//---캔버스 코드 끝---
