@@ -45,7 +45,10 @@ app.get('/:room', (req, res) => {
 })
 
 io.on('connection', socket => {
-  socket.on('sendMessage', function(data){ data.name = socket.userName; io.sockets.emit('updateMessage', data); });
+  socket.on('sendMessage', function(data){ 
+    data.name = socket.userName;
+    io.sockets.emit('updateMessage', data); 
+  });
 
   socket.on('getName', async (userId) =>{ //유저 이름 달아줌
     users = await User.findOne({userId:userId}, null, {})
