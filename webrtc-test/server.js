@@ -87,8 +87,12 @@ io.on('connection', socket => {
       socket.to(roomId).broadcast.emit('user-disconnected', userId)
     })
   })
-
   //---캔버스 코드---
+  socket.on('reDrawing', () => {
+    for(var i in line_track) {
+      socket.emit('drawLine', {line: line_track[i].line, roomId:line_track[i].roomId});
+    }
+  })
   for(var i in line_track) {
     socket.emit('drawLine', {line: line_track[i].line, roomId:line_track[i].roomId});
   } //트랙보고 새로 들어온 사람이 원래 그렸던 그림 볼 수 있도록
@@ -104,6 +108,8 @@ io.on('connection', socket => {
     io.emit('drawLine', {line: data.line, roomId:data.roomId})
   })
   //---캔버스 코드---
+
+})
 
 })
 server.listen(443)

@@ -160,21 +160,31 @@ document.addEventListener("DOMContentLoaded", ()=> {
   var height = window.innerHeight
   var socket = io.connect()
 
+  var relativeX = 5
+  var relativeY = 330 //이거 값 유동적으로 할 수 있도록 해아함
+
   canvas.width = width
   canvas.height = height
+
+  /*제이쿼리테스트
+  var zz = $("canvas")
+  var video_grid = document.getElementById('video-grid')
+  var gridBottom = video_grid.getBoundingClientRect().bottom
+  var gridheight = video_grid.getBoundingClientRect().height
+  console.log(zz.offset().top)*/
+
 
   canvas.onmousedown = (e) => {mouse.click = true}
   canvas.onmouseup = (e) => {mouse.click = false}
 
   canvas.onmousemove = (e) => {
-    mouse.pos.x = e.clientX / width
-    mouse.pos.y = e.clientY / height
+    mouse.pos.x = (e.pageX + relativeX) / width
+    mouse.pos.y = (e.pageY - relativeY) / height
     mouse.move = true
   }
 
   socket.on('drawLine', data => {
     var line = data.line
-    printz(data.roomId)
     if(ROOM_ID == data.roomId) {
     context.beginPath()
     context.lineWidth = 2
@@ -185,12 +195,20 @@ document.addEventListener("DOMContentLoaded", ()=> {
   })
 
   function mainLoop() {
+    width = window.innerWidth
+    height = window.innerHeight
+    if(canvas.width != width || canvas.height != height) {
+      socket.emit('reDrawing')
+      canvas.width = width
+      canvas.height = height
+    }
+
     if(mouse.click && mouse.move && mouse.pos_prev) {
       socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID})
       mouse.move = false
     }
     mouse.pos_prev = {x: mouse.pos.x, y: mouse.pos.y}
-    setTimeout(mainLoop, 25)
+    setTimeout(mainLoop, 25)  //최종은 25로
   }
   mainLoop()
 })
