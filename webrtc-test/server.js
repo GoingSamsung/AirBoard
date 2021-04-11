@@ -71,7 +71,7 @@ io.on('connection', socket => {
       console.log(user);
     });
     socket.emit('userIdSet', userId)
-    var msg= userName + '님이 접속하셨습니다.'
+    var msg= userName + '님이 접속하셨습니다.'  //이거 뜨는 위치 바꺼야댐
     socket.to(roomId).emit('updateMessage', { name : 'SERVER', message : msg, roomId: roomId });
 
     socket.join(roomId)
@@ -93,6 +93,7 @@ io.on('connection', socket => {
       socket.emit('drawLine', {line: line_track[i].line, roomId:line_track[i].roomId});
     }
   })
+
   for(var i in line_track) {
     socket.emit('drawLine', {line: line_track[i].line, roomId:line_track[i].roomId});
   } //트랙보고 새로 들어온 사람이 원래 그렸던 그림 볼 수 있도록

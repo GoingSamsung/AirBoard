@@ -145,7 +145,6 @@ sendButton.addEventListener('click', function(){
   socket.emit('sendMessage', { message, ROOM_ID });
   chatInput.value = '';
 });
-
 //---캔버스 코드 시작---
 document.addEventListener("DOMContentLoaded", ()=> {
   var mouse = {
@@ -160,11 +159,10 @@ document.addEventListener("DOMContentLoaded", ()=> {
   var height = window.innerHeight
   var socket = io.connect()
 
-  var relativeX = 5
-  var relativeY = 330 //이거 값 유동적으로 할 수 있도록 해아함
-
-  canvas.width = width
-  canvas.height = height
+  var relativeX = 8
+  var relativeY = 218 //이거 값 유동적으로 할 수 있도록 해아함
+  canvas.width = parseInt(width*0.782)
+  canvas.height = parseInt(height*0.793)
 
   /*제이쿼리테스트
   var zz = $("canvas")
@@ -178,7 +176,7 @@ document.addEventListener("DOMContentLoaded", ()=> {
   canvas.onmouseup = (e) => {mouse.click = false}
 
   canvas.onmousemove = (e) => {
-    mouse.pos.x = (e.pageX + relativeX) / width
+    mouse.pos.x = (e.pageX - relativeX) / width
     mouse.pos.y = (e.pageY - relativeY) / height
     mouse.move = true
   }
@@ -195,8 +193,8 @@ document.addEventListener("DOMContentLoaded", ()=> {
   })
 
   function mainLoop() {
-    width = window.innerWidth
-    height = window.innerHeight
+    width = parseInt(window.innerWidth*0.782)
+    height = parseInt(window.innerHeight*0.793)
     if(canvas.width != width || canvas.height != height) {
       socket.emit('reDrawing')
       canvas.width = width
