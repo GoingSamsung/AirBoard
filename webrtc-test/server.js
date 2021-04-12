@@ -45,6 +45,11 @@ app.get('/:room', (req, res) => {
 })
 
 io.on('connection', socket => {
+
+  socket.on('imageSend', (roomId, userId, image) => { //화면 공유용
+    io.emit('drawImage', roomId, userId, image)
+  })
+
   socket.on('sendMessage', function(data){ 
     data.name = socket.userName;
     io.sockets.emit('updateMessage', data); 
@@ -68,7 +73,7 @@ io.on('connection', socket => {
     else
       socket.emit('connectResult', false)
   })
-  
+
   socket.on('join-room', async(roomId, userId, userName) => {
     socket.userName=userName
     socket.userId = userId

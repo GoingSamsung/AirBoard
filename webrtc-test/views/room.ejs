@@ -21,7 +21,6 @@
         grid-template-columns: repeat(auto-fill, 210px);
         grid-auto-rows: 210px;
       }
-
       video {
         width: 200px;
         height: 150px;
@@ -83,6 +82,14 @@
         margin-left: 10px;
         font-size:15px;
       }
+      #displayBox {
+        position:absolute;
+        margin-right: auto;
+      }
+      #userDisplay {
+        height:0px;
+        width:0px;
+      }
     </style>
   </head>
   <body>
@@ -91,6 +98,7 @@
       <div class="video-box">
         <div id="video-grid"></div>
         </div>
+    <div id="displayBox"></div>
     <canvas class='whiteboard' id='<%= roomId %>'></canvas>
     </div>
 
@@ -102,7 +110,6 @@
         <button id="chatMessageSendBtn">전송</button>
       </div>
     </div>
- 
     <div class="footer"></div>
   </body>
 </html>

@@ -14,6 +14,8 @@ function printz(x)
   console.log(x)
 }
 const myVideo = document.createElement('video')
+const myDisplay = document.createElement('video')
+myDisplay.id = 'display'
 myVideo.muted = true
 const peers = {}
 
@@ -167,6 +169,88 @@ sendButton.addEventListener('click', function(){
   socket.emit('sendMessage', { message, ROOM_ID });
   chatInput.value = '';
 });
+//---화면 공유---
+function displayPlay() {
+  var canvas = document.getElementById(ROOM_ID),
+  context = canvas.getContext('2d'),
+  displayBox = document.getElementById('displayBox')
+  var video = document.createElement('video')
+  video.id = 'userDisplay'
+  displayBox.append(video)
+  navigator.mediaDevices.getDisplayMedia({
+    video: true,
+    audio: false
+  }).then(stream => {
+    video.srcObject = stream
+    video.play();
+  }).catch(error => {
+    console.log(error)
+  });
+  video.addEventListener('play', function() {
+    draw( this, context, 1024, 768 );
+  }, false )
+}
+
+function draw( video, context, width, height ) {
+  var canvas = document.getElementById(ROOM_ID)
+  width = parseInt(window.innerWidth*0.782)
+  height = parseInt(window.innerHeight*0.793)
+  var image, data, i, r, g, b, brightness;
+  
+  context.drawImage( video, 0, 0, width, height );
+  image = context.getImageData( 0, 0, width, height );
+  /*
+  data = image.data;
+  
+  for( i = 0 ; i < data.length ; i += 4 ) {
+    r = data[i];
+    g = data[i + 1];
+    b = data[i + 2];
+    brightness = ( r + g + b ) / 3;
+    
+    data[i] = data[i + 1] = data[i + 2] = brightness;
+  }
+  
+  image.data = data;
+  socket.emit('imageSend', ROOM_ID, user_id, image)
+  context.putImageData( image, 0, 0 );*/
+  
+  if(image != undefined && image != null)
+    socket.emit('imageSend', ROOM_ID, user_id, canvas.toDataURL())
+    
+  document.addEventListener("keydown", (e) => {
+    if(e.key == '-') {  
+      draw(video, context, width, height)
+    }
+  })
+}
+
+socket.on('drawImage', (roomId,userId,image)=>{
+  if(userId != user_id && roomId == ROOM_ID) {
+    var canvas = document.getElementById(ROOM_ID),
+    context = canvas.getContext('2d')
+    otherDraw(context, image)
+  }
+})
+
+function otherDraw(context, image) {
+  var img = new Image();
+  img.addEventListener('load', ()=> {
+    context.drawImage(img, 0,0)
+  })
+  img.src = image
+  /*
+  var imgData = context.createImageData(width, height)
+  for(var i=0;i<imgData.data.length; i+=4){
+    imgData.data[i]=image.data[i]
+    imgData.data[i+1]=image.data[i+1]
+    imgData.data[i+2]=image.data[i+2]
+    imgData.data[i+3]=image.data[i+3]
+  }
+  context.putImageData( imgData, 0, 0 );*/
+}
+
+//---화면 공유 끝---
 
 var isPause = false
 document.addEventListener("keydown", (e) => {
@@ -179,7 +263,24 @@ document.addEventListener("keydown", (e) => {
     isPause=!isPause
   }
   if(e.key == 'Escape')  //지우개
-    socket.emit('clearWhiteBoard', ROOM_ID)  
+    socket.emit('clearWhiteBoard', ROOM_ID)
+  if(e.key == '*') {  //화면공유
+    displayPlay()
+    /*
+    navigator.mediaDevices.getDisplayMedia({
+      audio:true,
+      video:true
+    }).then(stream => {
+      const displayBox = document.getElementById('displayBox')
+      myDisplay.srcObject = stream
+      myDisplay.addEventListener('loadedmetadata', () => {
+      myDisplay.play()
+      })
+      displayBox.append(myDisplay)
+    }).catch(e => {
+      console.log(e+'!')
+    })*/
+  }
 })
 
 socket.on('pause', (userId, isPause) => {
