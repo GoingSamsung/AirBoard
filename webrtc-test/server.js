@@ -57,7 +57,9 @@ io.on('connection', socket => {
     else
       socket.emit('setName', userId, users.userName)
   })
-
+  socket.on('pauseServer', (userId, isPause) => {
+    io.emit('pause', userId, isPause)
+  })
   socket.on('join-room', async(roomId, userId, userName) => {
     socket.userName=userName
     socket.userId = userId
@@ -66,7 +68,6 @@ io.on('connection', socket => {
     //---호스트 판별---//
     var ishost = true
     hostUser = await User.findOne({roomid:roomId, isHost:true}, null, {})
-    console.log(hostUser)
     if(hostUser != null)
       ishost=false
     //---호스트 판별 끝---//
@@ -100,6 +101,14 @@ io.on('connection', socket => {
     })
   })
   //---캔버스 코드---
+  socket.on('clearWhiteBoard', (roomId) => {
+    var line_track_copy = []
+    for(var i in line_track)
+      if(line_track[i].roomId != roomId)
+        line_track_copy.push(line_track[i])
+    line_track = line_track_copy
+    io.emit('reLoading', roomId)
+  })
   socket.on('reDrawing', () => {
     for(var i in line_track) {
       socket.emit('drawLine', {line: line_track[i].line, roomId:line_track[i].roomId});

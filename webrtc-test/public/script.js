@@ -3,6 +3,7 @@ const videoGrid = document.getElementById('video-grid')
 const sendButton = document.getElementById('chatMessageSendBtn')
 const chatInput = document.getElementById('chatInput')
 var user_name = prompt('대화명을 입력해주세요.', '');
+var user_id
 const myPeer = new Peer({
 
 })
@@ -13,10 +14,14 @@ function printz(x)
 const myVideo = document.createElement('video')
 myVideo.muted = true
 const peers = {}
+
+//if(navigator.getUserMedia) 이걸로 캠있는지없는지 판별 가능 추후 추가 예정
+var localStream
 navigator.mediaDevices.getUserMedia({
   video: true,
   audio: true,
 }).then(async(stream) => {
+  localStream = stream
 
   const user_box = document.createElement('user_box')
   var video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
@@ -40,6 +45,7 @@ navigator.mediaDevices.getUserMedia({
 
     call.on('stream', userVideoStream => {
       bold.id = call.peer
+      video.id = call.peer+'!'  // bold랑 차이두기위함
       addVideoStream(video, userVideoStream, user_box)  //원래 있던 유저들 보여주기
       socket.emit('getName', call.peer)
       video_user_name.appendChild(bold)
@@ -67,6 +73,7 @@ socket.on('setName', (userId, userName) => {
 })
 
 myPeer.on('open', id => {
+  user_id = id
   socket.emit('join-room', ROOM_ID, id, user_name)
 })
 
@@ -79,6 +86,7 @@ function connectToNewUser(userId, userName, stream) { //기존 유저 입장에�
   const video_user_name_text = document.createTextNode(userName)
 
   call.on('stream', userVideoStream => {
+    video.id = userId + '!' //bold랑 차이두기 위해 !붙임
     video_user_name.appendChild(bold)
 
     bold.appendChild(video_user_name_text)
@@ -145,6 +153,39 @@ sendButton.addEventListener('click', function(){
   socket.emit('sendMessage', { message, ROOM_ID });
   chatInput.value = '';
 });
+
+var isPause = false
+document.addEventListener("keydown", (e) => {
+  if(e.key == ' ') {  
+    if(isPause)
+      myVideo.play()
+    else
+      myVideo.pause()
+    socket.emit('pauseServer', user_id, isPause)
+    isPause=!isPause
+  }
+  if(e.key == 'Escape')  //지우개
+    socket.emit('clearWhiteBoard', ROOM_ID)  
+})
+
+socket.on('pause', (userId, isPause) => {
+  const video = document.getElementById(userId+'!')
+  if(video) {
+    if(isPause)
+      video.play()
+    else
+      video.pause()
+  }
+})
+
+socket.on('reLoading', (roomId)=>{
+  if(roomId == ROOM_ID) {
+    var canvas = document.getElementById(ROOM_ID)
+    canvas.width += 1
+    canvas.width -= 1
+    socket.emit('reDrawing')
+  }
+})
 
 //---캔버스 코드 시작---
 document.addEventListener("DOMContentLoaded", ()=> {
