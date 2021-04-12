@@ -60,6 +60,15 @@ io.on('connection', socket => {
   socket.on('pauseServer', (userId, isPause) => {
     io.emit('pause', userId, isPause)
   })
+
+  socket.on('isConnect', async(videoCnt, roomId) => { //---연결 버그 확인중
+    const user = await User.find({roomid:roomId}, null, {})
+    if(videoCnt == user.length)
+      socket.emit('connectResult', true)
+    else
+      socket.emit('connectResult', false)
+  })
+  
   socket.on('join-room', async(roomId, userId, userName) => {
     socket.userName=userName
     socket.userId = userId
@@ -67,7 +76,7 @@ io.on('connection', socket => {
 
     //---호스트 판별---//
     var ishost = true
-    hostUser = await User.findOne({roomid:roomId, isHost:true}, null, {})
+    const hostUser = await User.findOne({roomid:roomId, isHost:true}, null, {})
     if(hostUser != null)
       ishost=false
     //---호스트 판별 끝---//
@@ -83,7 +92,7 @@ io.on('connection', socket => {
       }
       console.log(user);
     });
-    socket.emit('userIdSet', userId)
+
     var msg= userName + '님이 접속하셨습니다.'  //이거 뜨는 위치 바꺼야댐
     socket.to(roomId).emit('updateMessage', { name : 'SERVER', message : msg, roomId: roomId });
 

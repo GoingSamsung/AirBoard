@@ -4,6 +4,8 @@ const sendButton = document.getElementById('chatMessageSendBtn')
 const chatInput = document.getElementById('chatInput')
 var user_name = prompt('대화명을 입력해주세요.', '');
 var user_id
+var video_cnt = 0
+
 const myPeer = new Peer({
 
 })
@@ -32,31 +34,9 @@ navigator.mediaDevices.getUserMedia({
   bold.appendChild(video_user_name_text)
   user_box.appendChild(video_user_name)
   user_box.appendChild(myVideo)
-  addVideoStream(myVideo, stream, user_box)
+  addVideoStream(myVideo, stream, user_box, true)
 
-  myPeer.on('call', call => {
-    call.answer(stream)
-
-    const video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
-    const bold = document.createElement('b')
-    const video_user_name_text = document.createTextNode('loading..')
-    const video = document.createElement('video')
-    const user_box = document.createElement('user_box')
-
-    call.on('stream', userVideoStream => {
-      bold.id = call.peer
-      video.id = call.peer+'!'  // bold랑 차이두기위함
-      addVideoStream(video, userVideoStream, user_box)  //원래 있던 유저들 보여주기
-      socket.emit('getName', call.peer)
-      video_user_name.appendChild(bold)
-      bold.appendChild(video_user_name_text)
-      user_box.appendChild(video_user_name)
-      user_box.appendChild(video)
-    })
-    call.on('close', () => {    
-      user_box.remove()
-    })
-  })
+  getNewUser(stream)
 
   socket.on('user-connected', (userId, userName) => {
     connectToNewUser(userId, userName, stream)
@@ -77,31 +57,65 @@ myPeer.on('open', id => {
   socket.emit('join-room', ROOM_ID, id, user_name)
 })
 
-function connectToNewUser(userId, userName, stream) { //기존 유저 입장에서 새로운 유저가 들어왔을 때
-  const call = myPeer.call(userId, stream)
-  const video = document.createElement('video')
-  const user_box = document.createElement('user_box')
-  const video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
-  const bold = document.createElement('b')
-  const video_user_name_text = document.createTextNode(userName)
+function getNewUser(stream){
+  myPeer.on('call', call => {
+    call.answer(stream)
+    const video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
+    const bold = document.createElement('b')
+    const video_user_name_text = document.createTextNode('loading..')
+    const video = document.createElement('video')
+    const user_box = document.createElement('user_box')
 
-  call.on('stream', userVideoStream => {
-    video.id = userId + '!' //bold랑 차이두기 위해 !붙임
-    video_user_name.appendChild(bold)
-
-    bold.appendChild(video_user_name_text)
-    user_box.appendChild(video_user_name)
-    user_box.appendChild(video)
-    addVideoStream(video, userVideoStream, user_box)
+    call.on('stream', userVideoStream => {
+      if(peers[call.peer] == undefined) {
+        bold.id = call.peer
+        video.id = call.peer+'!video'  // bold랑 차이두기위함
+        addVideoStream(video, userVideoStream, user_box, true)  //원래 있던 유저들 보여주기
+        socket.emit('getName', call.peer)
+        video_user_name.appendChild(bold)
+        bold.appendChild(video_user_name_text)
+        user_box.appendChild(video_user_name)
+        user_box.appendChild(video)
+        peers[call.peer] = call
+      }
+    })
+    call.on('close', () => {
+      video_cnt--
+      user_box.remove()
+    })
   })
-  call.on('close', () => {    
-    user_box.remove()
-  })
-
-  peers[userId] = call
 }
 
-function addVideoStream(video, stream, user_box) {
+function connectToNewUser(userId, userName, stream) { //기존 유저 입장에서 새로운 유저가 들어왔을 때
+  if(peers[userId] == undefined) {
+    const call = myPeer.call(userId, stream)
+    const video = document.createElement('video')
+    const user_box = document.createElement('user_box')
+    const video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
+    const bold = document.createElement('b')
+    const video_user_name_text = document.createTextNode(userName)
+
+    call.on('stream', userVideoStream => {
+      video.id = userId + '!video' //bold랑 차이두기 위해 !붙임
+      video_user_name.appendChild(bold)
+
+      bold.appendChild(video_user_name_text)
+      user_box.appendChild(video_user_name)
+      user_box.appendChild(video)
+      addVideoStream(video, userVideoStream, user_box, false)
+    })
+    call.on('close', () => {
+      video_cnt--    
+      user_box.remove()
+    })
+
+    peers[userId] = call
+  }
+}
+
+function addVideoStream(video, stream, user_box, cnt) {
+  if(cnt) video_cnt++
+  else video_cnt+=0.5
   video.srcObject = stream
   video.addEventListener('loadedmetadata', () => {
     video.play()
@@ -169,7 +183,7 @@ document.addEventListener("keydown", (e) => {
 })
 
 socket.on('pause', (userId, isPause) => {
-  const video = document.getElementById(userId+'!')
+  const video = document.getElementById(userId+'!video')
   if(video) {
     if(isPause)
       video.play()
@@ -251,6 +265,18 @@ document.addEventListener("DOMContentLoaded", ()=> {
     setTimeout(mainLoop, 25)  //최종은 25로
   }
   mainLoop()
+  //---캔버스 코드 끝---
+
+  //---연결 버그 확인중---
+  function isConnect(){
+    socket.emit('isConnect',video_cnt, ROOM_ID)
+  }
+  setTimeout(isConnect, 5000)
 })
 
-//---캔버스 코드 끝---
+socket.on('connectResult', result => {
+  if(!result) {
+    getNewUser(localStream)
+  }
+})
+//---연결 버그 확인중---
