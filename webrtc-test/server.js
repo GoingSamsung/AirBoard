@@ -52,17 +52,29 @@ io.on('connection', socket => {
 
   socket.on('getName', async (userId) =>{ //유저 이름 달아줌
     users = await User.findOne({userId:userId}, null, {})
-    socket.emit('setName', userId, users.userName)
+    if(users.isHost)
+      socket.emit('setName', userId, users.userName+'(호스트)') //호스트 문구 처리는 나중에 더 이쁘게
+    else
+      socket.emit('setName', userId, users.userName)
   })
 
-  socket.on('join-room', (roomId, userId, userName) => {
+  socket.on('join-room', async(roomId, userId, userName) => {
     socket.userName=userName
     socket.userId = userId
     socket.roomId = roomId
+
+    //---호스트 판별---//
+    var ishost = true
+    hostUser = await User.findOne({roomid:roomId, isHost:true}, null, {})
+    console.log(hostUser)
+    if(hostUser != null)
+      ishost=false
+    //---호스트 판별 끝---//
     const user = new User({
       userName:userName,
       userId : userId,
       roomid:roomId,
+      isHost: ishost,
     });
     user.save((err, user)=>{
       if(err){

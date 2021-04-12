@@ -145,6 +145,7 @@ sendButton.addEventListener('click', function(){
   socket.emit('sendMessage', { message, ROOM_ID });
   chatInput.value = '';
 });
+
 //---캔버스 코드 시작---
 document.addEventListener("DOMContentLoaded", ()=> {
   var mouse = {

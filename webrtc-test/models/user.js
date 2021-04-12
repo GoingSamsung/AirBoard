@@ -14,6 +14,10 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
+    isHost: {
+        type: Boolean,
+        default: false,
+    }
 });
 
 module.exports = mongoose.model('user', userSchema);
