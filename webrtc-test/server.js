@@ -49,7 +49,12 @@ io.on('connection', socket => {
   socket.on('imageSend', (roomId, userId, image) => { //화면 공유용
     io.emit('drawImage', roomId, userId, image)
   })
-
+  socket.on('drawPause_script', (tf, roomId) => {
+    io.emit('drawPause_server', tf, roomId)
+  })
+  socket.on('isDisplaying_script', (tf, roomId) => {
+    io.emit('isDisplaying_server', tf, roomId)
+  })
   socket.on('sendMessage', function(data){ 
     data.name = socket.userName;
     io.sockets.emit('updateMessage', data); 
