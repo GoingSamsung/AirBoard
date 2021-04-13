@@ -5,6 +5,7 @@ const chatInput = document.getElementById('chatInput')
 var user_name = prompt('대화명을 입력해주세요.', '');
 var user_id
 var video_cnt = 0
+var isDisplayHost = false
 
 const myPeer = new Peer({
 
@@ -89,6 +90,12 @@ function getNewUser(stream){
 }
 
 function connectToNewUser(userId, userName, stream) { //기존 유저 입장에서 새로운 유저가 들어왔을 때
+  if(isDisplayHost) {
+    socket.emit('isDisplaying_script', isDisplaying, ROOM_ID)
+    socket.emit('drawPause_script',drawPause, ROOM_ID)
+    if(prev_image != undefined && prev_image != null && drawPause)
+      socket.emit('imageSend', ROOM_ID, user_id, prev_image)
+  }
   if(peers[userId] == undefined) {
     const call = myPeer.call(userId, stream)
     const video = document.createElement('video')
@@ -183,7 +190,8 @@ function displayPlay() {
     video: true,
     audio: false
   }).then(stream => {
-    isDisplaying= !isDisplaying;
+    isDisplaying= !isDisplaying
+    isDisplayHost= true
     socket.emit('isDisplaying_script', isDisplaying, ROOM_ID)
     video.srcObject = stream
     video.play();
@@ -198,10 +206,9 @@ function displayPlay() {
 var drawPause = false;
 var prev_image
 
-async function draw( video, context, width, height ) {
+function draw( video, context, width, height ) {
   width = parseInt(window.innerWidth*0.782)
   height = parseInt(window.innerHeight*0.793)
-
   if(!drawPause) {
     context.drawImage( video, 0, 0, width, height );
     prev_image = canvas.toDataURL()
@@ -214,7 +221,7 @@ async function draw( video, context, width, height ) {
     if(prev_image != undefined && prev_image != null)
       socket.emit('imageSend', ROOM_ID, user_id, prev_image)
   }
-  setTimeout(draw, 25, video, context, width, height)
+  setTimeout(draw, 333, video, context, width, height)
 }
 
 socket.on('drawImage', (roomId,userId,image)=>{
@@ -321,8 +328,8 @@ document.addEventListener("DOMContentLoaded", ()=> {
   canvas.onmouseup = (e) => {mouse.click = false}
 
   canvas.onmousemove = (e) => {
-    mouse.pos.x = (e.pageX - relativeX) / width
-    mouse.pos.y = (e.pageY - relativeY) / height
+    mouse.pos.x = (e.pageX - relativeX)
+    mouse.pos.y = (e.pageY - relativeY) //상대좌표로하려면 height로 나누기
     mouse.move = true
   }
 
@@ -331,8 +338,8 @@ document.addEventListener("DOMContentLoaded", ()=> {
     if(ROOM_ID == data.roomId) {
     context.beginPath()
     context.lineWidth = 2
-    context.moveTo(line[0].x*width, line[0].y*height)
-    context.lineTo(line[1].x*width, line[1].y*height)
+    context.moveTo(line[0].x, line[0].y)
+    context.lineTo(line[1].x, line[1].y)  //상대좌표로하려면 x는 width로 y는 height로 나누기
     context.stroke()
     }
   })
@@ -342,7 +349,7 @@ document.addEventListener("DOMContentLoaded", ()=> {
       mainLoop()
     }
     else {
-      setTimeout(outerLoop, 25)
+      setTimeout(outerLoop, 50)
     }
   }
   function mainLoop() {
