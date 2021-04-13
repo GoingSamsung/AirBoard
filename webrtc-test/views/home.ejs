@@ -1,17 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>AirBoard</title>
-    <style>
-    </style>
+    <meta charset="utf-8"/>
+    <!-- 모바일 대응을 위한 뷰포트 기본 설정 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="scrollhomecss.css">
+    <link rel="stylesheet" href="btnstyle.css">
+    <link rel="stylesheet" href="arcod.css">
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
   </head>
   <body>
-    <a href="/">AirBoard</a><br>
-    <form action="/newroom" id="new_room" method="GET">
-        <input type="submit" value="새 회의">
-    </form>
+    <header id="slider">
+      <center>
+        <h1 id='first_airboard'>AirBoard</h1>
+      </center>
+      <div id="btncon">
+        <div class="mouse"></div>
+        <p>Scroll</p>
+      </div>
+    </header>
+    <main class="sa sa-up" id='main'>
+      <div class="movecontainer">
+        <h3 class="title">
+          <span>Main Page</span>
+        </h3>
+      </div>
+      <section id="content">
+        <div class="container blue circleBehind">
+          <a href="#main">HOME</a>
+          <a href='/newroom'>NEW ROOM</a>
+          <a>HOW TO USE</a>
+          <a>FAQ</a>
+      </div>
+      </section>
+    </main>
+    <script type="text/javascript" src="scroll.js"></script>
   </body>
 </html>
