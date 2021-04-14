@@ -6,6 +6,12 @@ var user_name = prompt('대화명을 입력해주세요.', '');
 var user_id
 var video_cnt = 0
 var isDisplayHost = false
+var isPause = false
+var isDisplaying = false
+var drawPause = false
+var canvas = document.getElementById(ROOM_ID)
+var context = canvas.getContext('2d')
+var prev_image
 
 const myPeer = new Peer({
 
@@ -90,7 +96,7 @@ function getNewUser(stream){
 }
 
 function connectToNewUser(userId, userName, stream) { //기존 유저 입장에서 새로운 유저가 들어왔을 때
-  if(isDisplayHost) {
+  if(isDisplayHost) { //화면공유중일때 새로 들어온 유저가 화면공유 보도록
     socket.emit('isDisplaying_script', isDisplaying, ROOM_ID)
     socket.emit('drawPause_script',drawPause, ROOM_ID)
     if(prev_image != undefined && prev_image != null && drawPause)
@@ -176,12 +182,10 @@ sendButton.addEventListener('click', function(){
   socket.emit('sendMessage', { message, ROOM_ID });
   chatInput.value = '';
 });
+
 //---화면 공유---
-var canvas = document.getElementById(ROOM_ID)
-var isDisplaying = false;
 
 function displayPlay() {
-  var context = canvas.getContext('2d')
   var displayBox = document.getElementById('displayBox')
   var video = document.createElement('video')
   video.id = 'userDisplay'
@@ -203,8 +207,6 @@ function displayPlay() {
   }, false )
 }
 
-var drawPause = false;
-var prev_image
 
 function draw( video, context, width, height ) {
   width = parseInt(window.innerWidth*0.782)
@@ -221,13 +223,11 @@ function draw( video, context, width, height ) {
     if(prev_image != undefined && prev_image != null)
       socket.emit('imageSend', ROOM_ID, user_id, prev_image)
   }
-  setTimeout(draw, 333, video, context, width, height)
+  setTimeout(draw, 250, video, context, width, height)  //4프레임
 }
 
 socket.on('drawImage', (roomId,userId,image)=>{
   if(userId != user_id && roomId == ROOM_ID) {
-    var canvas = document.getElementById(ROOM_ID),
-    context = canvas.getContext('2d')
     prev_image = image
     otherDraw(context, image)
   }
@@ -242,8 +242,6 @@ function otherDraw(context, image) {
 }
 
 //---화면 공유 끝---
-
-var isPause = false
 
 document.addEventListener("keydown", (e) => {
   if(e.key == ' ') {  
@@ -263,7 +261,7 @@ document.addEventListener("keydown", (e) => {
   }
   if(e.key == '*')   //화면공유
     displayPlay()
-  if(e.key == '-' && isDisplaying) {//화면 정지
+  if(e.key == '-' && isDisplaying && isDisplayHost) {//화면 정지
     drawPause = !drawPause
     socket.emit('drawPause_script',drawPause, ROOM_ID)
   }
@@ -291,7 +289,6 @@ socket.on('pause', (userId, isPause) => {
 
 socket.on('reLoading', (roomId)=>{
   if(roomId == ROOM_ID) {
-    var canvas = document.getElementById(ROOM_ID)
     canvas.width += 1
     canvas.width -= 1
     socket.emit('reDrawing')
@@ -306,16 +303,15 @@ document.addEventListener("DOMContentLoaded", ()=> {
     pos: {x:0, y:0},
     pos_prev: false
   }
-  var context = canvas.getContext('2d')
   var width = window.innerWidth
   var height = window.innerHeight
   var socket = io.connect()
-
   var relativeX = 8
-  var relativeY = 218 //이거 값 유동적으로 할 수 있도록 해아함
-  canvas.width = parseInt(width*0.782)
-  canvas.height = parseInt(height*0.793)
-
+  var relativeY = 188 //이거 값 유동적으로 할 수 있도록 해아함
+  var rX = 0.742
+  var rY = 0.753
+  canvas.width = parseInt(width*rX)
+  canvas.height = parseInt(height*rY)
   /*제이쿼리테스트
   var zz = $("canvas")
   var video_grid = document.getElementById('video-grid')
@@ -353,8 +349,8 @@ document.addEventListener("DOMContentLoaded", ()=> {
     }
   }
   function mainLoop() {
-    width = parseInt(window.innerWidth*0.782)
-    height = parseInt(window.innerHeight*0.793)
+    width = parseInt(window.innerWidth*rX)
+    height = parseInt(window.innerHeight*rY)
     if(canvas.width != width || canvas.height != height) {
       socket.emit('reDrawing')
       otherDraw(context, prev_image)

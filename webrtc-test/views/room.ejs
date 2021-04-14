@@ -16,10 +16,13 @@
     <script src="script.js" defer></script>
     <title>AirBoard Room</title>
     <style>
+      body {
+        background-color:#222a30;
+      }
       #video-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, 210px);
-        grid-auto-rows: 210px;
+        grid-template-columns: repeat(auto-fill, 180px);
+        grid-auto-rows: 180px;
       }
       video {
         width: 200px;
@@ -33,31 +36,34 @@
         height: 180px;
       }
       video_user_name {        
-        background-color: black;
+        background-color: #4e5559;
         display:block;
         color: white; width: 200px;
         text-align: center;
       }
       .video-box {
-        width: 100%; overflow: hidden;margin: 0px auto; position: relative;position: relative; display:block;
+        width: 100%; overflow: hidden;margin: 0px auto; position: relative;
       }
       .whiteboard {
+        background-color: white;
         display: block;
         width:100%;
         padding:0;
-        border:solid 1px black;
+        border: 2px solid white;
       }
       .chatBox {
+        background-color: #161b1f;
         margin-left:auto;
         display: block;
         width:20%;
-        height: 100%;
+        height:93%;
         position:absolute;
         top:0;left:0;right:0;bottom: 0;
       }
       .leftBox {
         float: left;
-        width: 80%;
+        width: 75%;
+        height: 80%;
       }
       .footer {
         display: block;
@@ -67,18 +73,19 @@
         height: 90%;
         top:0;
         bottom:3em;
-        border: 1px solid black;
       }
       #inputBox {
+        background-color: #30383d;
         display: block;
         bottom:0;
         height: 10%;
         padding:.5em;
         margin-bottom:auto;
-        border: 1px solid black;
+        border-top: 1px solid black;
       }
       .output__user {
         display: block;
+        color:white;
         margin-left: 10px;
         font-size:15px;
       }
