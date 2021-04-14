@@ -9,6 +9,7 @@ var isDisplayHost = false
 var isPause = false
 var isDisplaying = false
 var drawPause = false
+var isCam = true
 var canvas = document.getElementById(ROOM_ID)
 var context = canvas.getContext('2d')
 var prev_image
@@ -123,7 +124,6 @@ function connectToNewUser(userId, userName, stream) { //기존 유저 입장에�
       video_cnt--    
       user_box.remove()
     })
-
     peers[userId] = call
   }
 }
@@ -265,6 +265,56 @@ document.addEventListener("keydown", (e) => {
     drawPause = !drawPause
     socket.emit('drawPause_script',drawPause, ROOM_ID)
   }
+  /*  더 건드려보기
+  if(e.key == '/') {  //캠끄기
+    if(isCam) {
+      const tracks = localStream.getTracks()
+      tracks.forEach((track) => {
+        track.stop()
+      })
+    }
+    else {
+      navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      }).then(async(stream) => {
+        console.log(localStream, stream)
+        localStream = stream      
+        myVideo.srcObject = stream
+        myVideo.addEventListener('loadedmetadata', () => {
+          myVideo.play()
+        })
+        const call = myPeer.call(user_id,localStream)
+        console.log(call)
+        socket.emit('stream_play', user_id, ROOM_ID, stream)
+        const call = myPeer.call(user_id, stream)
+
+        call.on('stream', userVideoStream => {
+          const video = document.getElementsById(user_id + '!video')
+          video.srcObject = stream.srcObject 
+          video.addEventListener('loadedmetadata', () => {
+            video.play()
+          })
+        }
+      })
+    }
+    isCam = !isCam
+  }*/
+})
+
+socket.on('streamPlay', (userId, roomId, stream) => {
+  if(roomId == ROOM_ID && userId != user_id) {
+    const call = myPeer.call(userId, localStream)
+    console.log(localStream)
+    const video = document.getElementById(userId + '!video')
+    call.on('stream', userVideoStream => {
+      console.log(userVideoStream)
+      video.srcObject = userVideoStream
+      video.addEventListener('loadedmetadata', () => {
+        video.play()
+      })
+    })
+  }
 })
 
 socket.on('drawPause_server', (tf,roomId) =>{
@@ -292,6 +342,20 @@ socket.on('reLoading', (roomId)=>{
     canvas.width += 1
     canvas.width -= 1
     socket.emit('reDrawing')
+  }
+})
+
+socket.on('cam_set', (userId, roomId, isCams) => {
+  if(roomId == ROOM_ID) {
+    if(isCams){
+
+    }
+    else {
+      var noCam = document.createElement('noCam')
+      noCam.id = userId + '!noCam'
+      var noCamVideo = document.getElementById(userId+'!video')
+      noCamVideo.append(noCam)
+    }
   }
 })
 

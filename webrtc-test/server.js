@@ -60,6 +60,14 @@ io.on('connection', socket => {
     io.sockets.emit('updateMessage', data); 
   });
 
+  socket.on('cam_control', (userId, roomId, isCam) => {
+    io.emit('cam_set', userId, roomId, isCam)
+  })  //지우자
+
+  socket.on('stream_play', (userId, roomId, stream) => {
+    io.emit('streamPlay', userId, roomId, stream)
+  })
+
   socket.on('getName', async (userId) =>{ //유저 이름 달아줌
     users = await User.findOne({userId:userId}, null, {})
     if(users.isHost)
