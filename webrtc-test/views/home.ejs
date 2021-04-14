@@ -4,15 +4,13 @@
     <meta charset="utf-8"/>
     <!-- 모바일 대응을 위한 뷰포트 기본 설정 -->
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-    <title>AirBoard</title> 
     <link rel="stylesheet" href="scrollhomecss.css">
     <link rel="stylesheet" href="btnstyle.css">
     <link rel="stylesheet" href="arcod.css">
     <script src="http://code.jquery.com/jquery-latest.js"></script>
   </head>
   <body>
-    <header id="slider">
+    <header class="maincontent" id="slider">
       <center>
         <h1 id='first_airboard'>AirBoard</h1>
       </center>
@@ -21,7 +19,7 @@
         <p>Scroll</p>
       </div>
     </header>
-    <main class="sa sa-up" id='main'>
+    <main class="maincontent sa" id='main'>
       <div class="movecontainer">
         <h3 class="title">
           <span>Main Page</span>
@@ -29,13 +27,44 @@
       </div>
       <section id="content">
         <div class="container blue circleBehind">
-          <a href="#main">HOME</a>
+          <a href="#main">MAIN PAGE</a>
           <a href='/newroom'>NEW ROOM</a>
-          <a>HOW TO USE</a>
-          <a>FAQ</a>
+          <a href="#howtouse">HOW TO USE</a>
+          <a href="#aboutus">ABOUT US</a>
       </div>
       </section>
     </main>
+    <main class="maincontent sa" id='howtouse'>
+      <div class="movecontainer">
+        <h3 class="title">
+          <span>HOW TO USE</span>
+        </h3>
+      </div>
+      <section id="content">
+        <div class="container blue circleBehind">
+          <a href="#main">MAIN PAGE</a>
+          <a href='/newroom'>NEW ROOM</a>
+          <a href="#howtouse">HOW TO USE</a>
+          <a href="#aboutus">ABOUT US</a>
+      </div>
+      </section>
+    </main>
+    <main class="maincontent sa" id='aboutus'>
+      <div class="movecontainer">
+        <h3 class="title">
+          <span>ABOUT US</span>
+        </h3>
+      </div>
+      <section id="content">
+        <div class="container blue circleBehind">
+          <a href="#main">MAIN PAGE</a>
+          <a href='/newroom'>NEW ROOM</a>
+          <a href="#howtouse">HOW TO USE</a>
+          <a href="#aboutus">ABOUT US</a>
+      </div>
+      </section>
+    </main>
+    <script type="text/javascript" src="scrollpage.js"></script>
     <script type="text/javascript" src="scroll.js"></script>
   </body>
 </html>

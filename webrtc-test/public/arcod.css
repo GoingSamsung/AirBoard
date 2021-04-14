@@ -5,6 +5,10 @@ html, body
     margin: 0px;
 }
 
+html { 
+    scroll-behavior: smooth; 
+} 
+
 div.container
 {
     font-family: Raleway;
@@ -70,6 +74,7 @@ font-size: 40px;
 text-transform: uppercase;
 margin-bottom:0px;
 }
+
 h2 span {
 width: 100%;
 float: left;
@@ -111,16 +116,8 @@ animation-delay: 0.5s;
 }
 
 h3 span {
-    animation-delay: 0.6s;
+    animation-delay: 1s;
     -webkit-animation-fill-mode: forwards;
-    }
-    h2 span:first-child {
-    color: #4e5559;
-    animation-delay: 0.7s;
-    }
-    h2 span:last-child {
-    color: #4e5559;
-    animation-delay: 0.5s;
 }
 
 .usechrome {
