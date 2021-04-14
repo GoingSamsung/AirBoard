@@ -4,7 +4,6 @@ const sendButton = document.getElementById('chatMessageSendBtn')
 const chatInput = document.getElementById('chatInput')
 var user_name = prompt('대화명을 입력해주세요.', '');
 var user_id
-var video_cnt = 0
 var isDisplayHost = false
 var isPause = false
 var isDisplaying = false
@@ -94,7 +93,6 @@ function getNewUser(){
       }
     })
     call.on('close', () => {
-      video_cnt--
       user_box.remove()
     })
   })
@@ -104,6 +102,7 @@ function connectToNewUser(userId, userName, stream) { //기존 유저 입장에�
   if(isDisplayHost) { //화면공유중일때 새로 들어온 유저가 화면공유 보도록
     socket.emit('isDisplaying_script', isDisplaying, ROOM_ID)
     socket.emit('drawPause_script',drawPause, ROOM_ID)
+    socket.emit('new_display_connect', ROOM_ID, user_id, userId)
     if(prev_image != undefined && prev_image != null && drawPause)
       socket.emit('imageSend', ROOM_ID, user_id, prev_image)
   }
@@ -125,7 +124,6 @@ function connectToNewUser(userId, userName, stream) { //기존 유저 입장에�
       addVideoStream(video, userVideoStream, user_box, false)
     })
     call.on('close', () => {
-      video_cnt--    
       user_box.remove()
     })
     peers[userId] = call
@@ -133,8 +131,6 @@ function connectToNewUser(userId, userName, stream) { //기존 유저 입장에�
 }
 
 function addVideoStream(video, stream, user_box, cnt) {
-  if(cnt) video_cnt++
-  else video_cnt+=0.5
   video.srcObject = stream
   video.addEventListener('loadedmetadata', () => {
     video.play()
@@ -188,7 +184,7 @@ sendButton.addEventListener('click', function(){
 });
 
 //---화면 공유---
-function connectToDisplay(userId) { //기존 유저 입장에서 새로운 유저가 들어왔을 때
+function connectToDisplay(userId) {
     var displayBox = document.getElementById('displayBox')
     var video = document.createElement('video')
     video.id = 'userDisplay'
@@ -208,6 +204,10 @@ function connectToDisplay(userId) { //기존 유저 입장에서 새로운 유�
 }
 socket.on('display_connected', (roomId, userId) => {
   if(roomId == ROOM_ID && userId != user_id)
+    connectToDisplay(userId)
+})
+socket.on('new_display_connected', (roomId, userId, newUserId) => {
+  if(roomId == ROOM_ID && userId != user_id && newUserId == user_id)
     connectToDisplay(userId)
 })
 
@@ -242,6 +242,11 @@ function draw( video, context, width, height ) {
   if(!drawPause) {
     context.drawImage( video, 0, 0, width, height );
     prev_image = canvas.toDataURL()
+    if(canvas.width != width || canvas.height != height) {
+      otherDraw(context, prev_image)
+      canvas.width = width
+      canvas.height = height
+    }
     /*
     var img = new Image();
     img.addEventListener('load', ()=> {
@@ -290,7 +295,7 @@ document.addEventListener("keydown", (e) => {
       socket.emit('imageSend', ROOM_ID, user_id, prev_image)
     }
   }
-  if(e.key == '*')   //화면공유
+  if(e.key == '*' && !isDisplaying)   //화면공유
     displayPlay()
   if(e.key == '-' && isDisplaying && isDisplayHost) {//화면 정지
     drawPause = !drawPause
@@ -322,7 +327,7 @@ document.addEventListener("keydown", (e) => {
     isCam = !isCam
   }*/
   if(e.key == 'End') {  //디버그용
-    console.log(myPeer.connections)
+    console.log(peers)
   }
 })
 
@@ -445,17 +450,4 @@ document.addEventListener("DOMContentLoaded", ()=> {
   }
   mainLoop()
   //---캔버스 코드 끝---
-
-  //---연결 버그 확인중---
-  function isConnect(){
-    socket.emit('isConnect',video_cnt, ROOM_ID)
-  }
-  setTimeout(isConnect, 5000)
 })
-
-socket.on('connectResult', result => {
-  if(!result) {
-    getNewUser(localStream)
-  }
-})
-//---연결 버그 확인중---

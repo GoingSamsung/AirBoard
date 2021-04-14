@@ -62,6 +62,9 @@ io.on('connection', socket => {
   socket.on('display_connect', (roomId, userId) => {
     io.emit('display_connected', roomId, userId)
   })
+  socket.on('new_display_connect', (roomId, userId, newUserId) => {
+    io.emit('new_display_connected', roomId, userId, newUserId)
+  })
   socket.on('stream_play', (userId, roomId, isCam) => {
     io.emit('streamPlay', userId, roomId, isCam)
   })
@@ -83,10 +86,6 @@ io.on('connection', socket => {
       socket.emit('connectResult', true)
     else
       socket.emit('connectResult', false)
-  })
-
-  socket.on('display_connect', (roomId, userId, displayId) => {
-    io.emit('display_connected', roomId, userId, displayId)
   })
 
   socket.on('join-room', async(roomId, userId, userName) => {
