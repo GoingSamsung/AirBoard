@@ -13,7 +13,8 @@ var isCam = true
 var canvas = document.getElementById(ROOM_ID)
 var context = canvas.getContext('2d')
 var prev_image
-
+var localStream
+var localDisplay
 const myPeer = new Peer({
 
 })
@@ -28,7 +29,6 @@ myVideo.muted = true
 const peers = {}
 
 //if(navigator.getUserMedia) 이걸로 캠있는지없는지 판별 가능 추후 추가 예정
-var localStream
 navigator.mediaDevices.getUserMedia({
   video: true,
   audio: true,
@@ -46,7 +46,7 @@ navigator.mediaDevices.getUserMedia({
   user_box.appendChild(myVideo)
   addVideoStream(myVideo, stream, user_box, true)
 
-  getNewUser(stream)
+  getNewUser()
 
   socket.on('user-connected', (userId, userName) => {
     connectToNewUser(userId, userName, stream)
@@ -63,13 +63,17 @@ socket.on('setName', (userId, userName) => {
 })
 
 myPeer.on('open', id => {
+  printz("peer open")
   user_id = id
   socket.emit('join-room', ROOM_ID, id, user_name)
 })
 
-function getNewUser(stream){
+function getNewUser(){
   myPeer.on('call', call => {
-    call.answer(stream)
+    if(localDisplay != undefined)
+      call.answer(localDisplay)
+    else
+      call.answer(localStream)
     const video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
     const bold = document.createElement('b')
     const video_user_name_text = document.createTextNode('loading..')
@@ -184,6 +188,28 @@ sendButton.addEventListener('click', function(){
 });
 
 //---화면 공유---
+function connectToDisplay(userId) { //기존 유저 입장에서 새로운 유저가 들어왔을 때
+    var displayBox = document.getElementById('displayBox')
+    var video = document.createElement('video')
+    video.id = 'userDisplay'
+    displayBox.append(video)
+    const call = myPeer.call(userId, localStream)
+
+    call.on('stream', stream => {
+      video.srcObject = stream
+      video.addEventListener('loadedmetadata', () => {
+        video.play()
+      })
+    })
+
+    video.addEventListener('play', function() {
+      draw( this, context, 1024, 768 );
+    }, false )
+}
+socket.on('display_connected', (roomId, userId) => {
+  if(roomId == ROOM_ID && userId != user_id)
+    connectToDisplay(userId)
+})
 
 function displayPlay() {
   var displayBox = document.getElementById('displayBox')
@@ -194,11 +220,13 @@ function displayPlay() {
     video: true,
     audio: false
   }).then(stream => {
+    localDisplay = stream
     isDisplaying= !isDisplaying
     isDisplayHost= true
     socket.emit('isDisplaying_script', isDisplaying, ROOM_ID)
     video.srcObject = stream
     video.play();
+    socket.emit('display_connect', ROOM_ID, user_id)
   }).catch(error => {
     console.log(error)
   });
@@ -214,17 +242,20 @@ function draw( video, context, width, height ) {
   if(!drawPause) {
     context.drawImage( video, 0, 0, width, height );
     prev_image = canvas.toDataURL()
+    /*
     var img = new Image();
     img.addEventListener('load', ()=> {
       context.drawImage(img, 0,0)
     })
     img.src = prev_image
-    
-    if(prev_image != undefined && prev_image != null)
-      socket.emit('imageSend', ROOM_ID, user_id, prev_image)
+    */
+
+    //if(prev_image != undefined && prev_image != null)
+     //socket.emit('imageSend', ROOM_ID, user_id, prev_image)
   }
-  setTimeout(draw, 250, video, context, width, height)  //4프레임
+  setTimeout(draw, 50, video, context, width, height)  //20프레임
 }
+
 
 socket.on('drawImage', (roomId,userId,image)=>{
   if(userId != user_id && roomId == ROOM_ID) {
@@ -265,13 +296,14 @@ document.addEventListener("keydown", (e) => {
     drawPause = !drawPause
     socket.emit('drawPause_script',drawPause, ROOM_ID)
   }
-  /*  더 건드려보기
+  /* 보류
   if(e.key == '/') {  //캠끄기
     if(isCam) {
       const tracks = localStream.getTracks()
       tracks.forEach((track) => {
         track.stop()
       })
+      
     }
     else {
       navigator.mediaDevices.getUserMedia({
@@ -284,28 +316,19 @@ document.addEventListener("keydown", (e) => {
         myVideo.addEventListener('loadedmetadata', () => {
           myVideo.play()
         })
-        const call = myPeer.call(user_id,localStream)
-        console.log(call)
-        socket.emit('stream_play', user_id, ROOM_ID, stream)
-        const call = myPeer.call(user_id, stream)
-
-        call.on('stream', userVideoStream => {
-          const video = document.getElementsById(user_id + '!video')
-          video.srcObject = stream.srcObject 
-          video.addEventListener('loadedmetadata', () => {
-            video.play()
-          })
-        }
+        socket.emit('stream_play', user_id, ROOM_ID)
       })
     }
     isCam = !isCam
   }*/
+  if(e.key == 'End') {  //디버그용
+    console.log(myPeer.connections)
+  }
 })
 
-socket.on('streamPlay', (userId, roomId, stream) => {
+socket.on('streamPlay', (userId, roomId) => {
   if(roomId == ROOM_ID && userId != user_id) {
     const call = myPeer.call(userId, localStream)
-    console.log(localStream)
     const video = document.getElementById(userId + '!video')
     call.on('stream', userVideoStream => {
       console.log(userVideoStream)
@@ -342,20 +365,6 @@ socket.on('reLoading', (roomId)=>{
     canvas.width += 1
     canvas.width -= 1
     socket.emit('reDrawing')
-  }
-})
-
-socket.on('cam_set', (userId, roomId, isCams) => {
-  if(roomId == ROOM_ID) {
-    if(isCams){
-
-    }
-    else {
-      var noCam = document.createElement('noCam')
-      noCam.id = userId + '!noCam'
-      var noCamVideo = document.getElementById(userId+'!video')
-      noCamVideo.append(noCam)
-    }
   }
 })
 

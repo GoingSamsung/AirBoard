@@ -59,13 +59,11 @@ io.on('connection', socket => {
     data.name = socket.userName;
     io.sockets.emit('updateMessage', data); 
   });
-
-  socket.on('cam_control', (userId, roomId, isCam) => {
-    io.emit('cam_set', userId, roomId, isCam)
-  })  //지우자
-
-  socket.on('stream_play', (userId, roomId, stream) => {
-    io.emit('streamPlay', userId, roomId, stream)
+  socket.on('display_connect', (roomId, userId) => {
+    io.emit('display_connected', roomId, userId)
+  })
+  socket.on('stream_play', (userId, roomId, isCam) => {
+    io.emit('streamPlay', userId, roomId, isCam)
   })
 
   socket.on('getName', async (userId) =>{ //유저 이름 달아줌
@@ -85,6 +83,10 @@ io.on('connection', socket => {
       socket.emit('connectResult', true)
     else
       socket.emit('connectResult', false)
+  })
+
+  socket.on('display_connect', (roomId, userId, displayId) => {
+    io.emit('display_connected', roomId, userId, displayId)
   })
 
   socket.on('join-room', async(roomId, userId, userName) => {
@@ -110,11 +112,10 @@ io.on('connection', socket => {
       }
       console.log(user);
     });
-
+    socket.join(roomId)
     var msg= userName + '님이 접속하셨습니다.'  //이거 뜨는 위치 바꺼야댐
     socket.to(roomId).emit('updateMessage', { name : 'SERVER', message : msg, roomId: roomId });
 
-    socket.join(roomId)
     socket.to(roomId).broadcast.emit('user-connected', userId, userName)
 
     socket.on('disconnect', () => {
