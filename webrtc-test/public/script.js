@@ -33,7 +33,6 @@ navigator.mediaDevices.getUserMedia({
   audio: true,
 }).then(async(stream) => {
   localStream = stream
-
   const user_box = document.createElement('user_box')
   var video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
   var bold = document.createElement('b')
@@ -115,6 +114,7 @@ function connectToNewUser(userId, userName, stream) { //기존 유저 입장에�
     const video_user_name_text = document.createTextNode(userName)
 
     call.on('stream', userVideoStream => {
+      printz(userVideoStream, localStream)
       video.id = userId + '!video' //bold랑 차이두기 위해 !붙임
       video_user_name.appendChild(bold)
 
@@ -237,8 +237,8 @@ function displayPlay() {
 
 
 function draw( video, context, width, height ) {
-  width = parseInt(window.innerWidth*0.782)
-  height = parseInt(window.innerHeight*0.793)
+  width = parseInt(window.innerWidth*0.742)
+  height = parseInt(window.innerHeight*0.753)
   if(!drawPause) {
     context.drawImage( video, 0, 0, width, height );
     prev_image = canvas.toDataURL()
@@ -369,7 +369,7 @@ socket.on('reLoading', (roomId)=>{
   if(roomId == ROOM_ID) {
     canvas.width += 1
     canvas.width -= 1
-    socket.emit('reDrawing')
+    socket.emit('reDrawing', ROOM_ID)
   }
 })
 
@@ -396,7 +396,6 @@ document.addEventListener("DOMContentLoaded", ()=> {
   var gridBottom = video_grid.getBoundingClientRect().bottom
   var gridheight = video_grid.getBoundingClientRect().height
   console.log(zz.offset().top)*/
-
 
   canvas.onmousedown = (e) => {mouse.click = true}
   canvas.onmouseup = (e) => {mouse.click = false}
@@ -430,7 +429,7 @@ document.addEventListener("DOMContentLoaded", ()=> {
     width = parseInt(window.innerWidth*rX)
     height = parseInt(window.innerHeight*rY)
     if(canvas.width != width || canvas.height != height) {
-      socket.emit('reDrawing')
+      socket.emit('reDrawing', ROOM_ID)
       otherDraw(context, prev_image)
       canvas.width = width
       canvas.height = height
@@ -448,6 +447,7 @@ document.addEventListener("DOMContentLoaded", ()=> {
     setTimeout(mainLoop, 25)  //최종은 25로
     }
   }
+  socket.emit('reDrawing', ROOM_ID)
   mainLoop()
   //---캔버스 코드 끝---
 })

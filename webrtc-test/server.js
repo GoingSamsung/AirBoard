@@ -129,31 +129,30 @@ io.on('connection', socket => {
   })
   //---캔버스 코드---
   socket.on('clearWhiteBoard', (roomId) => {
-    var line_track_copy = []
-    for(var i in line_track)
-      if(line_track[i].roomId != roomId)
-        line_track_copy.push(line_track[i])
-    line_track = line_track_copy
+    line_track[roomId]=[]
     io.emit('reLoading', roomId)
   })
-  socket.on('reDrawing', () => {
-    for(var i in line_track) {
-      socket.emit('drawLine', {line: line_track[i].line, roomId:line_track[i].roomId});
+  socket.on('reDrawing', (roomId) => {
+    for(var i in line_track[roomId]) {
+      socket.emit('drawLine', {line: line_track[roomId][i].line, roomId:line_track[roomId][i].roomId});
     }
   })
-
-  for(var i in line_track) {
-    socket.emit('drawLine', {line: line_track[i].line, roomId:line_track[i].roomId});
+  /*
+  for(var i in line_track[roomId]) {
+    socket.emit('drawLine', {line: line_track[roomId][i].line, roomId:line_track[roomId][i].roomId});
   } //트랙보고 새로 들어온 사람이 원래 그렸던 그림 볼 수 있도록
-
+  */
   socket.on('drawLine', data => {
+    if(line_track[data.roomId] == undefined) {
+      line_track[data.roomId] = new Array(1)
+    }
     const dt ={
       line: data.line,
       roomId: data.roomId
     }
     dt.line = data.line
     dt.roomId = data.roomId
-    line_track.push(dt)
+    line_track[data.roomId].push(dt)
     io.emit('drawLine', {line: data.line, roomId:data.roomId})
   })
   //---캔버스 코드---
