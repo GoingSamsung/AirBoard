@@ -9,11 +9,13 @@ var isPause = false
 var isDisplaying = false
 var drawPause = false
 var isCam = true
+var isNoCamUser = false
 var canvas = document.getElementById(ROOM_ID)
 var context = canvas.getContext('2d')
 var prev_image
 var localStream
 var localDisplay
+const nocamVideo = document.getElementById('nocam__video')
 const myPeer = new Peer({
 
 })
@@ -27,7 +29,6 @@ myDisplay.id = 'display'
 myVideo.muted = true
 const peers = {}
 
-//if(navigator.getUserMedia) 이걸로 캠있는지없는지 판별 가능 추후 추가 예정
 navigator.mediaDevices.getUserMedia({
   video: true,
   audio: true,
@@ -49,6 +50,30 @@ navigator.mediaDevices.getUserMedia({
   socket.on('user-connected', (userId, userName) => {
     connectToNewUser(userId, userName, stream)
   })
+}).catch(error => {
+  navigator.mediaDevices.getUserMedia({
+    video: false,
+    audio: true,
+  }).then(async(stream) => {
+    localStream = nocamVideo.captureStream()
+    isNoCamUser = true
+    const user_box = document.createElement('user_box')
+    var video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
+    var bold = document.createElement('b')
+    var video_user_name_text = document.createTextNode(user_name)
+  
+    video_user_name.appendChild(bold)
+    bold.appendChild(video_user_name_text)
+    user_box.appendChild(video_user_name)
+    user_box.appendChild(myVideo)
+    addVideoStream(myVideo, stream, user_box, true)
+  
+    getNewUser()
+  
+    socket.on('user-connected', (userId, userName) => {
+      connectToNewUser(userId, userName, stream)
+    })
+  })
 })
 
 socket.on('user-disconnected', userId => {
@@ -68,10 +93,14 @@ myPeer.on('open', id => {
 
 function getNewUser(){
   myPeer.on('call', call => {
-    if(localDisplay != undefined)
+    if(localDisplay != undefined) {
       call.answer(localDisplay)
-    else
+      printz("!?")
+    }
+    else {
       call.answer(localStream)
+      printz("!ASDF")
+    }
     const video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
     const bold = document.createElement('b')
     const video_user_name_text = document.createTextNode('loading..')
@@ -106,7 +135,7 @@ function connectToNewUser(userId, userName, stream) { //기존 유저 입장에�
       socket.emit('imageSend', ROOM_ID, user_id, prev_image)
   }
   if(peers[userId] == undefined) {
-    const call = myPeer.call(userId, stream)
+    const call = myPeer.call(userId, localStream)
     const video = document.createElement('video')
     const user_box = document.createElement('user_box')
     const video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
@@ -114,7 +143,7 @@ function connectToNewUser(userId, userName, stream) { //기존 유저 입장에�
     const video_user_name_text = document.createTextNode(userName)
 
     call.on('stream', userVideoStream => {
-      printz(userVideoStream, localStream)
+      console.log("!@@!")
       video.id = userId + '!video' //bold랑 차이두기 위해 !붙임
       video_user_name.appendChild(bold)
 
@@ -190,13 +219,18 @@ function connectToDisplay(userId) {
     video.id = 'userDisplay'
     displayBox.append(video)
     const call = myPeer.call(userId, localStream)
-
+    printz(call)
     call.on('stream', stream => {
+      printz(stream+'??')
       video.srcObject = stream
       video.addEventListener('loadedmetadata', () => {
         video.play()
       })
     })
+    call.on('error', err => {
+       printz(err)
+    })
+
 
     video.addEventListener('play', function() {
       draw( this, context, 1024, 768 );
@@ -218,7 +252,7 @@ function displayPlay() {
   displayBox.append(video)
   navigator.mediaDevices.getDisplayMedia({
     video: true,
-    audio: false
+    audio: false,
   }).then(stream => {
     localDisplay = stream
     isDisplaying= !isDisplaying
@@ -326,8 +360,10 @@ document.addEventListener("keydown", (e) => {
     }
     isCam = !isCam
   }*/
-  if(e.key == 'End') {  //디버그용
-    console.log(peers)
+  if(e.key == 'Insert') {  //디버그용
+    //localStream.addTrack(nocamVideo.captureStream().getVideoTracks())
+    console.log(localStream.getAudioTracks())
+    console.log(localStream.getVideoTracks())
   }
 })
 
