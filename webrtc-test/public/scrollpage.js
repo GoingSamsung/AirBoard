@@ -3,15 +3,21 @@ var count=0;
 
 $("html,body").on("mousewheel",function(c){
     const child = document.querySelector(".maincontent");
-    const distanceFromViewport = child.getBoundingClientRect().top
-    //count=parseInt((-distanceFromViewport)/720);
-    console.log("거리 : "+distanceFromViewport);
-    console.log('카운트 : '+count)
+    var content=document.getElementsByClassName("maincontent");
     c.preventDefault();
     var m=c.originalEvent.wheelDelta;
     var sb=$(".maincontent").height();
 
     if(m>1&&scrollEvent==false&&count>=1){
+        for(var i=0;i<content.length;i++){
+            const cur_child=document.getElementById(content[i].id);
+            var dist=cur_child.getBoundingClientRect().top;
+            dist=Math.round(dist);
+
+            if(dist==0||dist==2){
+                count=i;
+            }
+        }
         scrollEvent=true;
         count--;
         $("html,body").stop().animate({scrollTop:sb*count},
@@ -20,6 +26,15 @@ $("html,body").on("mousewheel",function(c){
         })
     }
     else if(m<1&&scrollEvent==false&&count<3){
+        for(var i=0;i<content.length;i++){
+            const cur_child=document.getElementById(content[i].id);
+            var dist=cur_child.getBoundingClientRect().top;
+            dist=Math.round(dist);
+
+            if(dist==0||dist==2){
+                count=i;
+            }
+        }
         scrollEvent=true;
         count++;
 
