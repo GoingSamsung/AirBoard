@@ -18,6 +18,9 @@ const { v4: uuidV4 } = require('uuid')
 const mongoose = require('mongoose');
 const User = require('./models/user');
 
+///JB
+const spawn = require('child_process').spawn;
+
 //로컬 테스트시 여기서 복붙
 //mongoose 연결
 mongoose.connect('mongodb://localhost:27017/room_user_db');
@@ -119,6 +122,11 @@ io.on('connection', socket => {
     socket.userName=userName
     socket.userId = userId
     socket.roomId = roomId
+    const result_02 = spawn('python', ['test.py', 'test', '20']); 
+    //console.log(result_02);
+    result_02.stdout.on('data', (result)=>{
+      console.log(result.toString());
+    });
 
     //---호스트 판별---//
     var ishost = true
