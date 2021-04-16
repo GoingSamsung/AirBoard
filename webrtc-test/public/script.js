@@ -93,14 +93,13 @@ myPeer.on('open', id => {
 function getNewUser(){
   myPeer.on('call', call => {
     printz("!?")
-    if(localStream.flag == 2)
-      call.answer(localStream)
+    if(isDisplayHost && localStream.flag == 2)
+      call.answer(localDisplay)
     else if(localStream.flag == 1)
       call.answer(nocamVideo.captureStream())
-    else if(localDisplay == undefined)
-      call.answer(localStream)
     else
-      call.answer(localDisplay)
+      call.answer(localStream)
+
     const video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
     const bold = document.createElement('b')
     const video_user_name_text = document.createTextNode('loading..')
@@ -127,6 +126,7 @@ function getNewUser(){
 }
 
 function connectToNewUser(userId, userName, stream) { //기존 유저 입장에서 새로운 유저가 들어왔을 때
+  localStream.flag = 2
   if(isDisplayHost) { //화면공유중일때 새로 들어온 유저가 화면공유 보도록
     socket.emit('isDisplaying_script', isDisplaying, ROOM_ID)
     socket.emit('drawPause_script',drawPause, ROOM_ID)
@@ -134,6 +134,9 @@ function connectToNewUser(userId, userName, stream) { //기존 유저 입장에�
     if(prev_image != undefined && prev_image != null && drawPause)
       socket.emit('imageSend', ROOM_ID, user_id, prev_image)
   }
+  if(!isCam)
+    socket.emit('stream_play', user_id,ROOM_ID)
+  socket.emit('mute_request', user_id,ROOM_ID,isMute)
   if(peers[userId] == undefined) {
     const call = myPeer.call(userId, localStream)
     const video = document.createElement('video')
@@ -143,7 +146,6 @@ function connectToNewUser(userId, userName, stream) { //기존 유저 입장에�
     const video_user_name_text = document.createTextNode(userName)
 
     call.on('stream', userVideoStream => {
-      console.log("!@@!")
       video.id = userId + '!video' //bold랑 차이두기 위해 !붙임
       video_user_name.appendChild(bold)
 
@@ -246,6 +248,7 @@ socket.on('new_display_connected', (roomId, userId, newUserId) => {
 })
 
 function displayPlay() {
+  localStream.flag = 2
   var displayBox = document.getElementById('displayBox')
   var video = document.createElement('video')
   video.id = 'userDisplay'
@@ -347,7 +350,7 @@ document.addEventListener("keydown", (e) => {
       socket.emit('stream_play', user_id,ROOM_ID)
     }
     else {
-      localStream.flag = 2
+      localStream.flag = 0
       myVideo.srcObject = localStream
       myVideo.addEventListener('loadedmetadata', () => {
         myVideo.play()
@@ -357,15 +360,8 @@ document.addEventListener("keydown", (e) => {
     isCam = !isCam
   }
   if(e.key == '+' && !isMuteUser) {
-    printz(isMute)
-    if(isMute) {
-      myVideo.muted = false
+    if(isMute)
       socket.emit('mute_request', user_id,ROOM_ID,isMute)
-    }
-    else {
-      myVideo.muted = true
-      socket.emit('mute_request', user_id,ROOM_ID,isMute)
-    }
     isMute = !isMute
   }
   if(e.key == 'Insert') {  //디버그용
@@ -386,7 +382,6 @@ socket.on('streamPlay', (userId, roomId) => {
     const call = myPeer.call(userId, localStream)
     const video = document.getElementById(userId + '!video')
     call.on('stream', userVideoStream => {
-      console.log("ABC")
       video.srcObject = userVideoStream
       video.addEventListener('loadedmetadata', () => {
         video.play()
