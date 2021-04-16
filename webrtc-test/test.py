@@ -1,9 +1,9 @@
 import sys
 import socket
 
-def getName(name, age): 
+def getName(name): 
     print (name + " : " + socket.gethostbyname(socket.gethostname()))
     
 if __name__ == '__main__':
-    getName(sys.argv[1], sys.argv[2])
+    getName(sys.argv[1])
 

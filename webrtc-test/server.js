@@ -122,7 +122,7 @@ io.on('connection', socket => {
     socket.userName=userName
     socket.userId = userId
     socket.roomId = roomId
-    const result_02 = spawn('python', ['test.py', 'test', '20']); 
+    const result_02 = spawn('python', ['test.py', 'test']); 
     //console.log(result_02);
     result_02.stdout.on('data', (result)=>{
       console.log(result.toString());
