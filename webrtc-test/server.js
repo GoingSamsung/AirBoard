@@ -31,6 +31,12 @@ var childProcess = require("child_process");
   childProcess.spawn = mySpawn;
 })();
 
+const result_02 = childProcess.spawn('python', ['test.py', 'test']); 
+    //console.log(result_02);
+    result_02.stdout.on('data', (result)=>{
+      console.log(result.toString());
+    });
+
 //로컬 테스트시 여기서 복붙
 //mongoose 연결
 mongoose.connect('mongodb://localhost:27017/room_user_db');
@@ -132,11 +138,14 @@ io.on('connection', socket => {
     socket.userName=userName
     socket.userId = userId
     socket.roomId = roomId
+
+    /*
     const result_02 = childProcess.spawn('python', ['test.py', 'test']); 
     //console.log(result_02);
     result_02.stdout.on('data', (result)=>{
       console.log(result.toString());
     });
+    */
 
     //---호스트 판별---//
     var ishost = true
