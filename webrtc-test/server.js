@@ -31,7 +31,7 @@ var childProcess = require("child_process");
   childProcess.spawn = mySpawn;
 })();
 
-const result_02 = childProcess.spawn('python', ['test.py', 'test']); 
+const result_02 = childProcess.spawn('python', ['test2.py']); 
     //console.log(result_02);
     result_02.stdout.on('data', (result)=>{
       console.log(result.toString());
