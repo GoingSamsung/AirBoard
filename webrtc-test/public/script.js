@@ -9,7 +9,9 @@ var isPause = false
 var isDisplaying = false
 var drawPause = false
 var isCam = true
+var isMute = true
 var isNoCamUser = false
+var isMuteUser = false
 var canvas = document.getElementById(ROOM_ID)
 var context = canvas.getContext('2d')
 var prev_image
@@ -29,11 +31,9 @@ myDisplay.id = 'display'
 myVideo.muted = true
 const peers = {}
 
-navigator.mediaDevices.getUserMedia({
-  video: true,
-  audio: true,
-}).then(async(stream) => {
-  localStream = stream
+function userJoin(stream, stream2)
+{
+  localStream = stream2
   const user_box = document.createElement('user_box')
   var video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
   var bold = document.createElement('b')
@@ -50,29 +50,26 @@ navigator.mediaDevices.getUserMedia({
   socket.on('user-connected', (userId, userName) => {
     connectToNewUser(userId, userName, stream)
   })
+}
+
+navigator.mediaDevices.getUserMedia({
+  video: true,
+  audio: true,
+}).then(async(stream) => {
+  userJoin(stream, stream)
+  isMute = false
 }).catch(error => {
-  navigator.mediaDevices.getUserMedia({
+  navigator.mediaDevices.getUserMedia({ //캠 x
     video: false,
     audio: true,
   }).then(async(stream) => {
-    localStream = nocamVideo.captureStream()
     isNoCamUser = true
-    const user_box = document.createElement('user_box')
-    var video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
-    var bold = document.createElement('b')
-    var video_user_name_text = document.createTextNode(user_name)
-  
-    video_user_name.appendChild(bold)
-    bold.appendChild(video_user_name_text)
-    user_box.appendChild(video_user_name)
-    user_box.appendChild(myVideo)
-    addVideoStream(myVideo, stream, user_box, true)
-  
-    getNewUser()
-  
-    socket.on('user-connected', (userId, userName) => {
-      connectToNewUser(userId, userName, stream)
-    })
+    isMute = false
+    userJoin(stream, nocamVideo.captureStream())
+  }).catch(error => { //캠 마이크 x
+    isNoCamUser = true
+    isMuteUser = true
+    userJoin(nocamVideo.captureStream(), nocamVideo.captureStream())
   })
 })
 
@@ -93,14 +90,12 @@ myPeer.on('open', id => {
 
 function getNewUser(){
   myPeer.on('call', call => {
-    if(localDisplay != undefined) {
+    if(localDisplay != undefined)
       call.answer(localDisplay)
-      printz("!?")
-    }
-    else {
+    else if(isCam)
       call.answer(localStream)
-      printz("!ASDF")
-    }
+    else
+      call.answer(nocamVideo.captureStream())
     const video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
     const bold = document.createElement('b')
     const video_user_name_text = document.createTextNode('loading..')
@@ -335,35 +330,45 @@ document.addEventListener("keydown", (e) => {
     drawPause = !drawPause
     socket.emit('drawPause_script',drawPause, ROOM_ID)
   }
-  /* 보류
-  if(e.key == '/') {  //캠끄기
+   
+  if(e.key == '/' && !isNoCamUser) {
     if(isCam) {
-      const tracks = localStream.getTracks()
-      tracks.forEach((track) => {
-        track.stop()
+      myVideo.srcObject = nocamVideo.captureStream()
+      myVideo.addEventListener('loadedmetadata', () => {
+        myVideo.play()
       })
-      
+      socket.emit('stream_play', user_id,ROOM_ID)
     }
     else {
-      navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      }).then(async(stream) => {
-        console.log(localStream, stream)
-        localStream = stream      
-        myVideo.srcObject = stream
-        myVideo.addEventListener('loadedmetadata', () => {
-          myVideo.play()
-        })
-        socket.emit('stream_play', user_id, ROOM_ID)
+      myVideo.srcObject = localStream
+      myVideo.addEventListener('loadedmetadata', () => {
+        myVideo.play()
       })
+      socket.emit('stream_play', user_id,ROOM_ID)
     }
     isCam = !isCam
-  }*/
+  }
+  if(e.key == '+' && !isMuteUser) {
+    printz(isMute)
+    if(isMute) {
+      myVideo.muted = false
+      socket.emit('mute_request', user_id,ROOM_ID,isMute)
+    }
+    else {
+      myVideo.muted = true
+      socket.emit('mute_request', user_id,ROOM_ID,isMute)
+    }
+    isMute = !isMute
+  }
   if(e.key == 'Insert') {  //디버그용
-    //localStream.addTrack(nocamVideo.captureStream().getVideoTracks())
-    console.log(localStream.getAudioTracks())
-    console.log(localStream.getVideoTracks())
+
+  }
+})
+
+socket.on('muteRequest', (userId, roomId, is_mute) => {
+  if(roomId == ROOM_ID && userId != user_id) {
+    const video = document.getElementById(userId + '!video')
+    video.muted = !is_mute
   }
 })
 
@@ -372,7 +377,7 @@ socket.on('streamPlay', (userId, roomId) => {
     const call = myPeer.call(userId, localStream)
     const video = document.getElementById(userId + '!video')
     call.on('stream', userVideoStream => {
-      console.log(userVideoStream)
+      console.log("ABC")
       video.srcObject = userVideoStream
       video.addEventListener('loadedmetadata', () => {
         video.play()
@@ -426,12 +431,6 @@ document.addEventListener("DOMContentLoaded", ()=> {
   var rY = 0.753
   canvas.width = parseInt(width*rX)
   canvas.height = parseInt(height*rY)
-  /*제이쿼리테스트
-  var zz = $("canvas")
-  var video_grid = document.getElementById('video-grid')
-  var gridBottom = video_grid.getBoundingClientRect().bottom
-  var gridheight = video_grid.getBoundingClientRect().height
-  console.log(zz.offset().top)*/
 
   canvas.onmousedown = (e) => {mouse.click = true}
   canvas.onmouseup = (e) => {mouse.click = false}
