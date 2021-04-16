@@ -19,7 +19,17 @@ const mongoose = require('mongoose');
 const User = require('./models/user');
 
 ///JB
-const spawn = require('child_process').spawn;
+var childProcess = require("child_process");
+(function() {
+  var oldSpawn = childProcess.spawn;
+  function mySpawn() {
+      console.log('spawn called');
+      console.log(arguments);
+      var result = oldSpawn.apply(this, arguments);
+      return result;
+  }
+  childProcess.spawn = mySpawn;
+})();
 
 //로컬 테스트시 여기서 복붙
 //mongoose 연결
@@ -122,7 +132,7 @@ io.on('connection', socket => {
     socket.userName=userName
     socket.userId = userId
     socket.roomId = roomId
-    const result_02 = spawn('python', ['test.py', 'test']); 
+    const result_02 = childProcess.spawn('python', ['test.py', 'test']); 
     //console.log(result_02);
     result_02.stdout.on('data', (result)=>{
       console.log(result.toString());
