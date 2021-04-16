@@ -34,6 +34,7 @@ const peers = {}
 function userJoin(stream, stream2)
 {
   localStream = stream2
+  localStream.flag = 0
   const user_box = document.createElement('user_box')
   var video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
   var bold = document.createElement('b')
@@ -67,9 +68,10 @@ navigator.mediaDevices.getUserMedia({
     isMute = false
     userJoin(stream, nocamVideo.captureStream())
   }).catch(error => { //캠 마이크 x
+    /*
     isNoCamUser = true
     isMuteUser = true
-    userJoin(nocamVideo.captureStream(), nocamVideo.captureStream())
+    userJoin(nocamVideo.captureStream(), nocamVideo.captureStream())*/
   })
 })
 
@@ -90,12 +92,15 @@ myPeer.on('open', id => {
 
 function getNewUser(){
   myPeer.on('call', call => {
-    if(localDisplay != undefined)
-      call.answer(localDisplay)
-    else if(isCam)
+    printz("!?")
+    if(localStream.flag == 2)
+      call.answer(localStream)
+    else if(localStream.flag == 1)
+      call.answer(nocamVideo.captureStream())
+    else if(localDisplay == undefined)
       call.answer(localStream)
     else
-      call.answer(nocamVideo.captureStream())
+      call.answer(localDisplay)
     const video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
     const bold = document.createElement('b')
     const video_user_name_text = document.createTextNode('loading..')
@@ -250,6 +255,7 @@ function displayPlay() {
     audio: false,
   }).then(stream => {
     localDisplay = stream
+    localDisplay.flag = 1
     isDisplaying= !isDisplaying
     isDisplayHost= true
     socket.emit('isDisplaying_script', isDisplaying, ROOM_ID)
@@ -333,6 +339,7 @@ document.addEventListener("keydown", (e) => {
    
   if(e.key == '/' && !isNoCamUser) {
     if(isCam) {
+      localStream.flag = 1
       myVideo.srcObject = nocamVideo.captureStream()
       myVideo.addEventListener('loadedmetadata', () => {
         myVideo.play()
@@ -340,6 +347,7 @@ document.addEventListener("keydown", (e) => {
       socket.emit('stream_play', user_id,ROOM_ID)
     }
     else {
+      localStream.flag = 2
       myVideo.srcObject = localStream
       myVideo.addEventListener('loadedmetadata', () => {
         myVideo.play()
@@ -361,7 +369,8 @@ document.addEventListener("keydown", (e) => {
     isMute = !isMute
   }
   if(e.key == 'Insert') {  //디버그용
-
+    printz(localStream.flag)
+    printz(localDisplay.flag)
   }
 })
 
