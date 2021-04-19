@@ -19,6 +19,7 @@ var isMute = true
 var isNoCamUser = false
 var isMuteUser = false
 var isCall = {}
+var isDisplayCall = {}
 var canvas = document.getElementById(ROOM_ID)
 var context = canvas.getContext('2d')
 var prevImage
@@ -233,14 +234,27 @@ sendButton.addEventListener('click', function(){
   chatInput.value = '';
 });
 
+function connectionDisplayLoop(userId)
+{
+  if(isDisplayCall[userId]) {
+    printz("display1")
+    connectToDisplay(userId)
+    setTimeout(connectionDisplayLoop, 2000, userId)
+  }
+  else {
+    printz("display2")
+  }
+}
+
 //---화면 공유---
 function connectToDisplay(userId) {
     var displayBox = document.getElementById('displayBox')
     var video = document.createElement('video')
     video.id = 'userDisplay'
-    displayBox.append(video)
     const call = myPeer.call(userId, localStream)
     call.on('stream', stream => {
+      displayBox.append(video)
+      isDisplayCall[userId] = false
       video.srcObject = stream
       video.addEventListener('loadedmetadata', () => {
         video.play()
@@ -254,12 +268,16 @@ function connectToDisplay(userId) {
     }, false )
 }
 socket.on('displayConnect_script', (roomId, userId) => {
-  if(roomId == ROOM_ID && userId != user_id)
-    connectToDisplay(userId)
+  if(roomId == ROOM_ID && userId != user_id) {
+    isDisplayCall[userId] = true
+    connectionDisplayLoop(userId)
+  }
 })
 socket.on('newDisplayConnect_script', (roomId, userId, newUserId) => {
-  if(roomId == ROOM_ID && userId != user_id && newUserId == user_id)
-    connectToDisplay(userId)
+  if(roomId == ROOM_ID && userId != user_id && newUserId == user_id) {
+    isDisplayCall[userId] = true
+    connectionDisplayLoop(userId)
+  }
 })
 
 function displayPlay() {
