@@ -18,6 +18,7 @@ var isCam = true
 var isMute = true
 var isNoCamUser = false
 var isMuteUser = false
+var isCall = false
 var canvas = document.getElementById(ROOM_ID)
 var context = canvas.getContext('2d')
 var prevImage
@@ -127,6 +128,15 @@ function getNewUser(){
   })
 }
 
+function connectionLoop(userId, userName) {
+  printz("reconnection..")
+  setTimeout(5000)
+  if(isCall) {
+    connectToNewUser(userId, userName)
+    connectionLoop(userId, userName)
+  }
+}
+
 function connectToNewUser(userId, userName) { //기존 유저 입장에서 새로운 유저가 들어왔을 때
   localStream.flag = 2
   if(isDisplayHost) { //화면공유중일때 새로 들어온 유저가 화면공유 보도록
@@ -141,6 +151,8 @@ function connectToNewUser(userId, userName) { //기존 유저 입장에서 새�
   //socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
   if(peers[userId] == undefined) {
     const call = myPeer.call(userId, localStream)
+    isCall = true
+    connectionLoop(userId, userName)
     const video = document.createElement('video')
     const userBox = document.createElement('userBox')
     const videoUserName = document.createElement('videoUserName') //비디오에 이름 표시 코드
@@ -148,6 +160,7 @@ function connectToNewUser(userId, userName) { //기존 유저 입장에서 새�
     const videoUserNameText = document.createTextNode(userName)
 
     call.on('stream', userVideoStream => {
+      isCall = false
       video.id = userId + '!video' //bold랑 차이두기 위해 !붙임
       videoUserName.appendChild(bold)
 
