@@ -18,7 +18,7 @@ var isCam = true
 var isMute = true
 var isNoCamUser = false
 var isMuteUser = false
-var isCall = false
+var isCall = true
 var canvas = document.getElementById(ROOM_ID)
 var context = canvas.getContext('2d')
 var prevImage
@@ -51,7 +51,7 @@ function userJoin(stream, stream2)
   getNewUser()
 
   socket.on('user-connected', (userId, userName) => {
-    connectToNewUser(userId, userName)
+    connectionLoop(userId, userName)
   })
 }
 
@@ -128,12 +128,15 @@ function getNewUser(){
   })
 }
 
-function connectionLoop(userId, userName) {
-  printz("reconnection..")
-  setTimeout(5000)
+function connectionLoop(userId, userName)
+{
   if(isCall) {
+    printz("efg")
     connectToNewUser(userId, userName)
-    connectionLoop(userId, userName)
+    setTimeout(connectionLoop, 5000, userId, userName)
+  }
+  else {
+    printz("abc")
   }
 }
 
@@ -151,8 +154,6 @@ function connectToNewUser(userId, userName) { //기존 유저 입장에서 새�
   //socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
   if(peers[userId] == undefined) {
     const call = myPeer.call(userId, localStream)
-    isCall = true
-    connectionLoop(userId, userName)
     const video = document.createElement('video')
     const userBox = document.createElement('userBox')
     const videoUserName = document.createElement('videoUserName') //비디오에 이름 표시 코드
@@ -465,7 +466,6 @@ document.addEventListener("DOMContentLoaded", ()=> {
     context.stroke()
     }
   })
-
   function outerLoop(){
     if(drawPause) {
       mainLoop()
