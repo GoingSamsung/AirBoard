@@ -2,6 +2,12 @@ const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
 const sendButton = document.getElementById('chatMessageSendBtn')
 const chatInput = document.getElementById('chatInput')
+const nocamVideo = document.getElementById('nocam__video')
+const myVideo = document.createElement('video')
+const myDisplay = document.createElement('video')
+myDisplay.id = 'display'
+myVideo.muted = true
+
 var user_name = prompt('대화명을 입력해주세요.', '');
 var user_id
 var isDisplayHost = false
@@ -14,42 +20,37 @@ var isNoCamUser = false
 var isMuteUser = false
 var canvas = document.getElementById(ROOM_ID)
 var context = canvas.getContext('2d')
-var prev_image
+var prevImage
 var localStream
 var localDisplay
-const nocamVideo = document.getElementById('nocam__video')
-const myPeer = new Peer({
 
-})
+const myPeer = new Peer({ })
+const peers = {}
+
 function printz(x)
 {
   console.log(x)
 }
-const myVideo = document.createElement('video')
-const myDisplay = document.createElement('video')
-myDisplay.id = 'display'
-myVideo.muted = true
-const peers = {}
 
 function userJoin(stream, stream2)
 {
   localStream = stream2
   localStream.flag = 0
-  const user_box = document.createElement('user_box')
-  var video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
+  const userBox = document.createElement('userBox')
+  var videoUserName = document.createElement('videoUserName') //비디오에 이름 표시 코드
   var bold = document.createElement('b')
-  var video_user_name_text = document.createTextNode(user_name)
+  var videoUserNameText = document.createTextNode(user_name)
 
-  video_user_name.appendChild(bold)
-  bold.appendChild(video_user_name_text)
-  user_box.appendChild(video_user_name)
-  user_box.appendChild(myVideo)
-  addVideoStream(myVideo, stream, user_box, true)
+  videoUserName.appendChild(bold)
+  bold.appendChild(videoUserNameText)
+  userBox.appendChild(videoUserName)
+  userBox.appendChild(myVideo)
+  addVideoStream(myVideo, stream, userBox)
 
   getNewUser()
 
   socket.on('user-connected', (userId, userName) => {
-    connectToNewUser(userId, userName, stream)
+    connectToNewUser(userId, userName)
   })
 }
 
@@ -85,14 +86,12 @@ socket.on('setName', (userId, userName) => {
 })
 
 myPeer.on('open', id => {
-  printz("peer open")
   user_id = id
   socket.emit('join-room', ROOM_ID, id, user_name)
 })
 
 function getNewUser(){
   myPeer.on('call', call => {
-    printz("!?")
     if(isDisplayHost && localStream.flag == 2)
       call.answer(localDisplay)
     else if(localStream.flag == 1)
@@ -100,73 +99,73 @@ function getNewUser(){
     else
       call.answer(localStream)
 
-    const video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
+    const videoUserName = document.createElement('videoUserName') //비디오에 이름 표시 코드
     const bold = document.createElement('b')
-    const video_user_name_text = document.createTextNode('loading..')
+    const videoUserNameText = document.createTextNode('loading..')
     const video = document.createElement('video')
-    const user_box = document.createElement('user_box')
+    const userBox = document.createElement('userBox')
 
     call.on('stream', userVideoStream => {
       if(peers[call.peer] == undefined) {
         bold.id = call.peer
         video.id = call.peer+'!video'  // bold랑 차이두기위함
-        addVideoStream(video, userVideoStream, user_box, true)  //원래 있던 유저들 보여주기
+        addVideoStream(video, userVideoStream, userBox)  //원래 있던 유저들 보여주기
         socket.emit('getName', call.peer)
-        video_user_name.appendChild(bold)
-        bold.appendChild(video_user_name_text)
-        user_box.appendChild(video_user_name)
-        user_box.appendChild(video)
+        videoUserName.appendChild(bold)
+        bold.appendChild(videoUserNameText)
+        userBox.appendChild(videoUserName)
+        userBox.appendChild(video)
         peers[call.peer] = call
       }
     })
     call.on('close', () => {
-      user_box.remove()
+      userBox.remove()
     })
   })
 }
 
-function connectToNewUser(userId, userName, stream) { //기존 유저 입장에서 새로운 유저가 들어왔을 때
+function connectToNewUser(userId, userName) { //기존 유저 입장에서 새로운 유저가 들어왔을 때
   localStream.flag = 2
   if(isDisplayHost) { //화면공유중일때 새로 들어온 유저가 화면공유 보도록
     socket.emit('isDisplaying_script', isDisplaying, ROOM_ID)
     socket.emit('drawPause_script',drawPause, ROOM_ID)
-    socket.emit('new_display_connect', ROOM_ID, user_id, userId)
-    if(prev_image != undefined && prev_image != null && drawPause)
-      socket.emit('imageSend', ROOM_ID, user_id, prev_image)
+    socket.emit('newDisplayConnect_server', ROOM_ID, user_id, userId)
+    if(prevImage != undefined && prevImage != null && drawPause)
+      socket.emit('imageSend', ROOM_ID, user_id, prevImage)
   }
   if(!isCam)
-    socket.emit('stream_play', user_id,ROOM_ID)
-  socket.emit('mute_request', user_id,ROOM_ID,isMute)
+    socket.emit('streamPlay_server', user_id,ROOM_ID)
+  socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
   if(peers[userId] == undefined) {
     const call = myPeer.call(userId, localStream)
     const video = document.createElement('video')
-    const user_box = document.createElement('user_box')
-    const video_user_name = document.createElement('video_user_name') //비디오에 이름 표시 코드
+    const userBox = document.createElement('userBox')
+    const videoUserName = document.createElement('videoUserName') //비디오에 이름 표시 코드
     const bold = document.createElement('b')
-    const video_user_name_text = document.createTextNode(userName)
+    const videoUserNameText = document.createTextNode(userName)
 
     call.on('stream', userVideoStream => {
       video.id = userId + '!video' //bold랑 차이두기 위해 !붙임
-      video_user_name.appendChild(bold)
+      videoUserName.appendChild(bold)
 
-      bold.appendChild(video_user_name_text)
-      user_box.appendChild(video_user_name)
-      user_box.appendChild(video)
-      addVideoStream(video, userVideoStream, user_box, false)
+      bold.appendChild(videoUserNameText)
+      userBox.appendChild(videoUserName)
+      userBox.appendChild(video)
+      addVideoStream(video, userVideoStream, userBox)
     })
     call.on('close', () => {
-      user_box.remove()
+      userBox.remove()
     })
     peers[userId] = call
   }
 }
 
-function addVideoStream(video, stream, user_box, cnt) {
+function addVideoStream(video, stream, userBox) {
   video.srcObject = stream
   video.addEventListener('loadedmetadata', () => {
     video.play()
   })
-  videoGrid.append(user_box)
+  videoGrid.append(userBox)
 }
 
 var chatWindow = document.getElementById('chatWindow'); 
@@ -221,28 +220,24 @@ function connectToDisplay(userId) {
     video.id = 'userDisplay'
     displayBox.append(video)
     const call = myPeer.call(userId, localStream)
-    printz(call)
     call.on('stream', stream => {
-      printz(stream+'??')
       video.srcObject = stream
       video.addEventListener('loadedmetadata', () => {
         video.play()
       })
     })
     call.on('error', err => {
-       printz(err)
     })
-
 
     video.addEventListener('play', function() {
       draw( this, context, 1024, 768 );
     }, false )
 }
-socket.on('display_connected', (roomId, userId) => {
+socket.on('displayConnect_script', (roomId, userId) => {
   if(roomId == ROOM_ID && userId != user_id)
     connectToDisplay(userId)
 })
-socket.on('new_display_connected', (roomId, userId, newUserId) => {
+socket.on('newDisplayConnect_script', (roomId, userId, newUserId) => {
   if(roomId == ROOM_ID && userId != user_id && newUserId == user_id)
     connectToDisplay(userId)
 })
@@ -264,7 +259,7 @@ function displayPlay() {
     socket.emit('isDisplaying_script', isDisplaying, ROOM_ID)
     video.srcObject = stream
     video.play();
-    socket.emit('display_connect', ROOM_ID, user_id)
+    socket.emit('displayConnect_server', ROOM_ID, user_id)
   }).catch(error => {
     console.log(error)
   });
@@ -279,9 +274,9 @@ function draw( video, context, width, height ) {
   height = parseInt(window.innerHeight*0.753)
   if(!drawPause) {
     context.drawImage( video, 0, 0, width, height );
-    prev_image = canvas.toDataURL()
+    prevImage = canvas.toDataURL()
     if(canvas.width != width || canvas.height != height) {
-      otherDraw(context, prev_image)
+      otherDraw(context, prevImage)
       canvas.width = width
       canvas.height = height
     }
@@ -290,11 +285,11 @@ function draw( video, context, width, height ) {
     img.addEventListener('load', ()=> {
       context.drawImage(img, 0,0)
     })
-    img.src = prev_image
+    img.src = prevImage
     */
 
-    //if(prev_image != undefined && prev_image != null)
-     //socket.emit('imageSend', ROOM_ID, user_id, prev_image)
+    //if(prevImage != undefined && prevImage != null)
+     //socket.emit('imageSend', ROOM_ID, user_id, prevImage)
   }
   setTimeout(draw, 50, video, context, width, height)  //20프레임
 }
@@ -302,7 +297,7 @@ function draw( video, context, width, height ) {
 
 socket.on('drawImage', (roomId,userId,image)=>{
   if(userId != user_id && roomId == ROOM_ID) {
-    prev_image = image
+    prevImage = image
     otherDraw(context, image)
   }
 })
@@ -323,14 +318,14 @@ document.addEventListener("keydown", (e) => {
       myVideo.play()
     else
       myVideo.pause()
-    socket.emit('pauseServer', user_id, isPause)
+    socket.emit('pause_server', user_id, isPause)
     isPause=!isPause
   }
   if(e.key == 'Escape')  {//지우개
     socket.emit('clearWhiteBoard', ROOM_ID)
     if(isDisplaying && drawPause) {
-      otherDraw(canvas.getContext('2d'), prev_image)
-      socket.emit('imageSend', ROOM_ID, user_id, prev_image)
+      otherDraw(canvas.getContext('2d'), prevImage)
+      socket.emit('imageSend', ROOM_ID, user_id, prevImage)
     }
   }
   if(e.key == '*' && !isDisplaying)   //화면공유
@@ -347,7 +342,7 @@ document.addEventListener("keydown", (e) => {
       myVideo.addEventListener('loadedmetadata', () => {
         myVideo.play()
       })
-      socket.emit('stream_play', user_id,ROOM_ID)
+      socket.emit('streamPlay_server', user_id,ROOM_ID)
     }
     else {
       localStream.flag = 0
@@ -355,13 +350,13 @@ document.addEventListener("keydown", (e) => {
       myVideo.addEventListener('loadedmetadata', () => {
         myVideo.play()
       })
-      socket.emit('stream_play', user_id,ROOM_ID)
+      socket.emit('streamPlay_server', user_id,ROOM_ID)
     }
     isCam = !isCam
   }
   if(e.key == '+' && !isMuteUser) {
     if(isMute)
-      socket.emit('mute_request', user_id,ROOM_ID,isMute)
+      socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
     isMute = !isMute
   }
   if(e.key == 'Insert') {  //디버그용
@@ -370,14 +365,14 @@ document.addEventListener("keydown", (e) => {
   }
 })
 
-socket.on('muteRequest', (userId, roomId, is_mute) => {
+socket.on('muteRequest_script', (userId, roomId, is_mute) => {
   if(roomId == ROOM_ID && userId != user_id) {
     const video = document.getElementById(userId + '!video')
     video.muted = !is_mute
   }
 })
 
-socket.on('streamPlay', (userId, roomId) => {
+socket.on('streamPlay_script', (userId, roomId) => {
   if(roomId == ROOM_ID && userId != user_id) {
     const call = myPeer.call(userId, localStream)
     const video = document.getElementById(userId + '!video')
@@ -400,13 +395,11 @@ socket.on('isDisplaying_server', (tf,roomId) =>{
     isDisplaying = tf
 })
 
-socket.on('pause', (userId, isPause) => {
+socket.on('pause_script', (userId, isPause) => {
   const video = document.getElementById(userId+'!video')
   if(video) {
-    if(isPause)
-      video.play()
-    else
-      video.pause()
+    if(isPause) video.play()
+    else video.pause()
   }
 })
 
@@ -469,7 +462,7 @@ document.addEventListener("DOMContentLoaded", ()=> {
     height = parseInt(window.innerHeight*rY)
     if(canvas.width != width || canvas.height != height) {
       socket.emit('reDrawing', ROOM_ID)
-      otherDraw(context, prev_image)
+      otherDraw(context, prevImage)
       canvas.width = width
       canvas.height = height
     }

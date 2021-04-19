@@ -74,29 +74,29 @@ app.get('/img/:fileName', (req,res) => {
 io.on('connection', socket => {
 
   socket.on('imageSend', (roomId, userId, image) => { //화면 공유용
-    io.emit('drawImage', roomId, userId, image)
+    io.sockets.in(roomId).emit('drawImage', roomId, userId, image)
   })
   socket.on('drawPause_script', (tf, roomId) => {
-    io.emit('drawPause_server', tf, roomId)
+    io.sockets.in(roomId).emit('drawPause_server', tf, roomId)
   })
   socket.on('isDisplaying_script', (tf, roomId) => {
-    io.emit('isDisplaying_server', tf, roomId)
+    io.sockets.in(roomId).emit('isDisplaying_server', tf, roomId)
   })
   socket.on('sendMessage', function(data){ 
     data.name = socket.userName;
     io.sockets.emit('updateMessage', data); 
   });
-  socket.on('display_connect', (roomId, userId) => {
-    io.emit('display_connected', roomId, userId)
+  socket.on('displayConnect_server', (roomId, userId) => {
+    io.sockets.in(roomId).emit('displayConnect_script', roomId, userId)
   })
-  socket.on('new_display_connect', (roomId, userId, newUserId) => {
-    io.emit('new_display_connected', roomId, userId, newUserId)
+  socket.on('newDisplayConnect_server', (roomId, userId, newUserId) => {
+    io.sockets.in(roomId).emit('newDisplayConnect_script', roomId, userId, newUserId)
   })
-  socket.on('stream_play', (userId, roomId) => {
-    io.emit('streamPlay', userId, roomId)
+  socket.on('streamPlay_server', (userId, roomId) => {
+    io.sockets.in(roomId).emit('streamPlay_script', userId, roomId)
   })
-  socket.on('mute_request', (userId, roomId, isMute) => {
-    io.emit('muteRequest', userId, roomId, isMute)
+  socket.on('muteRequest_server', (userId, roomId, isMute) => {
+    io.sockets.in(roomId).emit('muteRequest_script', userId, roomId, isMute)
   })
 
   socket.on('getName', async (userId) =>{ //유저 이름 달아줌
@@ -106,16 +106,9 @@ io.on('connection', socket => {
     else
       socket.emit('setName', userId, users.userName)
   })
-  socket.on('pauseServer', (userId, isPause) => {
-    io.emit('pause', userId, isPause)
-  })
 
-  socket.on('isConnect', async(videoCnt, roomId) => { //---연결 버그 확인중
-    const user = await User.find({roomid:roomId}, null, {})
-    if(videoCnt == user.length)
-      socket.emit('connectResult', true)
-    else
-      socket.emit('connectResult', false)
+  socket.on('pause_server', (userId, isPause) => {
+    io.emit('pause_script', userId, isPause)
   })
 
   socket.on('join-room', async(roomId, userId, userName) => {
@@ -132,7 +125,7 @@ io.on('connection', socket => {
     const user = new User({
       userName:userName,
       userId : userId,
-      roomid:roomId,
+      roomid: roomId,
       isHost: ishost,
     });
     user.save((err, user)=>{
@@ -158,11 +151,11 @@ io.on('connection', socket => {
     })
   })
   //---캔버스 코드---
-  socket.on('clearWhiteBoard', (roomId) => {
+  socket.on('clearWhiteBoard', roomId => {
     line_track[roomId]=[]
-    io.emit('reLoading', roomId)
+    io.sockets.in(roomId).emit('reLoading', roomId)
   })
-  socket.on('reDrawing', (roomId) => {
+  socket.on('reDrawing', roomId => {
     for(var i in line_track[roomId]) {
       socket.emit('drawLine', {line: line_track[roomId][i].line, roomId:line_track[roomId][i].roomId});
     }
