@@ -132,6 +132,7 @@ function connectionLoop(userId, userName)
 {
   if(isCall) {
     printz("efg")
+    peers[userId] = undefined
     connectToNewUser(userId, userName)
     setTimeout(connectionLoop, 5000, userId, userName)
   }
@@ -154,6 +155,7 @@ function connectToNewUser(userId, userName) { //기존 유저 입장에서 새�
     //socket.emit('streamPlay_server', user_id,ROOM_ID)
   //socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
   if(peers[userId] == undefined) {
+    printz("아아")
     const call = myPeer.call(userId, localStream)
     const video = document.createElement('video')
     const userBox = document.createElement('userBox')
