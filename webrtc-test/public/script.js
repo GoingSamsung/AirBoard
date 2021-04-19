@@ -18,7 +18,7 @@ var isCam = true
 var isMute = true
 var isNoCamUser = false
 var isMuteUser = false
-var isCall = true
+var isCall = {}
 var canvas = document.getElementById(ROOM_ID)
 var context = canvas.getContext('2d')
 var prevImage
@@ -51,6 +51,7 @@ function userJoin(stream, stream2)
   getNewUser()
 
   socket.on('user-connected', (userId, userName) => {
+    isCall[userId] = true
     connectionLoop(userId, userName)
   })
 }
@@ -130,14 +131,13 @@ function getNewUser(){
 
 function connectionLoop(userId, userName)
 {
-  if(isCall) {
+  if(isCall[userId]) {
     printz("efg")
     peers[userId] = undefined
     connectToNewUser(userId, userName)
-    setTimeout(connectionLoop, 5000, userId, userName)
+    setTimeout(connectionLoop, 2000, userId, userName)
   }
   else {
-    isCall = true
     printz("abc")
   }
 }
@@ -164,7 +164,7 @@ function connectToNewUser(userId, userName) { //기존 유저 입장에서 새�
     const videoUserNameText = document.createTextNode(userName)
 
     call.on('stream', userVideoStream => {
-      isCall = false
+      isCall[userId] = false
       video.id = userId + '!video' //bold랑 차이두기 위해 !붙임
       videoUserName.appendChild(bold)
 
