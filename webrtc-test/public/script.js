@@ -91,6 +91,9 @@ myPeer.on('open', id => {
 })
 
 function getNewUser(){
+  myPeer.on('error', err => {
+    printz(err.type)
+  })
   myPeer.on('call', call => {
     if(isDisplayHost && localStream.flag == 2)
       call.answer(localDisplay)
@@ -133,9 +136,9 @@ function connectToNewUser(userId, userName) { //기존 유저 입장에서 새�
     if(prevImage != undefined && prevImage != null && drawPause)
       socket.emit('imageSend', ROOM_ID, user_id, prevImage)
   }
-  if(!isCam)
-    socket.emit('streamPlay_server', user_id,ROOM_ID)
-  socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
+  //if(!isCam)  캠 끈거 들어오자마자 받아들이는 건데 일단 보류
+    //socket.emit('streamPlay_server', user_id,ROOM_ID)
+  //socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
   if(peers[userId] == undefined) {
     const call = myPeer.call(userId, localStream)
     const video = document.createElement('video')
@@ -354,11 +357,12 @@ document.addEventListener("keydown", (e) => {
     }
     isCam = !isCam
   }
-  if(e.key == '+' && !isMuteUser) {
+  /*
+  if(e.key == '+' && !isMuteUser) { 음소거 일단 보류
     if(isMute)
       socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
     isMute = !isMute
-  }
+  }*/
   if(e.key == 'Insert') {  //디버그용
     printz(localStream.flag)
     printz(localDisplay.flag)
