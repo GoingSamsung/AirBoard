@@ -259,13 +259,13 @@ function connectToDisplay(userId) {
       video.addEventListener('loadedmetadata', () => {
         video.play()
       })
+
+      video.addEventListener('play', function() {
+        draw( this, context, 1024, 768 );
+      }, false )
     })
     call.on('error', err => {
     })
-
-    video.addEventListener('play', function() {
-      draw( this, context, 1024, 768 );
-    }, false )
 }
 socket.on('displayConnect_script', (roomId, userId) => {
   if(roomId == ROOM_ID && userId != user_id) {
@@ -281,7 +281,6 @@ socket.on('newDisplayConnect_script', (roomId, userId, newUserId) => {
 })
 
 function displayPlay() {
-  localStream.flag = 2
   var displayBox = document.getElementById('displayBox')
   var video = document.createElement('video')
   video.id = 'userDisplay'
@@ -290,6 +289,7 @@ function displayPlay() {
     video: true,
     audio: false,
   }).then(stream => {
+    localStream.flag = 2
     localDisplay = stream
     localDisplay.flag = 1
     isDisplaying= !isDisplaying
@@ -399,7 +399,7 @@ document.addEventListener("keydown", (e) => {
     isMute = !isMute
   }*/
   if(e.key == 'Insert') {  //디버그용
-    printz(myPeer.connections)
+    printz(localStream.flag)
     printz(peers)
   }
 })
