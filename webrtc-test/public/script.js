@@ -364,8 +364,8 @@ document.addEventListener("keydown", (e) => {
     isMute = !isMute
   }*/
   if(e.key == 'Insert') {  //디버그용
-    printz(localStream.flag)
-    printz(localDisplay.flag)
+    printz(myPeer.connections)
+    printz(peers)
   }
 })
 
