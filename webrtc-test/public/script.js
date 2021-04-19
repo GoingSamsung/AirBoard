@@ -136,6 +136,7 @@ function connectionLoop(userId, userName)
     setTimeout(connectionLoop, 5000, userId, userName)
   }
   else {
+    isCall = true
     printz("abc")
   }
 }
