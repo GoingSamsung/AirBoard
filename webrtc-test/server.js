@@ -98,7 +98,9 @@ io.on('connection', socket => {
   socket.on('muteRequest_server', (userId, roomId, isMute) => {
     io.sockets.in(roomId).emit('muteRequest_script', userId, roomId, isMute)
   })
-
+  socket.on('displayReset_server', (roomId, userId) => {
+    io.sockets.in(roomId).emit('displayReset_script', roomId, userId)
+  })
   socket.on('getName', async (userId) =>{ //유저 이름 달아줌
     users = await User.findOne({userId:userId}, null, {})
     if(users.isHost)

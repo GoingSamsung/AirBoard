@@ -1,6 +1,11 @@
 /*
   화면공유 필기 중에 들어오는 유저는 필기 확인 불가 버그(화면 크기 바꾸면 다시 돌아옴)
+  캠 끄기 켜기 기능 사용시 렉 심해지는 버그(아직 원인 불명)
 */
+var user_name = prompt('대화명을 입력해주세요.', '')
+
+while(user_name == null || user_name == undefined || user_name == '') user_name = prompt('대화명을 다시 입력해주세요.', '')
+
 const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
 const sendButton = document.getElementById('chatMessageSendBtn')
@@ -11,7 +16,6 @@ const myDisplay = document.createElement('video')
 myDisplay.id = 'display'
 myVideo.muted = true
 
-var user_name = prompt('대화명을 입력해주세요.', '');
 var user_id
 var isDisplayHost = false
 var isPause = false
@@ -23,6 +27,7 @@ var isNoCamUser = false
 var isMuteUser = false
 var isCall = {}
 var isDisplayCall = {}
+var offDisplay = false
 var canvas = document.getElementById(ROOM_ID)
 var context = canvas.getContext('2d')
 var prevImage
@@ -75,6 +80,8 @@ navigator.mediaDevices.getUserMedia({
     isMute = false
     userJoin(stream, nocamVideo.captureStream())
   }).catch(error => { //캠 마이크 x
+    alert('마이크나 캠 중 하나를 켜주세요.')
+    window.location.href = '/'
     /*
     isNoCamUser = true
     isMuteUser = true
@@ -256,6 +263,7 @@ function connectToDisplay(userId) {
     video.id = 'userDisplay'
     const call = myPeer.call(userId, localStream)
     call.on('stream', stream => {
+      localDisplay = stream
       displayBox.append(video)
       isDisplayCall[userId] = false
       video.srcObject = stream
@@ -310,20 +318,34 @@ function displayPlay() {
 
 
 function draw( video, context, width, height ) {
-  width = parseInt(window.innerWidth*0.742)
-  height = parseInt(window.innerHeight*0.753)
-  if(!drawPause) {
-    context.drawImage( video, 0, 0, width, height );
-    prevImage = canvas.toDataURL()
-    if(canvas.width != width || canvas.height != height) {
-      otherDraw(context, prevImage)
-      canvas.width = width
-      canvas.height = height
+  if(localDisplay.active == true && isDisplaying) {
+    width = parseInt(window.innerWidth*0.742)
+    height = parseInt(window.innerHeight*0.753)
+    if(!drawPause) {
+      context.drawImage( video, 0, 0, width, height );
+      prevImage = canvas.toDataURL()
+      if(canvas.width != width || canvas.height != height) {
+        otherDraw(context, prevImage)
+        canvas.width = width
+        canvas.height = height
+      }
     }
+    setTimeout(draw, 50, video, context, width, height)  //20프레임
   }
-  setTimeout(draw, 50, video, context, width, height)  //20프레임
+  else{
+    if(isDisplayHost) socket.emit('displayReset_server', ROOM_ID, user_id)
+    isDisplayHost = false
+    isDisplaying = false
+    drawPause = false
+    offDisplay = true
+    prevImage = null
+  }
 }
 
+socket.on('displayReset_script', (roomId, userId) => {
+  if(userId != user_id)
+    isDisplaying = false
+})
 
 socket.on('drawImage', (roomId,userId,image)=>{
   if(userId != user_id && roomId == ROOM_ID) {
@@ -392,8 +414,7 @@ document.addEventListener("keydown", (e) => {
     isMute = !isMute
   }*/
   if(e.key == 'Insert') {  //디버그용
-    printz(localStream.flag)
-    printz(peers)
+    printz(localDisplay.active, localDisplay.srcObject)
   }
 })
 
@@ -483,12 +504,12 @@ document.addEventListener("DOMContentLoaded", ()=> {
     }
   })
   function outerLoop(){
-    if(drawPause) {
+    if(drawPause) mainLoop()
+    else if(offDisplay) {
+      offDisplay = !offDisplay
       mainLoop()
     }
-    else {
-      setTimeout(outerLoop, 50)
-    }
+    else setTimeout(outerLoop, 50)
   }
   function mainLoop() {
     width = parseInt(window.innerWidth*rX)
