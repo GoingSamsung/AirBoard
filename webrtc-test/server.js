@@ -157,7 +157,7 @@ io.on('connection', socket => {
   })
   socket.on('reDrawing', roomId => {
     for(var i in line_track[roomId]) {
-      socket.emit('drawLine', {line: line_track[roomId][i].line, roomId:line_track[roomId][i].roomId});
+      socket.emit('drawLine', {line: line_track[roomId][i].line, roomId:line_track[roomId][i].roomId, size: line_track[roomId][i].size});
     }
   })
   /*
@@ -171,12 +171,11 @@ io.on('connection', socket => {
     }
     const dt ={
       line: data.line,
-      roomId: data.roomId
+      roomId: data.roomId,
+      size: data.size
     }
-    dt.line = data.line
-    dt.roomId = data.roomId
     line_track[data.roomId].push(dt)
-    io.emit('drawLine', {line: data.line, roomId:data.roomId})
+    io.emit('drawLine', {line: data.line, roomId:data.roomId, size: data.size})
   })
   //---캔버스 코드---
 

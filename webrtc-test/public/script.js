@@ -1,3 +1,6 @@
+/*
+  화면공유 필기 중에 들어오는 유저는 필기 확인 불가 버그(화면 크기 바꾸면 다시 돌아옴)
+*/
 const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
 const sendButton = document.getElementById('chatMessageSendBtn')
@@ -291,7 +294,6 @@ function displayPlay() {
   }).then(stream => {
     localStream.flag = 2
     localDisplay = stream
-    localDisplay.flag = 1
     isDisplaying= !isDisplaying
     isDisplayHost= true
     socket.emit('isDisplaying_script', isDisplaying, ROOM_ID)
@@ -318,16 +320,6 @@ function draw( video, context, width, height ) {
       canvas.width = width
       canvas.height = height
     }
-    /*
-    var img = new Image();
-    img.addEventListener('load', ()=> {
-      context.drawImage(img, 0,0)
-    })
-    img.src = prevImage
-    */
-
-    //if(prevImage != undefined && prevImage != null)
-     //socket.emit('imageSend', ROOM_ID, user_id, prevImage)
   }
   setTimeout(draw, 50, video, context, width, height)  //20프레임
 }
@@ -335,6 +327,7 @@ function draw( video, context, width, height ) {
 
 socket.on('drawImage', (roomId,userId,image)=>{
   if(userId != user_id && roomId == ROOM_ID) {
+    printz("팀")
     prevImage = image
     otherDraw(context, image)
   }
@@ -343,7 +336,7 @@ socket.on('drawImage', (roomId,userId,image)=>{
 function otherDraw(context, image) {
   var img = new Image();
   img.addEventListener('load', ()=> {
-    context.drawImage(img, 0,0)
+    context.drawImage(img, 0,0, width, height)
   })
   img.src = image
 }
@@ -373,7 +366,7 @@ document.addEventListener("keydown", (e) => {
     socket.emit('drawPause_script',drawPause, ROOM_ID)
   }
    
-  if(e.key == '/' && !isNoCamUser) {
+  if(e.key == '/' && !isNoCamUser) {  //렉 심해지는 버그 잇음
     if(isCam) {
       localStream.flag = 1
       myVideo.srcObject = nocamVideo.captureStream()
@@ -450,6 +443,8 @@ socket.on('reLoading', (roomId)=>{
   }
 })
 
+var width = window.innerWidth
+var height = window.innerHeight
 //---캔버스 코드 시작---
 document.addEventListener("DOMContentLoaded", ()=> {
   var mouse = {
@@ -458,8 +453,6 @@ document.addEventListener("DOMContentLoaded", ()=> {
     pos: {x:0, y:0},
     pos_prev: false
   }
-  var width = window.innerWidth
-  var height = window.innerHeight
   var socket = io.connect()
   var relativeX = 8
   var relativeY = 188 //이거 값 유동적으로 할 수 있도록 해아함
@@ -479,11 +472,13 @@ document.addEventListener("DOMContentLoaded", ()=> {
 
   socket.on('drawLine', data => {
     var line = data.line
+    var size = data.size
+
     if(ROOM_ID == data.roomId) {
     context.beginPath()
     context.lineWidth = 2
-    context.moveTo(line[0].x, line[0].y)
-    context.lineTo(line[1].x, line[1].y)  //상대좌표로하려면 x는 width로 y는 height로 나누기
+    context.moveTo(line[0].x * (width/size[0]), line[0].y * (height/size[1]))
+    context.lineTo(line[1].x * (width/size[0]), line[1].y * (height/size[1]))  //상대좌표로하려면 x는 width로 y는 height로 나누기
     context.stroke()
     }
   })
@@ -510,7 +505,7 @@ document.addEventListener("DOMContentLoaded", ()=> {
     }
     else {
       if(mouse.click && mouse.move && mouse.pos_prev) {
-        socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID})
+        socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID, size:[width, height]})
         mouse.move = false
       }
       mouse.pos_prev = {x: mouse.pos.x, y: mouse.pos.y}
