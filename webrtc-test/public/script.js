@@ -25,6 +25,7 @@ var isCam = true
 var isMute = true
 var isNoCamUser = false
 var isMuteUser = false
+var isFrist = true
 var isCall = {} //콜이 소실되는 경우 판단용
 var isDisplayCall = {}
 var offDisplay = false
@@ -33,6 +34,7 @@ var context = canvas.getContext('2d')
 var prevImage
 var localStream
 var localDisplay
+var displayCall
 
 const myPeer = new Peer({ })
 const peers = {}
@@ -93,7 +95,11 @@ navigator.mediaDevices.getUserMedia({
 })
 
 socket.on('user-disconnected', userId => {
-  if (peers[userId]) peers[userId].close()
+  if (peers[userId]) {
+    peers[userId].close()
+    const userBox = document.getElementById(userId + '!userBox')
+    userBox.remove()
+  }
 })
 
 socket.on('setName', (userId, userName) => {
@@ -111,10 +117,8 @@ function getNewUser(){
     printz(err.type)
   })
   myPeer.on('call', call => {
-    if(isDisplayHost && localStream.flag == 2)
-      call.answer(localDisplay)
-    else
-      call.answer(localStream)
+    if(isDisplayHost && localStream.flag == 2) call.answer(localDisplay)
+    else call.answer(localStream)
 
     const videoUserName = document.createElement('videoUserName') //비디오에 이름 표시 코드
     const bold = document.createElement('b')
@@ -126,18 +130,28 @@ function getNewUser(){
       if(peers[call.peer] == undefined) {
         bold.id = call.peer
         video.id = call.peer+'!video'  // bold랑 차이두기위함
+        userBox.id = call.peer + '!userBox'
         addVideoStream(video, userVideoStream, userBox)  //원래 있던 유저들 보여주기
         socket.emit('getName', call.peer)
         videoUserName.appendChild(bold)
         bold.appendChild(videoUserNameText)
         userBox.appendChild(videoUserName)
         userBox.appendChild(video)
-        peers[call.peer] = call
       }
+      else if(localStream.flag != 2){
+        const nV = document.getElementById(call.peer+'!video')
+        nV.pause()
+        nV.srcObject = userVideoStream
+        nV.addEventListener('loadedmetadata', () => {
+          nV.play()
+        })
+      }
+      peers[call.peer] = call
     })
+    /*
     call.on('close', () => {
       userBox.remove()
-    })
+    })*/
   })
 }
 
@@ -168,6 +182,7 @@ function connectToNewUser(userId, userName) { //기존 유저 입장에서 새�
     const call = myPeer.call(userId, localStream)
     const video = document.createElement('video')
     const userBox = document.createElement('userBox')
+    userBox.id = userId + '!userBox'
     const videoUserName = document.createElement('videoUserName') //비디오에 이름 표시 코드
     const bold = document.createElement('b')
     const videoUserNameText = document.createTextNode(userName)
@@ -182,9 +197,10 @@ function connectToNewUser(userId, userName) { //기존 유저 입장에서 새�
       userBox.appendChild(video)
       addVideoStream(video, userVideoStream, userBox)
     })
+    /*
     call.on('close', () => {
       userBox.remove()
-    })
+    })*/
     peers[userId] = call
   }
 }
@@ -259,6 +275,7 @@ function connectToDisplay(userId) {
     var video = document.createElement('video')
     video.id = 'userDisplay'
     const call = myPeer.call(userId, localStream)
+    displayCall = call
     call.on('stream', stream => {
       isDisplaying = true
       localDisplay = stream
@@ -332,6 +349,7 @@ function draw( video, context, width, height ) {
   }
   else{
     if(isDisplayHost) socket.emit('displayReset_server', ROOM_ID, user_id)
+    else displayCall.close()
     isDisplayHost = false
     isDisplaying = false
     drawPause = false
@@ -386,10 +404,8 @@ document.addEventListener("keydown", (e) => {
   }
    
   if(e.key == '/' && !isNoCamUser) {  //렉 심해지는 버그 잇음
-    console.log(localStream.id)
     localStream.getTracks().forEach(t => localStream.removeTrack(t))
     if(isCam) {   
-      console.log(localStream.getTracks())
       navigator.mediaDevices.getUserMedia({
         video: false,
         audio: true,
@@ -398,7 +414,6 @@ document.addEventListener("keydown", (e) => {
           localStream.addTrack(track)
         for(const track of nocamVideo.captureStream().getVideoTracks())
           localStream.addTrack(track)
-        console.log(localStream.getTracks())
         /*
         realStream = stream
         myVideo.srcObject = stream
@@ -448,7 +463,7 @@ document.addEventListener("keydown", (e) => {
     isMute = !isMute
   }*/
   if(e.key == 'Insert') {  //디버그용
-    printz(localDisplay.active, localDisplay.srcObject)
+    printz(myPeer._connections)
   }
 })
 
@@ -461,7 +476,10 @@ socket.on('muteRequest_script', (userId, roomId, is_mute) => {
 
 socket.on('streamPlay_script', (userId, roomId) => {
   if(roomId == ROOM_ID && userId != user_id) {
+    console.log(myPeer._connections)
+    peers[userId].close()
     const call = myPeer.call(userId, localStream)
+    peers[userId] = call
     const video = document.getElementById(userId + '!video')
     call.on('stream', userVideoStream => {
       video.srcObject = userVideoStream
@@ -471,6 +489,8 @@ socket.on('streamPlay_script', (userId, roomId) => {
     })
   }
 })
+
+
 
 socket.on('drawPause_server', (tf,roomId) =>{
   if(ROOM_ID==roomId)
