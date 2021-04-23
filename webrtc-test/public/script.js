@@ -158,6 +158,7 @@ function getNewUser(){
 function connectionLoop(userId, userName) //피어 연결이 제대로 될 때 까지 반복
 {
   if(isCall[userId]) {
+    peers[userId].close()
     peers[userId] = undefined
     connectToNewUser(userId, userName)
     setTimeout(connectionLoop, 2000, userId, userName)
@@ -262,6 +263,7 @@ sendButton.addEventListener('click', function(){
 function connectionDisplayLoop(userId)
 {
   if(isDisplayCall[userId]) {
+    displayCall.close()
     connectToDisplay(userId)
     setTimeout(connectionDisplayLoop, 2000, userId)
   }
