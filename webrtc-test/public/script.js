@@ -264,7 +264,8 @@ sendButton.addEventListener('click', function(){
 function connectionDisplayLoop(userId)
 {
   if(isDisplayCall[userId]) {
-    displayCall.close()
+    if(displayCall != undefined)
+      displayCall.close()
     connectToDisplay(userId)
     setTimeout(connectionDisplayLoop, 2000, userId)
   }
