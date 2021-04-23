@@ -42,9 +42,8 @@ function printz(x)  //디버그용
   console.log(x)
 }
 
-function userJoin(stream, stream2)
+function userJoin()
 {
-  localStream = stream2
   localStream.flag = 0
   const userBox = document.createElement('userBox')
   var videoUserName = document.createElement('videoUserName') //비디오에 이름 표시 코드
@@ -55,7 +54,7 @@ function userJoin(stream, stream2)
   bold.appendChild(videoUserNameText)
   userBox.appendChild(videoUserName)
   userBox.appendChild(myVideo)
-  addVideoStream(myVideo, stream, userBox)
+  addVideoStream(myVideo, localStream, userBox)
 
   getNewUser()
 
@@ -69,7 +68,8 @@ navigator.mediaDevices.getUserMedia({
   video: true,
   audio: true,
 }).then(async(stream) => {
-  userJoin(stream, stream)
+  localStream = stream
+  userJoin()
   isMute = false
 }).catch(error => {
   navigator.mediaDevices.getUserMedia({ //캠 x
@@ -78,7 +78,10 @@ navigator.mediaDevices.getUserMedia({
   }).then(async(stream) => {
     isNoCamUser = true
     isMute = false
-    userJoin(stream, nocamVideo.captureStream())
+    localStream = stream
+    for(const track of nocamVideo.captureStream().getVideoTracks())
+      localStream.addTrack(track)
+    userJoin()
   }).catch(error => { //캠 마이크 x
     alert('마이크나 캠 중 하나를 켜주세요.')
     window.location.href = '/'
@@ -110,8 +113,6 @@ function getNewUser(){
   myPeer.on('call', call => {
     if(isDisplayHost && localStream.flag == 2)
       call.answer(localDisplay)
-    else if(localStream.flag == 1)
-      call.answer(nocamVideo.captureStream())
     else
       call.answer(localStream)
 
@@ -299,7 +300,7 @@ function displayPlay() {
   }).then(stream => {
     localStream.flag = 2
     localDisplay = stream
-    isDisplaying = true
+    isDisplaying= !isDisplaying
     isDisplayHost= true
     //socket.emit('isDisplaying_script', isDisplaying, ROOM_ID)
     video.srcObject = stream
@@ -315,7 +316,6 @@ function displayPlay() {
 
 
 function draw( video, context, width, height ) {
-  printz(isDisplaying)
   if(localDisplay.active == true && isDisplaying) {
     width = parseInt(window.innerWidth*0.742)
     height = parseInt(window.innerHeight*0.753)
@@ -332,8 +332,6 @@ function draw( video, context, width, height ) {
   }
   else{
     if(isDisplayHost) socket.emit('displayReset_server', ROOM_ID, user_id)
-    var v = document.getElementById('userDisplay')
-    v.remove()
     isDisplayHost = false
     isDisplaying = false
     drawPause = false
@@ -388,22 +386,59 @@ document.addEventListener("keydown", (e) => {
   }
    
   if(e.key == '/' && !isNoCamUser) {  //렉 심해지는 버그 잇음
-    if(isCam) {
+    console.log(localStream.id)
+    localStream.getTracks().forEach(t => localStream.removeTrack(t))
+    if(isCam) {   
+      console.log(localStream.getTracks())
+      navigator.mediaDevices.getUserMedia({
+        video: false,
+        audio: true,
+      }).then(async(stream) => {
+        for(const track of stream.getTracks())
+          localStream.addTrack(track)
+        for(const track of nocamVideo.captureStream().getVideoTracks())
+          localStream.addTrack(track)
+        console.log(localStream.getTracks())
+        /*
+        realStream = stream
+        myVideo.srcObject = stream
+        myVideo.addEventListener('loadedmetadata', () => {
+          myVideo.play()
+        })*/
+      })
+      /*
       localStream.flag = 1
       myVideo.srcObject = nocamVideo.captureStream()
       myVideo.addEventListener('loadedmetadata', () => {
         myVideo.play()
       })
       socket.emit('streamPlay_server', user_id,ROOM_ID)
+      */
     }
     else {
+      navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      }).then(async(stream) => {
+        for(const track of stream.getTracks())
+          localStream.addTrack(track)
+        /*
+        realStream = stream
+        myVideo.srcObject = stream
+        myVideo.addEventListener('loadedmetadata', () => {
+          myVideo.play()
+        })*/
+      })
+      /*
       localStream.flag = 0
       myVideo.srcObject = localStream
       myVideo.addEventListener('loadedmetadata', () => {
         myVideo.play()
       })
-      socket.emit('streamPlay_server', user_id,ROOM_ID)
+      socket.emit('streamPlay_server', user_id,ROOM_ID)*/
     }
+    localStream.flag = 0
+    socket.emit('streamPlay_server', user_id,ROOM_ID)
     isCam = !isCam
   }
   /*
@@ -413,7 +448,7 @@ document.addEventListener("keydown", (e) => {
     isMute = !isMute
   }*/
   if(e.key == 'Insert') {  //디버그용
-    console.log(isDisplaying, localDisplay.active)
+    printz(localDisplay.active, localDisplay.srcObject)
   }
 })
 
