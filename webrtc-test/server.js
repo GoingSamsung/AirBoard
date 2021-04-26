@@ -72,7 +72,12 @@ app.get('/img/:fileName', (req,res) => {
   }
 })
 io.on('connection', socket => {
-
+  socket.on('getStream_server', (userId_caller, userId_callee, roomId) => {
+    io.sockets.in(roomId).emit('getStream_script', userId_caller, userId_callee, roomId)
+  })
+  socket.on('sendStream_server', (userId_caller, userId_callee, roomId, isCam) => {
+    io.sockets.in(roomId).emit('sendStream_script', userId_caller, userId_callee, roomId, isCam)
+  })
   socket.on('imageSend', (roomId, userId, image) => { //화면 공유용
     io.sockets.in(roomId).emit('drawImage', roomId, userId, image)
   })
@@ -92,8 +97,8 @@ io.on('connection', socket => {
   socket.on('newDisplayConnect_server', (roomId, userId, newUserId) => {
     io.sockets.in(roomId).emit('newDisplayConnect_script', roomId, userId, newUserId)
   })
-  socket.on('streamPlay_server', (userId, roomId) => {
-    io.sockets.in(roomId).emit('streamPlay_script', userId, roomId)
+  socket.on('streamPlay_server', (userId, roomId, isCam) => {
+    io.sockets.in(roomId).emit('streamPlay_script', userId, roomId, isCam)
   })
   socket.on('muteRequest_server', (userId, roomId, isMute) => {
     io.sockets.in(roomId).emit('muteRequest_script', userId, roomId, isMute)

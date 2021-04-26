@@ -1,6 +1,7 @@
 /*
   화면공유 필기 중에 들어오는 유저는 필기 확인 불가 버그(화면 크기 바꾸면 다시 돌아옴)
-  캠 끄기 켜기 기능 사용시 렉 심해지는 버그(아직 원인 불명)
+  화면공유 했을 때 안넘어가는 경우가있음.
+  캠 끄기 켜기 기능 최적화가 필요할듯
 */
 var user_name = prompt('대화명을 입력해주세요.', '')
 
@@ -13,8 +14,11 @@ const chatInput = document.getElementById('chatInput')
 const nocamVideo = document.getElementById('nocam__video')
 const myVideo = document.createElement('video')
 const myDisplay = document.createElement('video')
+const myVideoBackground = document.createElement('videoBackground')
 myDisplay.id = 'display'
 myVideo.muted = true
+myVideo.width = 160
+myVideo.height = 120
 
 var user_id
 var isDisplayHost = false
@@ -55,6 +59,7 @@ function userJoin()
   videoUserName.appendChild(bold)
   bold.appendChild(videoUserNameText)
   userBox.appendChild(videoUserName)
+  userBox.appendChild(myVideoBackground)
   userBox.appendChild(myVideo)
   addVideoStream(myVideo, localStream, userBox)
 
@@ -124,18 +129,25 @@ function getNewUser(){
     const bold = document.createElement('b')
     const videoUserNameText = document.createTextNode('loading..')
     const video = document.createElement('video')
+    video.width = 0
+    video.height = 0
     const userBox = document.createElement('userBox')
+    const videoBackground = document.createElement('videoBackground')
+    videoBackground.style.width = '160px'
+    videoBackground.style.height = '120px'
 
     call.on('stream', userVideoStream => {
       if(peers[call.peer] == undefined) {
         bold.id = call.peer
         video.id = call.peer+'!video'  // bold랑 차이두기위함
         userBox.id = call.peer + '!userBox'
+        videoBackground.id = call.peer + '!videoBackground'
         addVideoStream(video, userVideoStream, userBox)  //원래 있던 유저들 보여주기
         socket.emit('getName', call.peer)
         videoUserName.appendChild(bold)
         bold.appendChild(videoUserNameText)
         userBox.appendChild(videoUserName)
+        userBox.appendChild(videoBackground)
         userBox.appendChild(video)
       }
       else if(localStream.flag != 2){
@@ -147,6 +159,7 @@ function getNewUser(){
         })
       }
       peers[call.peer] = call
+      socket.emit('getStream_server', user_id, call.peer, ROOM_ID)
     })
     /*
     call.on('close', () => {
@@ -154,6 +167,29 @@ function getNewUser(){
     })*/
   })
 }
+
+socket.on('getStream_script', (userId_caller, userId_callee, roomId) => {
+  if(user_id == userId_callee && roomId == ROOM_ID)
+    socket.emit('sendStream_server', userId_caller, user_id, ROOM_ID, isCam)
+})
+socket.on('sendStream_script', (userId_caller, userId_callee, roomId, isCam) => {
+  if(user_id == userId_caller && roomId == ROOM_ID) {
+    const video = document.getElementById(userId_callee + '!video')
+    const videoBackground = document.getElementById(userId_callee + '!videoBackground')
+   if(!isCam) {
+    videoBackground.style.width = '160px'
+    videoBackground.style.height = '120px'
+    video.width = 0
+    video.height = 0
+   }
+   else {
+    videoBackground.style.width = '0px'
+    videoBackground.style.height = '0px'
+    video.width = 160
+    video.height = 120
+   }
+  }
+})
 
 function connectionLoop(userId, userName) //피어 연결이 제대로 될 때 까지 반복
 {
@@ -183,19 +219,24 @@ function connectToNewUser(userId, userName) { //기존 유저 입장에서 새�
   if(peers[userId] == undefined) {
     const call = myPeer.call(userId, localStream)
     const video = document.createElement('video')
+    video.width = 160
+    video.height = 120
     const userBox = document.createElement('userBox')
     userBox.id = userId + '!userBox'
     const videoUserName = document.createElement('videoUserName') //비디오에 이름 표시 코드
     const bold = document.createElement('b')
     const videoUserNameText = document.createTextNode(userName)
+    const videoBackground = document.createElement('videoBackground')
 
     call.on('stream', userVideoStream => {
       isCall[userId] = false
       video.id = userId + '!video' //bold랑 차이두기 위해 !붙임
+      videoBackground.id = userId + '!videoBackground'
       videoUserName.appendChild(bold)
 
       bold.appendChild(videoUserNameText)
       userBox.appendChild(videoUserName)
+      userBox.appendChild(videoBackground)
       userBox.appendChild(video)
       addVideoStream(video, userVideoStream, userBox)
     })
@@ -337,28 +378,52 @@ function displayPlay() {
 
 
 function draw( video, context, width, height ) {
-  if(localDisplay.active == true && isDisplaying) {
-    width = parseInt(window.innerWidth*0.742)
-    height = parseInt(window.innerHeight*0.753)
-    if(!drawPause) {
-      context.drawImage( video, 0, 0, width, height );
-      prevImage = canvas.toDataURL()
-      if(canvas.width != width || canvas.height != height) {
-        otherDraw(context, prevImage)
-        canvas.width = width
-        canvas.height = height
+  if(isDisplayHost) {
+    if(localDisplay.active == true && isDisplaying) {
+      width = parseInt(window.innerWidth*0.742)
+      height = parseInt(window.innerHeight*0.753)
+      if(!drawPause) {
+        context.drawImage( video, 0, 0, width, height );
+        prevImage = canvas.toDataURL()
+        if(canvas.width != width || canvas.height != height) {
+          otherDraw(context, prevImage)
+          canvas.width = width
+          canvas.height = height
+        }
       }
+      setTimeout(draw, 50, video, context, width, height)  //20프레임
     }
-    setTimeout(draw, 50, video, context, width, height)  //20프레임
+    else{
+      socket.emit('displayReset_server', ROOM_ID, user_id)
+      isDisplayHost = false
+      isDisplaying = false
+      drawPause = false
+      offDisplay = true
+      prevImage = null
+    }
   }
-  else{
-    if(isDisplayHost) socket.emit('displayReset_server', ROOM_ID, user_id)
-    else displayCall.close()
-    isDisplayHost = false
-    isDisplaying = false
-    drawPause = false
-    offDisplay = true
-    prevImage = null
+  else {
+    if(isDisplaying) {
+      width = parseInt(window.innerWidth*0.742)
+      height = parseInt(window.innerHeight*0.753)
+      if(!drawPause) {
+        context.drawImage( video, 0, 0, width, height );
+        prevImage = canvas.toDataURL()
+        if(canvas.width != width || canvas.height != height) {
+          otherDraw(context, prevImage)
+          canvas.width = width
+          canvas.height = height
+        }
+      }
+      setTimeout(draw, 50, video, context, width, height)  //20프레임
+    }
+    else{
+      displayCall.close()
+      isDisplaying = false
+      drawPause = false
+      offDisplay = true
+      prevImage = null
+    }
   }
 }
 
@@ -407,9 +472,14 @@ document.addEventListener("keydown", (e) => {
     socket.emit('drawPause_script',drawPause, ROOM_ID)
   }
    
-  if(e.key == '/' && !isNoCamUser) {  //렉 심해지는 버그 잇음
-    localStream.getTracks().forEach(t => localStream.removeTrack(t))
-    if(isCam) {   
+  if(e.key == '/' && !isNoCamUser) {
+    //localStream.getTracks().forEach(t => localStream.removeTrack(t))
+    if(isCam) {
+      myVideoBackground.style.width = '160px'
+      myVideoBackground.style.height = '120px'
+      myVideo.width = 0
+      myVideo.height = 0
+      /*
       navigator.mediaDevices.getUserMedia({
         video: false,
         audio: true,
@@ -418,47 +488,26 @@ document.addEventListener("keydown", (e) => {
           localStream.addTrack(track)
         for(const track of nocamVideo.captureStream().getVideoTracks())
           localStream.addTrack(track)
-        /*
-        realStream = stream
-        myVideo.srcObject = stream
-        myVideo.addEventListener('loadedmetadata', () => {
-          myVideo.play()
-        })*/
-      })
-      /*
-      localStream.flag = 1
-      myVideo.srcObject = nocamVideo.captureStream()
-      myVideo.addEventListener('loadedmetadata', () => {
-        myVideo.play()
-      })
-      socket.emit('streamPlay_server', user_id,ROOM_ID)
-      */
+      })*/
+
     }
     else {
+      myVideoBackground.style.width = '0px'
+      myVideoBackground.style.height = '0px'
+      myVideo.width = 160
+      myVideo.height = 120
+      /*
       navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true,
       }).then(async(stream) => {
         for(const track of stream.getTracks())
           localStream.addTrack(track)
-        /*
-        realStream = stream
-        myVideo.srcObject = stream
-        myVideo.addEventListener('loadedmetadata', () => {
-          myVideo.play()
-        })*/
-      })
-      /*
-      localStream.flag = 0
-      myVideo.srcObject = localStream
-      myVideo.addEventListener('loadedmetadata', () => {
-        myVideo.play()
-      })
-      socket.emit('streamPlay_server', user_id,ROOM_ID)*/
+      })*/
     }
     localStream.flag = 0
-    socket.emit('streamPlay_server', user_id,ROOM_ID)
-    isCam = !isCam
+    socket.emit('streamPlay_server', user_id,ROOM_ID,isCam)
+    isCam = !isCam    
   }
   /*
   if(e.key == '+' && !isMuteUser) { 음소거 일단 보류
@@ -478,19 +527,37 @@ socket.on('muteRequest_script', (userId, roomId, is_mute) => {
   }
 })
 
-socket.on('streamPlay_script', (userId, roomId) => {
+socket.on('streamPlay_script', (userId, roomId, isCam) => {
   if(roomId == ROOM_ID && userId != user_id) {
+    /*
     console.log(myPeer._connections)
     peers[userId].close()
     const call = myPeer.call(userId, localStream)
-    peers[userId] = call
+    peers[userId] = call*/
     const video = document.getElementById(userId + '!video')
+    const videoBackground = document.getElementById(userId + '!videoBackground')
+    //videoBackground.backgroundColor='black'
+    //videoBackground.display='block'
+    /*
     call.on('stream', userVideoStream => {
       video.srcObject = userVideoStream
       video.addEventListener('loadedmetadata', () => {
         video.play()
       })
     })
+    */
+   if(isCam) {
+    videoBackground.style.width = '160px'
+    videoBackground.style.height = '120px'
+    video.width = 0
+    video.height = 0
+   }
+   else {
+    videoBackground.style.width = '0px'
+    videoBackground.style.height = '0px'
+    video.width = 160
+    video.height = 120
+   }
   }
 })
 
