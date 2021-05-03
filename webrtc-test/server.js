@@ -43,7 +43,12 @@ app.get('/newroom', (req, res) => {
 app.get('/:room', (req, res) => {
   res.render('room', { roomId: req.params.room })
 })
-
+/*
+app.get('/views/settingPage', (req, res) => {
+  console.log("Hh")
+  res.render('home')
+})
+*/
 app.get('/img/:fileName', (req,res) => {
   const { fileName } = req.params
   const { range } = req.headers
