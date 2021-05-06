@@ -369,6 +369,17 @@ function drawChatMessage(data){
   return wrap; 
 }
 
+document.querySelector('#chatInput').addEventListener('keyup', (e)=>{
+  if (e.keyCode === 13) {
+    var message = chatInput.value; 
+  if(!message){
+    return false; 
+  }
+  socket.emit('sendMessage', { message, ROOM_ID });
+  chatInput.value = '';
+  }  
+});
+
 sendButton.addEventListener('click', function(){ 
   var message = chatInput.value; 
   if(!message){
@@ -608,6 +619,7 @@ socket.on('updateMessage', function(data){
   else if(ROOM_ID==data.ROOM_ID){ //사용자의 ROOM_ID와 화상 회의방의 ROOM_ID가 같은가??
     var chatMessageEl = drawChatMessage(data); 
     chatWindow.appendChild(chatMessageEl); 
+    chatWindow.scrollTop=chatWindow.scrollHeight;
   } 
 }); 
 

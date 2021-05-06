@@ -94,8 +94,8 @@ videoBackground {
     border-radius: 10px;
     background-color: #ffffff;
     margin-right:5px;
-    margin-bottom:8px;
-    height: 7.5%;
+    margin-bottom:11px;
+    height: 7.1%;
     display:flex;
 }
 .output__user {
@@ -135,12 +135,14 @@ videoBackground {
 }
 
 .msg {
+    font-size:14px;
     display: inline-block;
     border-radius: 15px;
     padding: 7px 15px;
     margin-bottom: 10px;
     margin-top: 5px;
     margin-right:8px;
+    white-space:normal;
 }
 
 .anotherMsg > .msg {
@@ -159,20 +161,40 @@ videoBackground {
 }
 
 #chatInput {
+    margin-left:5px;
     border-radius: 5px;
     width: 85%;
     height: calc(100% - 2px);
     border: none;
 }
 
-#chatInput:focus {    outline: none;
+#chatInput:focus {    
+    outline: none;
 }
 
 #chatMessageSendBtn{
-    
     outline: none;
     border: none;
     background: none;
     color: #0084FF;
     font-size: 13px;
+}
+
+#chatWindow::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background: #f1f0f0;
+}
+
+#chatWindow::-webkit-scrollbar-thumb {
+    border-radius: 3.5px;
+    background-color: #ced4da;
+}
+
+#chatWindow::-webkit-scrollbar-thumb:hover {
+    background-color: #adb5bd;
+}
+
+#chatWindow::-webkit-scrollbar-track {
+    background: #ffffff;
 }
