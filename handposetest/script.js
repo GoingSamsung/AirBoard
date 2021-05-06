@@ -57,13 +57,24 @@ function printz(x)  //디버그용
 
 //제스처 테스트
 async function gesturetest() {
+
+  var getest = document.querySelector("#getest");
+if (navigator.mediaDevices.getUserMedia) {
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(function (stream) {
+      getest.srcObject = stream;
+    })
+    .catch(function (err0r) {
+      console.log("Something went wrong!");
+    });
+}
+
   // Load the MediaPipe handpose model.
   const model = await handpose.load();
-  var getest = document.createElement('getest');
-  getest = myVideo;
   // Pass in a video stream (or an image, canvas, or 3D tensor) to obtain a
   // hand prediction from the MediaPipe graph.
-  const predictions = await model.estimateHands(document.querySelector(getest));
+  const predictions = await model.estimateHands(document.querySelector("#getest"));
+  console.log("test");
   if (predictions.length > 0) {
     /*
     `predictions` is an array of objects describing each detected hand, for example:
