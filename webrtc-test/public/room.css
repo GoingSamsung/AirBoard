@@ -55,7 +55,7 @@ videoBackground {
 #videoarea{
     margin:5px;
     width:79.8%;
-    height:19.6%;
+    height: 180px;
     border-radius: 10px;
     background-color: #ffffff;
 }
@@ -63,7 +63,6 @@ videoBackground {
 .whiteboard{
     margin-left:5px;
     width: 79.8%;
-    height:78%;
     border-radius: 10px;
     background-color: #ffffff;
     padding:0;
@@ -166,8 +165,7 @@ videoBackground {
     border: none;
 }
 
-#chatInput:focus {
-    outline: none;
+#chatInput:focus {    outline: none;
 }
 
 #chatMessageSendBtn{

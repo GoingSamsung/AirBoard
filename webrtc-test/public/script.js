@@ -47,6 +47,9 @@ var localStream
 var localDisplay
 var displayCall
 
+var rX = 0.79872  //rX, rY는 최대한 마우스 에임에 맞는 필기를 위해 곱해주는 용도
+var rY = 0.8091
+
 const myPeer = new Peer({ })
 const peers = {}
 
@@ -348,16 +351,20 @@ function addVideoStream(video, stream, userBox) {
 }
 
 function drawChatMessage(data){
-  var wrap = document.createElement('p'); 
+  var wrap = document.createElement('div'); 
+  wrap.className="anotherMsg"
   var message = document.createElement('span');
+  message.className="msg";
   var name = document.createElement('span'); 
+  name.className="anotherName";
 
   name.innerText = data.name + ': '; 
   message.innerText = data.message; 
   name.classList.add('output__user__name'); 
   message.classList.add('output__user__message'); 
   wrap.classList.add('output__user'); 
-  wrap.dataset.id = socket.id; wrap.appendChild(name); 
+  wrap.dataset.id = socket.id; 
+  wrap.appendChild(name); 
   wrap.appendChild(message); 
   return wrap; 
 }
@@ -436,14 +443,15 @@ function displayPlay() {
 function draw( video, context, width, height ) {
   if(isDisplayHost) {
     if(localDisplay.active == true && isDisplaying) {
-      width = parseInt(window.innerWidth*0.742)
-      height = parseInt(window.innerHeight*0.753)
+      width = parseInt(window.innerWidth*rX)
+      height = parseInt(window.innerHeight-200)
       if(!drawPause) {
         context.drawImage( video, 0, 0, width, height );
         prevImage = canvas.toDataURL()
         if(canvas.width != width || canvas.height != height) {
           otherDraw(context, prevImage)
           canvas.width = width
+          //canvas.height = height
           canvas.height = height
         }
       }
@@ -460,8 +468,8 @@ function draw( video, context, width, height ) {
   }
   else {
     if(isDisplaying) {
-      width = parseInt(window.innerWidth*0.742)
-      height = parseInt(window.innerHeight*0.753)
+      width = parseInt(window.innerWidth*rX)
+      height = parseInt(window.innerHeight-200)
       if(!drawPause) {
         context.drawImage( video, 0, 0, width, height );
         prevImage = canvas.toDataURL()
@@ -577,8 +585,7 @@ socket.on('pause_script', (userId, isPause) => {
 
 socket.on('reLoading', (roomId)=>{
   if(roomId == ROOM_ID) {
-    canvas.width += 1
-    canvas.width -= 1
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
     socket.emit('reDrawing', ROOM_ID)
   }
 })
@@ -708,7 +715,8 @@ document.addEventListener("keydown", (e) => {
     isMute = !isMute
   }*/
   if(e.key == 'Insert') {  //디버그용
-    printz(myPeer._connections)
+    console.log(window.innerWidth)
+    console.log(window.innerHeight)
   }
   if(e.key == 'Home') {
     if(!isCamWrite) {
@@ -741,12 +749,10 @@ document.addEventListener("DOMContentLoaded", ()=> {
     pos_prev: false
   }
   var socket = io.connect()
-  var relativeX = 8
+  var relativeX = 3
   var relativeY = 188
-  var rX = 0.742  //rX, rY는 최대한 마우스 에임에 맞는 필기를 위해 곱해주는 용도
-  var rY = 0.753
   canvas.width = parseInt(width*rX)
-  canvas.height = parseInt(height*rY)
+  canvas.height = parseInt(height-200)
 
   canvas.onmousedown = (e) => {mouse.click = true}
   canvas.onmouseup = (e) => {mouse.click = false}
@@ -779,11 +785,12 @@ document.addEventListener("DOMContentLoaded", ()=> {
   }
   function mainLoop() {
     width = parseInt(window.innerWidth*rX)
-    height = parseInt(window.innerHeight*rY)
+    height = parseInt(window.innerHeight-200)
     if(canvas.width != width || canvas.height != height) {  //웹 페이지 크기가 변할 때
       socket.emit('reDrawing', ROOM_ID)
       otherDraw(context, prevImage)
       canvas.width = width
+      //canvas.height = height
       canvas.height = height
     }
     if(isDisplaying && !drawPause) {  //방송중이고 방송 일시정지가 아니면
