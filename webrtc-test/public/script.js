@@ -45,6 +45,7 @@ var prevImage
 var localStream
 var localDisplay
 var displayCall
+var thr = 15
 
 var rX = 0.79872  //rX, rY는 최대한 마우스 에임에 맞는 필기를 위해 곱해주는 용도
 var rY = 0.8091
@@ -135,7 +136,6 @@ function fun_mask(R,G,B){
   let src = cv.matFromImageData(imgData);
 
   let dst = new cv.Mat();
-  var thr = 15;
   let low = new cv.Mat(src.rows, src.cols, src.type(), [R-thr, G-thr, B-thr, 0]);
   let high = new cv.Mat(src.rows, src.cols, src.type(), [R+thr, G+thr, B+thr, 255]);
   
@@ -696,6 +696,18 @@ document.addEventListener("keydown", (e) => {
     drawPause = !drawPause
     socket.emit('drawPause_script',drawPause, ROOM_ID)
   }
+  if(e.key=='['){
+    if(thr>0){
+      thr-=1;
+      console.log(thr);
+    }
+  }
+  if(e.key==']'){
+    if(thr<255){
+      thr+=1;
+      console.log(thr);
+    }
+  }  
    
   if(e.key == '/' && !isNoCamUser) {
     //localStream.getTracks().forEach(t => localStream.removeTrack(t))
