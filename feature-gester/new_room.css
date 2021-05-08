@@ -10,6 +10,7 @@ html{
 }
 
 .layer {
+    z-index: 3;
     position: absolute;
     top: 0;
     left: 0;
@@ -18,10 +19,12 @@ html{
 }
 
 #pose-video {
+    z-index: 2;
     transform: scaleX(-1);
 }
 
 #pose-result {
+    z-index: 2;
     font-size: 100px;
     text-align: right;
     padding: 20px 30px 0 0;
