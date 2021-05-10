@@ -435,20 +435,14 @@ function drawChatMessage(data){
   var message = document.createElement('span');
   message.className="msg";
 
-  
-  var name = document.createElement('span'); 
-
   if(data.user_id!=user_id){
+    var name = document.createElement('span'); 
     name.className="anotherName";
-    name.innerText = data.name+":"; 
-  }
-  else{
-    name.className="myName";
-    name.innerText = data.name+"(나):"; 
+    name.innerText = data.name + ': '; 
+    name.classList.add('output__user__name'); 
+    wrap.appendChild(name); 
   }
 
-  name.classList.add('output__user__name'); 
-  wrap.appendChild(name); 
   message.innerText = data.message; 
   message.classList.add('output__user__message'); 
   wrap.classList.add('output__user'); 
