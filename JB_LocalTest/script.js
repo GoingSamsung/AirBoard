@@ -51,6 +51,7 @@ var isMuteUser = false
 var isFrist = true
 var isCall = {} //콜이 소실되는 경우 판단용
 var isDisplayCall = {}
+var isWriteLoop = true
 var offDisplay = false
 var canvas = document.getElementById(ROOM_ID)
 var context = canvas.getContext('2d')
@@ -61,6 +62,8 @@ var localStream
 var localDisplay
 var displayCall
 var gesturechk = false
+var chkfirst = true;
+
 
 hiddenCamVideo.width = 1024
 hiddenCamVideo.height = 768
@@ -79,6 +82,15 @@ function printz(x)  //디버그용
 }
 
 var R,G,B;
+
+function delay(gap){ /* gap is in millisecs */ 
+  var then,now; 
+  then=new Date().getTime(); 
+  now=then; 
+  while((now-then)<gap){ 
+    now=new Date().getTime();  // 현재시간을 읽어 함수를 불러들인 시간과의 차를 이용하여 처리 
+  } 
+} 
 
 var isCamWrite2 = false
 
@@ -179,6 +191,7 @@ function extractDraw( video, context, width, height ) {
           anspoint = i;
         }
     }
+    //console.log(cntareas);
     let ans = contours.get(anspoint);
     if(ans!==undefined){
       let rect = cv.boundingRect(ans);
@@ -262,10 +275,6 @@ function userJoin()
   hiddenVideo.srcObject = localStream
   hiddenVideo.addEventListener('loadedmetadata', () => {
     hiddenVideo.play()
-    console.log("Camera is ready")
-
-    //일단 지움
-    //탄지로()
   })
   getNewUser()
 
@@ -373,10 +382,7 @@ function connectionLoop(userId, userName) //피어 연결이 제대로 될 때 �
 function firstConnectSocketCall(userId)
 {
   socket.emit('isDisplaying_script', isDisplaying, ROOM_ID)
-  socket.emit('drawPause_script',drawPause, ROOM_ID)
   socket.emit('newDisplayConnect_server', ROOM_ID, user_id, userId)
-  if(prevImage != undefined && prevImage != null && drawPause)
-    socket.emit('imageSend', ROOM_ID, user_id, prevImage)
 }
 
 function connectToNewUser(userId, userName) { //기존 유저 입장에서 새로운 유저가 들어왔을 때
@@ -468,6 +474,7 @@ sendButton.addEventListener('click', function(){
 function connectionDisplayLoop(userId)
 {
   if(isDisplayCall[userId]) {
+    console.log('display connecting..')
     if(displayCall != undefined)
       displayCall.close()
     connectToDisplay(userId)
@@ -477,22 +484,25 @@ function connectionDisplayLoop(userId)
   }
 }
 
-var displayVideo = document.createElement('video')
-
 //---화면 공유---
 function connectToDisplay(userId) {
+    var displayVideo = document.createElement('video')
     var displayBox = document.getElementById('displayBox')
+    var test = document.getElementById('test')
     //var video = document.createElement('video')
     displayVideo.id = 'userDisplay'
+    displayVideo.width = canvas.width
+    displayVideo.height = canvas.height
     const call = myPeer.call(userId, localStream)
     displayCall = call
     call.on('stream', stream => {
       //isDisplaying = true
       localDisplay = stream
-      displayBox.append(displayVideo)
+      test.append(displayVideo)
       isDisplayCall[userId] = false
       displayVideo.srcObject = stream
       displayVideo.addEventListener('loadedmetadata', () => {
+        canvas.style.backgroundColor = 'transparent'
         displayVideo.play()
       })
 
@@ -506,10 +516,14 @@ function connectToDisplay(userId) {
 }
 
 function displayPlay() {
-  var displayBox = document.getElementById('displayBox')
+  var displayVideo = document.createElement('video')
+  //var displayBox = document.getElementById('displayBox')
+  var test = document.getElementById('test')
   //var video = document.createElement('video')
   displayVideo.id = 'userDisplay'
-  displayBox.append(displayVideo)
+  displayVideo.width = canvas.width
+  displayVideo.height = canvas.height
+  test.append(displayVideo)
   navigator.mediaDevices.getDisplayMedia({
     video: true,
     audio: false,
@@ -526,11 +540,12 @@ function displayPlay() {
     console.log(error)
   });
   displayVideo.addEventListener('play', function() {
+    canvas.style.backgroundColor = 'transparent'
     isDisplaying = true
     //draw( this, context, 1024, 768 );
   }, false )
 }
-
+/*
 function draw( video, context, width, height ) {
   if(isDisplayHost) {
     if(localDisplay.active == true && isDisplaying) {
@@ -592,7 +607,7 @@ function otherDraw(context, image) {
   })
   img.src = image
 }
-
+*/
 socket.on('displayConnect_script', (roomId, userId) => {
   if(roomId == ROOM_ID && userId != user_id) {
     isDisplayCall[userId] = true
@@ -607,8 +622,12 @@ socket.on('newDisplayConnect_script', (roomId, userId, newUserId) => {
 })
 
 socket.on('displayReset_script', (roomId, userId) => {
-  if(userId != user_id)
+  if(userId != user_id) {
+    var displayVideo = document.getElementById('userDisplay')
+    canvas.style.backgroundColor = '#ffffff'
+    displayVideo.remove()
     isDisplaying = false
+  }
 })
 
 socket.on('drawImage', (roomId,userId,image)=>{
@@ -761,10 +780,11 @@ document.addEventListener("keydown", (e) => {
   }
   if(e.key == '*' && !isDisplaying)   //화면공유
     displayPlay()
+    /*
   if(e.key == '-' && isDisplaying && isDisplayHost) {//화면 정지
     drawPause = !drawPause
     socket.emit('drawPause_script',drawPause, ROOM_ID)
-  }
+  }*/
   if(e.key == '`') {
     cam_mouse.click = true
   }
@@ -836,13 +856,13 @@ document.addEventListener("keydown", (e) => {
   if(e.key === 'g'){
     탄지로()
     gesturechk = !gesturechk
-    console.log(gesturechk)
   } 
 })
 
 document.addEventListener("keyup", (e) => {
   if(e.key == '`') {  
     cam_mouse.click = false
+    chkfirst = true
   }
 })
 
@@ -883,13 +903,23 @@ document.addEventListener("DOMContentLoaded", ()=> {
     var line = data.line
     var size = data.size
     if(ROOM_ID == data.roomId) {
-    context.beginPath()
-    context.lineWidth = 5
-    context.moveTo(line[0].x * (width/size[0]), line[0].y * (height/size[1]))
-    context.lineTo(line[1].x * (width/size[0]), line[1].y * (height/size[1]))
-    context.stroke()
+      if(chkfirst){
+        //context.fillRect(line[1].x * (width/size[1]), line[1].y * (height/size[1]),2,2)
+        delay(200)
+        chkfirst = !chkfirst   
+        console.log(chkfirst)
+      }
+      else{
+        context.beginPath()
+        context.lineWidth = 2
+        context.moveTo(line[0].x * (width/size[0]), line[0].y * (height/size[1]))
+        context.lineTo(line[1].x * (width/size[0]), line[1].y * (height/size[1]))
+        context.stroke()
+      }    
     }
   })
+
+  /*
   function outerLoop(){
     if(drawPause) mainLoop()
     else if(offDisplay) {
@@ -897,39 +927,62 @@ document.addEventListener("DOMContentLoaded", ()=> {
       mainLoop()
     }
     else {
-      draw(displayVideo, context, 1024, 768)
+      //draw(displayVideo, context, 1024, 768)
       setTimeout(outerLoop, 50)
     }
+  }*/
+
+  function extractLoop() {
+    extractDraw(hiddenVideo, extractContext, 1024, 768)
+    setTimeout(extractLoop, 25)
   }
   function mainLoop() {
-    if(isDisplaying && !drawPause) {
-      draw(displayVideo, context, 1024, 768)
+    if(isDisplayHost && localDisplay.active === false) {
+      var displayVideo = document.getElementById('userDisplay')
+      displayVideo.remove()
+      canvas.style.backgroundColor = '#ffffff'
+      socket.emit('displayReset_server', ROOM_ID, user_id)
+      isDisplayHost = false
+      isDisplaying = false
     }
-    if(isCamWrite) {
-      extractDraw(myVideo, extractContext, 160, 120)
+    if(isDisplaying) {
+      var displayVideo = document.getElementById('userDisplay')
+      if(displayVideo !== null) {
+        displayVideo.width = canvas.width
+        displayVideo.height = canvas.height
+      }
     }
+    /*
+    if(isDisplaying && !drawPause) {  //다른 루프로 빼기
+      //draw(displayVideo, context, 1024, 768)
+    }
+    */
+    if(isCamWrite && isWriteLoop) {
+      isWriteLoop = !isWriteLoop
+      extractLoop()
+      //extractDraw(myVideo, extractContext, 160, 120)
+    }
+
     width = parseInt(window.innerWidth*rX)
     height = parseInt(window.innerHeight-200)
     if(canvas.width != width || canvas.height != height) {  //웹 페이지 크기가 변할 때
       socket.emit('reDrawing', ROOM_ID)
-      otherDraw(context, prevImage)
+      //otherDraw(context, prevImage)
       canvas.width = width
       //canvas.height = height
       canvas.height = height
-
     }
+    /*
     if(isDisplaying && !drawPause) {  //방송중이고 방송 일시정지가 아니면
       socket.emit('clearWhiteBoard', ROOM_ID)
       outerLoop()
+    }*/
+    if(mouse.click && mouse.move && mouse.pos_prev) {
+      socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID, size:[width, height]})
+      mouse.move = false
     }
-    else {
-      if(mouse.click && mouse.move && mouse.pos_prev) {
-        socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID, size:[width, height]})
-        mouse.move = false
-      }
-      mouse.pos_prev = {x: mouse.pos.x, y: mouse.pos.y}
-    setTimeout(mainLoop, 20)  //최종은 20
-    }
+    mouse.pos_prev = {x: mouse.pos.x, y: mouse.pos.y}
+    setTimeout(mainLoop, 25)  //최종은 20
   }
   socket.emit('reDrawing', ROOM_ID)
   mainLoop()
@@ -977,7 +1030,7 @@ async function 탄지로() {
 
     // ...and so on
     if(gesturechk)
-      setTimeout(() => { estimateHands(); }, 2000 / config.video.fps);
+      setTimeout(() => { estimateHands(); }, 1000 / config.video.fps);
   };
 
   estimateHands();
