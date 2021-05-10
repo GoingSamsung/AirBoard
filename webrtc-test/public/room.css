@@ -46,6 +46,7 @@ videoUserName {
 }
 
 videoBackground {
+    border-radius: 0px 0px 10px 10px;
     background-color: black;
     display: block;
 }
@@ -154,6 +155,7 @@ videoBackground {
 
 .anotherMsg > .msg {
     background-color: #f1f0f0;
+
 }
 
 .myMsg > .msg {
@@ -164,6 +166,12 @@ videoBackground {
 .anotherName {
     font-size: 12px;
     display: block;
+}
+
+.myName {
+    font-size: 12px;
+    display: block;
+    margin-right:12px;
 }
 
 #chatInput {
