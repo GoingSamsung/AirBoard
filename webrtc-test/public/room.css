@@ -56,6 +56,7 @@ videoBackground {
 }
 
 #videoarea{
+    box-shadow: 3px 3px 5px black;
     margin:5px;
     width:79.8%;
     height: 180px;
@@ -64,6 +65,7 @@ videoBackground {
 }
 
 .whiteboard{
+    box-shadow: 3px 3px 5px black;
     margin-left:5px;
     width: 79.8%;
     border-radius: 10px;
@@ -72,6 +74,7 @@ videoBackground {
 }
 
 .chatarea{
+    box-shadow: 3px 3px 5px black;
     overflow:auto;
     white-space: normal;
     margin:5px;
@@ -90,6 +93,7 @@ videoBackground {
 }
 
 #inputBox {
+    box-shadow: 3px 3px 5px black;
     position:absolute;
     bottom:0;
     right:0;
