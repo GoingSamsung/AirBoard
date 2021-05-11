@@ -46,7 +46,6 @@ videoUserName {
 }
 
 videoBackground {
-    border-radius: 0px 0px 10px 10px;
     background-color: black;
     display: block;
 }
@@ -67,13 +66,17 @@ videoBackground {
 
 .whiteboard{
     box-shadow: 0px 0px 7px black;
+    position: absolute;
+    z-index: 200;
     margin-left:5px;
     width: 79.8%;
     border-radius: 10px;
-    background-color: #ffffff;
     padding:0;
+    background-color: #ffffff;
 }
-
+#test {
+    position: relative
+}
 .chatarea{
     box-shadow: 0px 0px 7px black;
     overflow:auto;
@@ -117,8 +120,9 @@ videoBackground {
     margin-right: auto;
 }
 #userDisplay {
-    width: 0px;
-    height: 0px;
+    transform: rotateY(0deg);
+    -webkit-transform:rotateY(0deg);
+    -moz-transform:rotateY(0deg);
 }
 #info {
     color: black;
@@ -155,7 +159,6 @@ videoBackground {
 
 .anotherMsg > .msg {
     background-color: #f1f0f0;
-
 }
 
 .myMsg > .msg {
@@ -167,13 +170,11 @@ videoBackground {
     font-size: 12px;
     display: block;
 }
-
 .myName {
     font-size: 12px;
     display: block;
     margin-right:12px;
 }
-
 #chatInput {
     margin-left:5px;
     border-radius: 5px;
