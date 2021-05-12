@@ -31,7 +31,7 @@ app.set('view engine', 'ejs')
 app.use(express.static('public'))
 
 var line_track = [] //캔버스용 라인따기
-
+var isDisplayHost = []
 app.get('/', (req, res) => {
   res.render('home');
 })
@@ -97,7 +97,9 @@ io.on('connection', socket => {
     io.sockets.emit('updateMessage', data); 
   });
   socket.on('displayConnect_server', (roomId, userId) => {
-    io.sockets.in(roomId).emit('displayConnect_script', roomId, userId)
+    if(isDisplayHost[roomId] === undefined) isDisplayHost[roomId] = new Array(1)
+    isDisplayHost[roomId] = userId
+    if(userId !== null) io.sockets.in(roomId).emit('displayConnect_script', roomId, userId)
   })
   socket.on('newDisplayConnect_server', (roomId, userId, newUserId) => {
     io.sockets.in(roomId).emit('newDisplayConnect_script', roomId, userId, newUserId)
@@ -153,6 +155,7 @@ io.on('connection', socket => {
     socket.to(roomId).broadcast.emit('user-connected', userId, userName)
 
     socket.on('disconnect', () => {
+      if(isDisplayHost[roomId] === userId) socket.to(roomId).broadcast.emit('displayReset_script', roomId, userId) //화면공유 켠 사람이 종료시
       User.remove({userId : userId}).then((result)=>{
         console.log("delete user id : "+userId+"user name : "+userName);
         console.log(result);

@@ -1,7 +1,7 @@
 /*
   화면공유 필기 중에 들어오는 유저는 필기 확인 불가 버그(화면 크기 바꾸면 다시 돌아옴)
   화면공유 했을 때 안넘어가는 경우가있음.(건모-> 형택: X, 형택->건모: O)
-  화면공유한 사람이 나가면 안됨
+  화면공유한 사람이 나가면 안됨(5/12 수정 완료)
   사람 많아지면 피어 꼬이는 경우 생김(최우선)
   모션 인식 연동
 */
@@ -114,7 +114,8 @@ extractColorVideo.addEventListener('click', (event) => {
 var thr = 15;
 var extractWidth = 1024
 var extractHeight = 768
-function extractDraw( video, context, width, height ) {
+
+function extractDraw() {
   //const test = document.getElementById('output');
   if(isCamWrite) {
     if(!isCamWrite2) {
@@ -186,10 +187,14 @@ function extractDraw( video, context, width, height ) {
       let rect = cv.boundingRect(ans);
       cam_mouse.pos.x = (rect.x)
       cam_mouse.pos.y = (rect.y)
-
       if(cam_mouse.pos_prev && cam_mouse.click) {
+        /*
+        context.beginPath()
+        context.lineWidth = 2
+        context.moveTo(cam_mouse.pos.x, cam_mouse.pos.y )
+        context.lineTo(cam_mouse.pos_prev.x , cam_mouse.pos_prev.y )
+        context.stroke()*/
         socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, size:[hiddenCamVideo.width, hiddenCamVideo.height]})
-        //socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, size:[width, height]})
       }
       cam_mouse.pos_prev = {x: cam_mouse.pos.x, y: cam_mouse.pos.y}
       ans.delete()
@@ -474,6 +479,71 @@ sendButton.addEventListener('click', function(){
   chatInput.value = '';
 });
 
+var camButton = document.getElementById('cam_button')
+var displayButton = document.getElementById('display_button')
+
+camButton.addEventListener('click', () => {
+  if(isNoCamUser) {
+    alert('캠이 없습니다.')
+  }
+  else {
+    if(isCam) {
+      myVideoBackground.style.width = '160px'
+      myVideoBackground.style.height = '120px'
+      myVideo.width = 0
+      myVideo.height = 0
+      camButton.innerText = '캠 켜기'
+      /*
+      navigator.mediaDevices.getUserMedia({
+        video: false,
+        audio: true,
+      }).then(async(stream) => {
+        for(const track of stream.getTracks())
+          localStream.addTrack(track)
+        for(const track of nocamVideo.captureStream().getVideoTracks())
+          localStream.addTrack(track)
+      })*/
+
+    }
+    else {
+      myVideoBackground.style.width = '0px'
+      myVideoBackground.style.height = '0px'
+      myVideo.width = 160
+      myVideo.height = 120
+      camButton.innerText = '캠 끄기'
+      /*
+      navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      }).then(async(stream) => {
+        for(const track of stream.getTracks())
+          localStream.addTrack(track)
+      })*/
+    }
+    localStream.flag = 0
+    socket.emit('streamPlay_server', user_id,ROOM_ID,isCam)
+    isCam = !isCam    
+  }
+})
+
+displayButton.addEventListener('click', () => {
+  if(!isDisplaying) {
+    displayButton.innerText = '공유 종료' //일단 4글자로 맞췄음
+    displayPlay()
+  }
+  else if(isDisplayHost) {
+    displayButton.innerText = '화면 공유'
+    var displayVideo = document.getElementById('userDisplay')
+    displayVideo.remove()
+    canvas.style.backgroundColor = '#ffffff'
+    socket.emit('displayReset_server', ROOM_ID, user_id)
+    socket.emit('displayConnect_server', ROOM_ID, null)
+    isDisplayHost = false
+    isDisplaying = false
+  }
+  else alert('화면공유가 이미 켜져있습니다.')
+})
+
 function connectionDisplayLoop(userId)
 {
   if(isDisplayCall[userId]) {
@@ -630,6 +700,7 @@ socket.on('displayReset_script', (roomId, userId) => {
     canvas.style.backgroundColor = '#ffffff'
     displayVideo.remove()
     isDisplaying = false
+    displayCall.close()
   }
 })
 
@@ -836,6 +907,7 @@ document.addEventListener("keydown", (e) => {
   }*/
   if(e.key == 'Insert') {  //디버그용
     console.log(thr)
+    console.log(myPeer.connections)
   }
   if(e.key == 'Home' && !isNoCamUser && isCam) {
     if(!isCamWrite) {
@@ -904,6 +976,7 @@ document.addEventListener("DOMContentLoaded", ()=> {
   socket.on('drawLine', data => {
     var line = data.line
     var size = data.size
+    console.log(data)
     if(ROOM_ID == data.roomId) {
     context.beginPath()
     context.lineWidth = 2
@@ -927,7 +1000,7 @@ document.addEventListener("DOMContentLoaded", ()=> {
   }*/
 
   function extractLoop() {
-    extractDraw(hiddenVideo, extractContext, 1024, 768)
+    extractDraw()
     setTimeout(extractLoop, 25)
   }
   function mainLoop() {
@@ -938,6 +1011,7 @@ document.addEventListener("DOMContentLoaded", ()=> {
       socket.emit('displayReset_server', ROOM_ID, user_id)
       isDisplayHost = false
       isDisplaying = false
+      displayButton.innerText = '화면 공유'
     }
     if(isDisplaying) {
       var displayVideo = document.getElementById('userDisplay')
@@ -973,10 +1047,17 @@ document.addEventListener("DOMContentLoaded", ()=> {
     }*/
     if(mouse.click && mouse.move && mouse.pos_prev) {
       socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID, size:[width, height]})
+      /*
+      context.beginPath()
+      context.lineWidth = 2
+      context.moveTo(mouse.pos.x, mouse.pos.y )
+      context.lineTo(mouse.pos_prev.x , mouse.pos_prev.y )
+      context.stroke()*/
+
       mouse.move = false
     }
     mouse.pos_prev = {x: mouse.pos.x, y: mouse.pos.y}
-    setTimeout(mainLoop, 25)  //최종은 20
+    setTimeout(mainLoop, 20)  //최종은 20
   }
   socket.emit('reDrawing', ROOM_ID)
   mainLoop()
