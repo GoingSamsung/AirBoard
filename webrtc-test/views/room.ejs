@@ -17,9 +17,14 @@
     <script src="/socket.io/socket.io.js" defer></script>
 
     <script src="script.js" defer></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
+    <script src="fingerpose.js" defer></script>
     <title>AirBoard Room</title>
   </head>
   <body>
+    <div id="extractCamArea"></div>
     <div id="videoarea">
       <div id="video-grid"></div>
     </div>
@@ -38,5 +43,6 @@
   <video id="nocam__video">
     <source src="../img/nocam.mp4" type="video/mp4" />
   </video>
+  <video id="hiddenVideo"></video>
   </body>
 </html>

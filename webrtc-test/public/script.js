@@ -1,6 +1,8 @@
 /*
   화면공유 필기 중에 들어오는 유저는 필기 확인 불가 버그(화면 크기 바꾸면 다시 돌아옴)
-  화면공유 했을 때 안넘어가는 경우가있음.
+  화면공유 했을 때 안넘어가는 경우가있음.(건모-> 형택: X, 형택->건모: O)
+  화면공유한 사람이 나가면 안됨
+  사람 많아지면 피어 꼬이는 경우 생김(최우선)
   모션 인식 연동
 */
 var user_name = prompt('대화명을 입력해주세요.', '')
@@ -17,6 +19,18 @@ const myVideo = document.createElement('video')
 const myDisplay = document.createElement('video')
 const myVideoBackground = document.createElement('videoBackground')
 const extractColorVideo = document.createElement('canvas')
+const hiddenCamVideo = document.createElement('canvas')
+const extractCamArea = document.getElementById('extractCamArea')
+const hiddenVideo = document.getElementById('hiddenVideo')
+
+hiddenVideo.style.visibility = 'hidden'
+hiddenVideo.width = 1024
+hiddenVideo.height = 768
+hiddenVideo.muted = true
+hiddenCamVideo.style.visibility = 'hidden'
+extractCamArea.style.width = 0
+extractCamArea.style.height = 0
+extractCamArea.appendChild(hiddenCamVideo)
 extractColorVideo.width = 0
 extractColorVideo.height = 0
 myDisplay.id = 'display'
@@ -41,10 +55,16 @@ var offDisplay = false
 var canvas = document.getElementById(ROOM_ID)
 var context = canvas.getContext('2d')
 var extractContext = extractColorVideo.getContext('2d')
+var hiddenCamContext = hiddenCamVideo.getContext('2d')
 var prevImage
 var localStream
 var localDisplay
 var displayCall
+
+hiddenCamVideo.width = 1024
+hiddenCamVideo.height = 768
+
+var thrh = 200 //threshold
 
 var rX = 0.79872  //rX, rY는 최대한 마우스 에임에 맞는 필기를 위해 곱해주는 용도
 var rY = 0.8091
@@ -57,34 +77,128 @@ function printz(x)  //디버그용
   console.log(x)
 }
 
+var R,G,B;
+
+var isCamWrite2 = false
+
 extractColorVideo.addEventListener('click', (event) => { 
   const test = document.getElementById('output');
   //var ctx = test.getContext('2d');
-  var imageData = extractContext.getImageData(0, 0, 160, 120);
+  var imageData = extractContext.getImageData(0, 0, 1024, 768);
   imageData.getRGBA = function(i,j,k){
     return this.data[this.width*4*j+4*i+k];
   };
   var x = event.offsetX;
   var y = event.offsetY;
   alert("현재 좌표는 : "+x+" / " +y);
-  var R = imageData.getRGBA(x,y,0);
-  var G = imageData.getRGBA(x,y,1);
-  var B = imageData.getRGBA(x,y,2);
+  R = imageData.getRGBA(x,y,0);
+  G = imageData.getRGBA(x,y,1);
+  B = imageData.getRGBA(x,y,2);
   console.log("R : "+R +", G : ," + G + " B : " + B);
   //const ctest = document.getElementById('coloroutput').getContext("2d");
   //ctest.fillStyle = "rgb("+R+","+G+","+B+")";
   //ctest.fillRect(0,0,50,50);
-  fun_mask(R,G,B);
+  //fun_mask();
+  isCamWrite2 = true
+  myVideo.style.visibility = 'visible'
+  extractColorVideo.width = 0
+  extractColorVideo.height = 0
+  myVideo.width = 160
+  myVideo.height = 120
+
 });
 
+var thr = 15;
+var extractWidth = 1024
+var extractHeight = 768
 function extractDraw( video, context, width, height ) {
   //const test = document.getElementById('output');
   if(isCamWrite) {
+    if(!isCamWrite2) {
+      extractContext.save()
+      extractContext.scale(-1, 1)
+      extractContext.translate(-hiddenCamVideo.width,0)
+      extractContext.drawImage(hiddenVideo, 0, 0, hiddenCamVideo.width, hiddenCamVideo.height)
+      extractContext.restore()
+    }
+
+    hiddenCamContext.save()
+    hiddenCamContext.scale(-1, 1)
+    hiddenCamContext.translate(-hiddenCamVideo.width,0)
+    hiddenCamContext.drawImage(hiddenVideo, 0, 0, hiddenCamVideo.width, hiddenCamVideo.height)
+    hiddenCamContext.restore()
+    /*
     let src = new cv.Mat(height, width, cv.CV_8UC4);
     let cap = new cv.VideoCapture(myVideo);
     cap.read(src);
     cv.imshow(extractColorVideo,src);
-    setTimeout(extractDraw, 50, video, context, width, height)  //20프레임
+    src.delete()*/
+    //extractContext.restore()
+    //let imgData = extractContext.getImageData(0, 0, 160, 120);
+    //let src = cv.matFromImageData(imgData)      
+  if(isCamWrite2) {
+    let imgData = hiddenCamContext.getImageData(0, 0, hiddenCamVideo.width, hiddenCamVideo.height);
+    //let imgData = extractContext.getImageData(0, 0, 160, 120);
+    let src = cv.matFromImageData(imgData);
+
+    let dst = new cv.Mat();
+    let low = new cv.Mat(src.rows, src.cols, src.type(), [R-thr, G-thr, B-thr, 0]);
+    let high = new cv.Mat(src.rows, src.cols, src.type(), [R+thr, G+thr, B+thr, 255]);
+  
+    cv.inRange(src, low, high, dst);
+    //let tmpimg = new cv.Mat();
+    //cv.cvtColor(src, tmpimg, cv.COLOR_RGBA2GRAY,0);
+    
+    //cv.imshow(out,tmpimg);
+    let ret = new cv.Mat();
+    cv.bitwise_and(src, src, ret, dst);
+    
+    cv.cvtColor(ret, ret, cv.COLOR_RGBA2GRAY, 0);
+    cv.threshold(ret, ret, 0, 200, cv.THRESH_BINARY);
+    let contours = new cv.MatVector();
+    let hierarchy = new cv.Mat();
+    
+    cv.findContours(ret, contours, hierarchy, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE);
+
+    // let contourtest = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
+    // let contoursColor = new cv.Scalar(255, 255, 255);
+    // cv.drawContours(contourtest, contours, 0, contoursColor, 1, 8, hierarchy, 100);
+
+    var cntareas=[];
+    for(let i = 0;i<contours.size();i++){
+      cntareas.push(cv.contourArea(contours.get(i)));
+    }
+    //console.log(cntareas);
+    let maxx = 0;
+    let anspoint = 0;
+    for(let i = 0;i<cntareas.length;i++){
+        if(maxx < cntareas[i]){
+          //console.log(cntareas[i]);
+          maxx = cntareas[i];
+          anspoint = i;
+        }
+    }
+    let ans = contours.get(anspoint);
+    if(ans!==undefined){
+      let rect = cv.boundingRect(ans);
+      cam_mouse.pos.x = (rect.x)
+      cam_mouse.pos.y = (rect.y)
+
+      if(cam_mouse.pos_prev && cam_mouse.click) {
+        socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, size:[hiddenCamVideo.width, hiddenCamVideo.height]})
+        //socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, size:[width, height]})
+      }
+      cam_mouse.pos_prev = {x: cam_mouse.pos.x, y: cam_mouse.pos.y}
+      ans.delete()
+    }
+    src.delete()
+    dst.delete()
+    ret.delete()
+    contours.delete()
+    hierarchy.delete()
+    low.delete()
+    high.delete()
+  }
   }
 }
 function rgb2hsv (r, g, b) {
@@ -123,61 +237,6 @@ function rgb2hsv (r, g, b) {
       v: percentRoundFn(v * 100)
   };
 }
-function fun_mask(R,G,B){
-  let tmp = new cv.Mat(120, 160, cv.CV_8UC4);
-  let cap = new cv.VideoCapture(myVideo);
-  cap.read(tmp);
-  console.log(R);
-  console.log(G);
-  console.log(B);
-  //let ctx = out.getContext("2d");
-  let imgData = extractContext.getImageData(0, 0, 160, 120);
-  let src = cv.matFromImageData(imgData);
-
-  let dst = new cv.Mat();
-  var thr = 15;
-  let low = new cv.Mat(src.rows, src.cols, src.type(), [R-thr, G-thr, B-thr, 0]);
-  let high = new cv.Mat(src.rows, src.cols, src.type(), [R+thr, G+thr, B+thr, 255]);
-  
-  cv.inRange(src, low, high, dst);
-  //let tmpimg = new cv.Mat();
-  //cv.cvtColor(src, tmpimg, cv.COLOR_RGBA2GRAY,0);
-  
-  //cv.imshow(out,tmpimg);
-  let ret = new cv.Mat();
-  cv.bitwise_and(src, src, ret, dst);
-
-  
-  cv.cvtColor(ret, ret, cv.COLOR_RGBA2GRAY, 0);
-  cv.threshold(ret, ret, 0, 200, cv.THRESH_BINARY);
-  let contours = new cv.MatVector();
-  let hierarchy = new cv.Mat();
-  
-  cv.findContours(ret, contours, hierarchy, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE);
-
-  // let contourtest = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
-  // let contoursColor = new cv.Scalar(255, 255, 255);
-  // cv.drawContours(contourtest, contours, 0, contoursColor, 1, 8, hierarchy, 100);
-
-  var cntareas=[];
-  for(let i = 0;i<contours.size();i++){
-    cntareas.push(cv.contourArea(contours.get(i)));
-  }
-  console.log(cntareas);
-  let maxx = 0;
-  let anspoint = 0;
-  for(let i = 0;i<cntareas.length;i++){
-      if(maxx < cntareas[i]){
-        console.log(cntareas[i]);
-        maxx = cntareas[i];
-        anspoint = i;
-      }
-  }
-  let ans = contours.get(anspoint);
-  let rect = cv.boundingRect(ans);
-
-  console.log(rect.x, rect.y);
-}
 
 myPeer.on('open', id => { //피어 접속시 맨 처음 실행되는 피어 함수
   user_id = id
@@ -199,7 +258,12 @@ function userJoin()
   userBox.appendChild(extractColorVideo)
   userBox.appendChild(myVideo)
   addVideoStream(myVideo, localStream, userBox)
-
+  hiddenVideo.srcObject = localStream
+  hiddenVideo.addEventListener('loadedmetadata', () => {
+    hiddenVideo.play()
+    console.log("Camera is ready")
+    탄지로()
+  })
   getNewUser()
 
   socket.on('user-connected', (userId, userName) => {
@@ -477,9 +541,10 @@ function draw( video, context, width, height ) {
           canvas.width = width
           //canvas.height = height
           canvas.height = height
+
         }
       }
-      setTimeout(draw, 50, video, context, width, height)  //20프레임
+      //setTimeout(draw, 50, video, context, width, height)  //20프레임
     }
     else{
       socket.emit('displayReset_server', ROOM_ID, user_id)
@@ -501,9 +566,11 @@ function draw( video, context, width, height ) {
           otherDraw(context, prevImage)
           canvas.width = width
           canvas.height = height
+          hiddenCamVideo.width = width
+          hiddenCamVideo.height = height
         }
       }
-      setTimeout(draw, 50, video, context, width, height)  //20프레임
+      //setTimeout(draw, 50, video, context, width, height)  //20프레임
     }
     else{
       displayCall.close()
@@ -645,7 +712,6 @@ socket.on('sendStream_script', (userId_caller, userId_callee, roomId, isCam) => 
   if(user_id == userId_caller && roomId == ROOM_ID) {
     const video = document.getElementById(userId_callee + '!video')
     const videoBackground = document.getElementById(userId_callee + '!videoBackground')
-    console.log(videoBackground)
     if(!isCam) {
       videoBackground.style.width = '160px'
       videoBackground.style.height = '120px'
@@ -696,7 +762,9 @@ document.addEventListener("keydown", (e) => {
     drawPause = !drawPause
     socket.emit('drawPause_script',drawPause, ROOM_ID)
   }
-   
+  if(e.key == '`') {
+    cam_mouse.click = true
+  }
   if(e.key == '/' && !isNoCamUser) {
     //localStream.getTracks().forEach(t => localStream.removeTrack(t))
     if(isCam) {
@@ -741,45 +809,59 @@ document.addEventListener("keydown", (e) => {
     isMute = !isMute
   }*/
   if(e.key == 'Insert') {  //디버그용
-    console.log(window.innerWidth)
-    console.log(window.innerHeight)
+    console.log(thr)
   }
-  if(e.key == 'Home') {
+  if(e.key == 'Home' && !isNoCamUser && isCam) {
     if(!isCamWrite) {
       alert("캠에서 펜으로 인식할 부분을 클릭해주세요");
-      myVideo.width = 160
-      myVideo.height = 120
       myVideo.style.visibility = 'hidden'
-      extractColorVideo.width = 160
-      extractColorVideo.height = 120
+      extractColorVideo.width = 1024
+      extractColorVideo.height = 768
       isCamWrite = true
-      extractDraw(myVideo, extractContext, 160, 120)
     }
     else {
-      myVideo.style.visibility = 'visible'
+      alert("캠 필기 기능 종료")
       extractColorVideo.width = 0
-      extractColorVideo.height = 0
+      extractColorVideo.height = false
+      myVideo.style.visibility = 'visible'
       isCamWrite = false
+      isCamWrite2 = false
     }
   }
+  if(e.key === 'PageUp') thr += 1
+  if(e.key === 'PageDown') thr -= 1
 })
+
+document.addEventListener("keyup", (e) => {
+  if(e.key == '`') {  
+    cam_mouse.click = false
+  }
+})
+
+var mouse = {
+  click: false,
+  move: false,
+  pos: {x:0, y:0},
+  pos_prev: false
+}
+var cam_mouse = {
+  click: false,
+  move: false,
+  pos: {x:0, y:0},
+  pos_prev: false
+}
+var relativeX = 3
+var relativeY = 188
 
 var width = window.innerWidth
 var height = window.innerHeight
 //---캔버스 코드 시작---
 document.addEventListener("DOMContentLoaded", ()=> {
-  var mouse = {
-    click: false,
-    move: false,
-    pos: {x:0, y:0},
-    pos_prev: false
-  }
   var socket = io.connect()
-  var relativeX = 3
-  var relativeY = 188
   canvas.width = parseInt(width*rX)
   canvas.height = parseInt(height-200)
 
+  
   canvas.onmousedown = (e) => {mouse.click = true}
   canvas.onmouseup = (e) => {mouse.click = false}
 
@@ -792,7 +874,6 @@ document.addEventListener("DOMContentLoaded", ()=> {
   socket.on('drawLine', data => {
     var line = data.line
     var size = data.size
-
     if(ROOM_ID == data.roomId) {
     context.beginPath()
     context.lineWidth = 2
@@ -807,11 +888,17 @@ document.addEventListener("DOMContentLoaded", ()=> {
       offDisplay = !offDisplay  //화면공유 껐을 때 알아차리고 루프 빠져나오기 위함
       mainLoop()
     }
-    else setTimeout(outerLoop, 50)
+    else {
+      draw(displayVideo, context, 1024, 768)
+      setTimeout(outerLoop, 50)
+    }
   }
   function mainLoop() {
     if(isDisplaying && !drawPause) {
       draw(displayVideo, context, 1024, 768)
+    }
+    if(isCamWrite) {
+      extractDraw(myVideo, extractContext, 160, 120)
     }
     width = parseInt(window.innerWidth*rX)
     height = parseInt(window.innerHeight-200)
@@ -821,6 +908,7 @@ document.addEventListener("DOMContentLoaded", ()=> {
       canvas.width = width
       //canvas.height = height
       canvas.height = height
+
     }
     if(isDisplaying && !drawPause) {  //방송중이고 방송 일시정지가 아니면
       socket.emit('clearWhiteBoard', ROOM_ID)
@@ -832,10 +920,58 @@ document.addEventListener("DOMContentLoaded", ()=> {
         mouse.move = false
       }
       mouse.pos_prev = {x: mouse.pos.x, y: mouse.pos.y}
-    setTimeout(mainLoop, 25)  //최종은 25로
+    setTimeout(mainLoop, 20)  //최종은 20
     }
   }
   socket.emit('reDrawing', ROOM_ID)
   mainLoop()
   //---캔버스 코드 끝---
 })
+
+
+//=제스처
+const config = {
+  video: { width: 1024, height: 768, fps: 30 }
+};
+
+async function 탄지로() {
+
+  const video = document.getElementById('hiddenVideo')
+
+  const knownGestures = [
+    fp.Gestures.VictoryGesture,
+    fp.Gestures.ThumbsUpGesture
+  ];
+  const GE = new fp.GestureEstimator(knownGestures);
+
+  // load handpose model
+  const model = await handpose.load();
+  console.log("Handpose model loaded");
+
+  // main estimation loop
+  const estimateHands = async () => {
+
+    const predictions = await model.estimateHands(video, true);
+
+    for(let i = 0; i < predictions.length; i++) {
+
+      const est = GE.estimate(predictions[i].landmarks, 7.5);
+
+      if(est.gestures.length > 0) {
+
+        let result = est.gestures.reduce((p, c) => { 
+          return (p.confidence > c.confidence) ? p : c;
+        });
+
+        console.log(result.name);
+      }
+    }
+
+    // ...and so on
+    setTimeout(() => { estimateHands(); }, 1000 / config.video.fps);
+  };
+
+  estimateHands();
+  console.log("Starting predictions");
+}
+//-제스처
