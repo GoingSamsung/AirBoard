@@ -1,11 +1,7 @@
 /*
   화면공유 필기 중에 들어오는 유저는 필기 확인 불가 버그(화면 크기 바꾸면 다시 돌아옴)
   화면공유 했을 때 안넘어가는 경우가있음.(건모-> 형택: X, 형택->건모: O)
-<<<<<<< HEAD
-  화면공유한 사람이 나가면 안됨
-=======
   화면공유한 사람이 나가면 안됨(5/12 수정 완료)
->>>>>>> fb283d46deecda24431e30aeb4946c73af60c7f7
   사람 많아지면 피어 꼬이는 경우 생김(최우선)
   모션 인식 연동
 */
@@ -73,11 +69,6 @@ hiddenCamVideo.height = 768
 
 var thrh = 200 //threshold
 
-hiddenCamVideo.width = 1024
-hiddenCamVideo.height = 768
-
-var thrh = 200 //threshold
-
 var rX = 0.79872  //rX, rY는 최대한 마우스 에임에 맞는 필기를 위해 곱해주는 용도
 var rY = 0.8091
 
@@ -123,12 +114,8 @@ extractColorVideo.addEventListener('click', (event) => {
 var thr = 15;
 var extractWidth = 1024
 var extractHeight = 768
-<<<<<<< HEAD
-function extractDraw( video, context, width, height ) {
-=======
 
 function extractDraw() {
->>>>>>> fb283d46deecda24431e30aeb4946c73af60c7f7
   //const test = document.getElementById('output');
   if(isCamWrite) {
     if(!isCamWrite2) {
@@ -200,12 +187,6 @@ function extractDraw() {
       let rect = cv.boundingRect(ans);
       cam_mouse.pos.x = (rect.x)
       cam_mouse.pos.y = (rect.y)
-<<<<<<< HEAD
-
-      if(cam_mouse.pos_prev && cam_mouse.click) {
-        socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, size:[hiddenCamVideo.width, hiddenCamVideo.height]})
-        //socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, size:[width, height]})
-=======
       if(cam_mouse.pos_prev && cam_mouse.click) {
         /*
         context.beginPath()
@@ -214,7 +195,6 @@ function extractDraw() {
         context.lineTo(cam_mouse.pos_prev.x , cam_mouse.pos_prev.y )
         context.stroke()*/
         socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, size:[hiddenCamVideo.width, hiddenCamVideo.height]})
->>>>>>> fb283d46deecda24431e30aeb4946c73af60c7f7
       }
       cam_mouse.pos_prev = {x: cam_mouse.pos.x, y: cam_mouse.pos.y}
       ans.delete()
@@ -289,11 +269,6 @@ function userJoin()
   hiddenVideo.srcObject = localStream
   hiddenVideo.addEventListener('loadedmetadata', () => {
     hiddenVideo.play()
-<<<<<<< HEAD
-    console.log("Camera is ready")
-    탄지로()
-=======
->>>>>>> fb283d46deecda24431e30aeb4946c73af60c7f7
   })
   getNewUser()
 
@@ -887,12 +862,6 @@ document.addEventListener("keydown", (e) => {
   if(e.key == '`') {
     cam_mouse.click = true
   }
-<<<<<<< HEAD
-  if(e.key == '`') {
-    cam_mouse.click = true
-  }
-=======
->>>>>>> fb283d46deecda24431e30aeb4946c73af60c7f7
   if(e.key == '/' && !isNoCamUser) {
     //localStream.getTracks().forEach(t => localStream.removeTrack(t))
     if(isCam) {
@@ -938,10 +907,7 @@ document.addEventListener("keydown", (e) => {
   }*/
   if(e.key == 'Insert') {  //디버그용
     console.log(thr)
-<<<<<<< HEAD
-=======
     console.log(myPeer.connections)
->>>>>>> fb283d46deecda24431e30aeb4946c73af60c7f7
   }
   if(e.key == 'Home' && !isNoCamUser && isCam) {
     if(!isCamWrite) {
@@ -962,13 +928,10 @@ document.addEventListener("keydown", (e) => {
   }
   if(e.key === 'PageUp') thr += 1
   if(e.key === 'PageDown') thr -= 1
-<<<<<<< HEAD
-=======
   if(e.key === 'g'){
     탄지로()
     gesturechk = !gesturechk
   } 
->>>>>>> fb283d46deecda24431e30aeb4946c73af60c7f7
 })
 
 document.addEventListener("keyup", (e) => {
@@ -1013,10 +976,7 @@ document.addEventListener("DOMContentLoaded", ()=> {
   socket.on('drawLine', data => {
     var line = data.line
     var size = data.size
-<<<<<<< HEAD
-=======
     console.log(data)
->>>>>>> fb283d46deecda24431e30aeb4946c73af60c7f7
     if(ROOM_ID == data.roomId) {
     context.beginPath()
     context.lineWidth = 2
@@ -1034,11 +994,6 @@ document.addEventListener("DOMContentLoaded", ()=> {
       mainLoop()
     }
     else {
-<<<<<<< HEAD
-      draw(displayVideo, context, 1024, 768)
-      setTimeout(outerLoop, 50)
-    }
-=======
       //draw(displayVideo, context, 1024, 768)
       setTimeout(outerLoop, 50)
     }
@@ -1047,7 +1002,6 @@ document.addEventListener("DOMContentLoaded", ()=> {
   function extractLoop() {
     extractDraw()
     setTimeout(extractLoop, 25)
->>>>>>> fb283d46deecda24431e30aeb4946c73af60c7f7
   }
   function mainLoop() {
     if(isDisplayHost && localDisplay.active === false) {
@@ -1070,11 +1024,6 @@ document.addEventListener("DOMContentLoaded", ()=> {
     if(isDisplaying && !drawPause) {  //다른 루프로 빼기
       //draw(displayVideo, context, 1024, 768)
     }
-<<<<<<< HEAD
-    if(isCamWrite) {
-      extractDraw(myVideo, extractContext, 160, 120)
-    }
-=======
     */
     if(isCamWrite && isWriteLoop) {
       isWriteLoop = !isWriteLoop
@@ -1082,7 +1031,6 @@ document.addEventListener("DOMContentLoaded", ()=> {
       //extractDraw(myVideo, extractContext, 160, 120)
     }
 
->>>>>>> fb283d46deecda24431e30aeb4946c73af60c7f7
     width = parseInt(window.innerWidth*rX)
     height = parseInt(window.innerHeight-200)
     if(canvas.width != width || canvas.height != height) {  //웹 페이지 크기가 변할 때
@@ -1091,7 +1039,6 @@ document.addEventListener("DOMContentLoaded", ()=> {
       canvas.width = width
       //canvas.height = height
       canvas.height = height
-
     }
     /*
     if(isDisplaying && !drawPause) {  //방송중이고 방송 일시정지가 아니면
@@ -1109,19 +1056,8 @@ document.addEventListener("DOMContentLoaded", ()=> {
 
       mouse.move = false
     }
-<<<<<<< HEAD
-    else {
-      if(mouse.click && mouse.move && mouse.pos_prev) {
-        socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID, size:[width, height]})
-        mouse.move = false
-      }
-      mouse.pos_prev = {x: mouse.pos.x, y: mouse.pos.y}
-    setTimeout(mainLoop, 20)  //최종은 20
-    }
-=======
     mouse.pos_prev = {x: mouse.pos.x, y: mouse.pos.y}
     setTimeout(mainLoop, 20)  //최종은 20
->>>>>>> fb283d46deecda24431e30aeb4946c73af60c7f7
   }
   socket.emit('reDrawing', ROOM_ID)
   mainLoop()
@@ -1168,12 +1104,8 @@ async function 탄지로() {
     }
 
     // ...and so on
-<<<<<<< HEAD
-    setTimeout(() => { estimateHands(); }, 1000 / config.video.fps);
-=======
     if(gesturechk)
       setTimeout(() => { estimateHands(); }, 1000 / config.video.fps);
->>>>>>> fb283d46deecda24431e30aeb4946c73af60c7f7
   };
 
   estimateHands();
