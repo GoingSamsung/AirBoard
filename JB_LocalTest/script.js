@@ -83,24 +83,6 @@ function printz(x)  //디버그용
 
 var R,G,B;
 
-function delay(gap){ /* gap is in millisecs */ 
-  var then,now; 
-  then=new Date().getTime(); 
-  now=then; 
-  while((now-then)<gap){ 
-    now=new Date().getTime();  // 현재시간을 읽어 함수를 불러들인 시간과의 차를 이용하여 처리 
-  } 
-} 
-
-function delay(gap){ /* gap is in millisecs */ 
-  var then,now; 
-  then=new Date().getTime(); 
-  now=then; 
-  while((now-then)<gap){ 
-    now=new Date().getTime();  // 현재시간을 읽어 함수를 불러들인 시간과의 차를 이용하여 처리 
-  } 
-} 
-
 var isCamWrite2 = false
 
 extractColorVideo.addEventListener('click', (event) => { 
@@ -164,12 +146,22 @@ function extractDraw( video, context, width, height ) {
     let src = cv.matFromImageData(imgData);
 
     let dst = new cv.Mat();
-    let low = new cv.Mat(src.rows, src.cols, src.type(), [R-thr, G-thr, B-thr, 0]);
-    let high = new cv.Mat(src.rows, src.cols, src.type(), [R+thr, G+thr, B+thr, 255]);
+    cv.cvtColor(src,src,cv.COLOR_RGBA2HSV);
+    let low = new cv.Mat(src.rows, src.cols, src.type(), [R-thr,G-thr,B-thr,0]);
+    let high = new cv.Mat(src.rows, src.cols, src.type(), [R-thr,G-thr,B-thr,255]);
   
     cv.inRange(src, low, high, dst);
+        
+    // let dst2 = new cv.Mat();
+    // let M = cv.Mat.ones(160, 120, cv.CV_8U);
+    // let anchor = new cv.Point(-1, -1);
+    // cv.erode(src, dst2, M, anchor, 1, cv.BORDER_CONSTANT, cv.morphologyDefaultBorderValue());
+    // cv.dilate(src, dst2, M, anchor, 1, cv.BORDER_CONSTANT, cv.morphologyDefaultBorderValue());
+    // dst2.delete();
+    // M.delete();
+    // anchor.delete();
     //let tmpimg = new cv.Mat();
-    //cv.cvtColor(src, tmpimg, cv.COLOR_RGBA2GRAY,0);
+    //cv.cvtColor(src, tmpimg, cv.COLOR_RGBA2GRAY,0);    
     
     //cv.imshow(out,tmpimg);
     let ret = new cv.Mat();
@@ -226,42 +218,6 @@ function extractDraw( video, context, width, height ) {
     high.delete()
   }
   }
-}
-function rgb2hsv (r, g, b) {
-  let rabs, gabs, babs, rr, gg, bb, h, s, v, diff, diffc, percentRoundFn;
-  rabs = r / 255;
-  gabs = g / 255;
-  babs = b / 255;
-  v = Math.max(rabs, gabs, babs),
-  diff = v - Math.min(rabs, gabs, babs);
-  diffc = c => (v - c) / 6 / diff + 1 / 2;
-  percentRoundFn = num => Math.round(num * 100) / 100;
-  if (diff == 0) {
-      h = s = 0;
-  } else {
-      s = diff / v;
-      rr = diffc(rabs);
-      gg = diffc(gabs);
-      bb = diffc(babs);
-
-      if (rabs === v) {
-          h = bb - gg;
-      } else if (gabs === v) {
-          h = (1 / 3) + rr - bb;
-      } else if (babs === v) {
-          h = (2 / 3) + gg - rr;
-      }
-      if (h < 0) {
-          h += 1;
-      }else if (h > 1) {
-          h -= 1;
-      }
-  }
-  return {
-      h: Math.round(h * 360),
-      s: percentRoundFn(s * 100),
-      v: percentRoundFn(v * 100)
-  };
 }
 
 myPeer.on('open', id => { //피어 접속시 맨 처음 실행되는 피어 함수
