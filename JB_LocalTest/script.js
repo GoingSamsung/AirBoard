@@ -92,6 +92,15 @@ function delay(gap){ /* gap is in millisecs */
   } 
 } 
 
+function delay(gap){ /* gap is in millisecs */ 
+  var then,now; 
+  then=new Date().getTime(); 
+  now=then; 
+  while((now-then)<gap){ 
+    now=new Date().getTime();  // 현재시간을 읽어 함수를 불러들인 시간과의 차를 이용하여 처리 
+  } 
+} 
+
 var isCamWrite2 = false
 
 extractColorVideo.addEventListener('click', (event) => { 
@@ -181,29 +190,32 @@ function extractDraw( video, context, width, height ) {
     for(let i = 0;i<contours.size();i++){
       cntareas.push(cv.contourArea(contours.get(i)));
     }
-    //console.log(cntareas);
-    let maxx = 0;
-    let anspoint = 0;
+    let areathr = 1;
+    var realareas=[];
+    var sum = 0;
     for(let i = 0;i<cntareas.length;i++){
-        if(maxx < cntareas[i]){
-          //console.log(cntareas[i]);
-          maxx = cntareas[i];
-          anspoint = i;
+        if(areathr < cntareas[i]){
+          realareas.push(i);
+          sum += cntareas[i]*cntareas[i];
         }
     }
-    //console.log(cntareas);
-    let ans = contours.get(anspoint);
-    if(ans!==undefined){
-      let rect = cv.boundingRect(ans);
-      cam_mouse.pos.x = (rect.x)
-      cam_mouse.pos.y = (rect.y)
+    var xx = 0;
+    var yy = 0;
+    for(let i=0;i<realareas.length;i++){
+      var temp = contours.get(realareas[i]);
+      xx += (cv.boundingRect(temp).x)/sum*cntareas[realareas[i]]*cntareas[realareas[i]];
+      yy += (cv.boundingRect(temp).y)/sum*cntareas[realareas[i]]*cntareas[realareas[i]];
+      temp.delete();
+    }
+    if(xx !=0 && yy !=0){
+      cam_mouse.pos.x = xx
+      cam_mouse.pos.y = yy
 
       if(cam_mouse.pos_prev && cam_mouse.click) {
         socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, size:[hiddenCamVideo.width, hiddenCamVideo.height]})
         //socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, size:[width, height]})
       }
       cam_mouse.pos_prev = {x: cam_mouse.pos.x, y: cam_mouse.pos.y}
-      ans.delete()
     }
     src.delete()
     dst.delete()
@@ -905,13 +917,13 @@ document.addEventListener("DOMContentLoaded", ()=> {
     if(ROOM_ID == data.roomId) {
       if(chkfirst){
         //context.fillRect(line[1].x * (width/size[1]), line[1].y * (height/size[1]),2,2)
-        delay(200)
+        //delay(200)
         chkfirst = !chkfirst   
         console.log(chkfirst)
       }
       else{
         context.beginPath()
-        context.lineWidth = 2
+        context.lineWidth = 5
         context.moveTo(line[0].x * (width/size[0]), line[0].y * (height/size[1]))
         context.lineTo(line[1].x * (width/size[0]), line[1].y * (height/size[1]))
         context.stroke()
