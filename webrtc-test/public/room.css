@@ -82,6 +82,15 @@ videoBackground {
     padding:0;
     background-color: #ffffff;
 }
+.cursor_whiteboard{
+    position: absolute;
+    z-index: 250;
+    margin-left:5px;
+    width: 79.8%;
+    border-radius: 10px;
+    padding:0;
+    background-color: transparent;
+}
 #test {
     position: relative
 }
