@@ -62,7 +62,7 @@ var localStream
 var localDisplay
 var displayCall
 var gesturechk = false
-var chkfirst = true;
+var chkfirst = 0;
 
 
 hiddenCamVideo.width = 1024
@@ -874,7 +874,7 @@ document.addEventListener("keydown", (e) => {
 document.addEventListener("keyup", (e) => {
   if(e.key == '`') {  
     cam_mouse.click = false
-    chkfirst = true
+    chkfirst = 0
   }
 })
 
@@ -915,10 +915,10 @@ document.addEventListener("DOMContentLoaded", ()=> {
     var line = data.line
     var size = data.size
     if(ROOM_ID == data.roomId) {
-      if(chkfirst){
+      if(chkfirst<2){
         //context.fillRect(line[1].x * (width/size[1]), line[1].y * (height/size[1]),2,2)
         //delay(200)
-        chkfirst = !chkfirst   
+        chkfirst++;
         console.log(chkfirst)
       }
       else{
