@@ -2,6 +2,7 @@
   화면공유 필기 중에 들어오는 유저는 필기 확인 불가 버그(화면 크기 바꾸면 다시 돌아옴)
   화면공유 했을 때 안넘어가는 경우가있음.(건모-> 형택: X, 형택->건모: O)
   화면공유한 사람이 나가면 안됨(5/12 수정 완료)
+  화면공유 width, height 조절 방식 조정해야될듯.(5/13 수정 완료)
   사람 많아지면 피어 꼬이는 경우 생김(최우선)
   모션 인식 연동
 */
@@ -277,6 +278,7 @@ function userJoin()
     connectionLoop(userId, userName)
   })
 }
+navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.oGetUserMedia || navigator.msGetUserMedia;
 
 navigator.mediaDevices.getUserMedia({
   video: true,
@@ -363,6 +365,7 @@ function getNewUser()
 function connectionLoop(userId, userName) //피어 연결이 제대로 될 때 까지 반복
 {
   if(isCall[userId]) {
+    console.log('peer connections..')
     if(peers[userId] != undefined)
       peers[userId].close()
     peers[userId] = undefined
@@ -610,6 +613,7 @@ function displayPlay() {
     displayVideo.play();
     socket.emit('displayConnect_server', ROOM_ID, user_id)
   }).catch(error => {
+    displayButton.innerText = '화면 공유'
     console.log(error)
   });
   displayVideo.addEventListener('play', function() {
@@ -852,8 +856,10 @@ document.addEventListener("keydown", (e) => {
       socket.emit('imageSend', ROOM_ID, user_id, prevImage)
     }
   }
-  if(e.key == '*' && !isDisplaying)   //화면공유
+  if(e.key == '*' && !isDisplaying) {  //화면공유
+    displayButton.innerText = '공유 종료'
     displayPlay()
+  }
     /*
   if(e.key == '-' && isDisplaying && isDisplayHost) {//화면 정지
     drawPause = !drawPause
@@ -869,6 +875,7 @@ document.addEventListener("keydown", (e) => {
       myVideoBackground.style.height = '120px'
       myVideo.width = 0
       myVideo.height = 0
+      camButton.innerText = '캠 켜기'
       /*
       navigator.mediaDevices.getUserMedia({
         video: false,
@@ -886,6 +893,7 @@ document.addEventListener("keydown", (e) => {
       myVideoBackground.style.height = '0px'
       myVideo.width = 160
       myVideo.height = 120
+      camButton.innerText = '캠 끄기'
       /*
       navigator.mediaDevices.getUserMedia({
         video: true,
@@ -976,7 +984,6 @@ document.addEventListener("DOMContentLoaded", ()=> {
   socket.on('drawLine', data => {
     var line = data.line
     var size = data.size
-    console.log(data)
     if(ROOM_ID == data.roomId) {
     context.beginPath()
     context.lineWidth = 2
@@ -1016,9 +1023,10 @@ document.addEventListener("DOMContentLoaded", ()=> {
     if(isDisplaying) {
       var displayVideo = document.getElementById('userDisplay')
       if(displayVideo !== null) {
+        
         displayVideo.width = canvas.width
         displayVideo.height = canvas.height
-      }
+    }
     }
     /*
     if(isDisplaying && !drawPause) {  //다른 루프로 빼기
