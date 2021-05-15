@@ -17,6 +17,10 @@ const userSchema = new Schema({
     isHost: {
         type: Boolean,
         default: false,
+    },
+    isMute: {
+        type: Boolean,
+        default: false,
     }
 });
 

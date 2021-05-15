@@ -83,15 +83,6 @@ io.on('connection', socket => {
   socket.on('sendStream_server', (userId_caller, userId_callee, roomId, isCam) => {
     io.sockets.in(roomId).emit('sendStream_script', userId_caller, userId_callee, roomId, isCam)
   })
-  socket.on('imageSend', (roomId, userId, image) => { //화면 공유용
-    io.sockets.in(roomId).emit('drawImage', roomId, userId, image)
-  })
-  socket.on('drawPause_script', (tf, roomId) => {
-    io.sockets.in(roomId).emit('drawPause_server', tf, roomId)
-  })
-  socket.on('isDisplaying_script', (tf, roomId) => {
-    io.sockets.in(roomId).emit('isDisplaying_server', tf, roomId)
-  })
   socket.on('sendMessage', function(data){ 
     data.name = socket.userName;
     io.sockets.emit('updateMessage', data); 
@@ -107,20 +98,26 @@ io.on('connection', socket => {
   socket.on('streamPlay_server', (userId, roomId, isCam) => {
     io.sockets.in(roomId).emit('streamPlay_script', userId, roomId, isCam)
   })
-  socket.on('muteRequest_server', (userId, roomId, isMute) => {
+  socket.on('muteRequest_server', async(userId, roomId, isMute) => {
     io.sockets.in(roomId).emit('muteRequest_script', userId, roomId, isMute)
+    const muteUser = await User.findOne({userId: userId}, null, {})
+    muteUser.isMute = isMute
+    muteUser.save()
   })
   socket.on('displayReset_server', (roomId, userId) => {
     io.sockets.in(roomId).emit('displayReset_script', roomId, userId)
   })
-  socket.on('getName', async (userId) =>{ //유저 이름 달아줌
+  socket.on('getName', async (userId, roomId) =>{ //유저 이름 달아줌
     users = await User.findOne({userId:userId}, null, {})
     if(users.isHost)
-      socket.emit('setName', userId, users.userName+'(호스트)') //호스트 문구 처리는 나중에 더 이쁘게
+      io.sockets.in(roomId).emit('setName', userId, users.userName+'(호스트)') //호스트 문구 처리는 나중에 더 이쁘게
     else
-      socket.emit('setName', userId, users.userName)
+      io.sockets.in(roomId).emit('setName', userId, users.userName)
   })
-
+  socket.on('getMute', async(muteUserId, userId, roomId) => {
+    users = await User.findOne({userId:muteUserId}, null, {})
+    io.sockets.in(roomId).emit('setMute', users.isMute, muteUserId, userId)
+  })
   socket.on('pause_server', (userId, isPause) => {
     io.emit('pause_script', userId, isPause)
   })
@@ -148,49 +145,18 @@ io.on('connection', socket => {
       }
       console.log(user);
     });
-    if(ishost==true){
-      const room=new Room({
-        hostId:userId,
-        roomId:roomId,
-        participant:1
-      })
-
-      room.save((err, room)=>{
-        if(err){
-            return console.error(err);
-        }
-        console.log(room);
-      });
-    }
-    else{
-      const cur_part=await Room.findOne({roomId:roomId}, null, {})
-      console.log(cur_part);
-      await Room.updateOne({ roomId: roomId }, { participant: cur_part.participant+1 });
-    }
-
     socket.join(roomId)
     var msg= userName + '님이 접속하셨습니다.'  //이거 뜨는 위치 바꺼야댐
     socket.to(roomId).emit('updateMessage', { name : 'SERVER', message : msg, roomId: roomId });
 
     socket.to(roomId).broadcast.emit('user-connected', userId, userName)
 
-    socket.on('disconnect', async() => {
-      await User.remove({userId : userId}).then((result)=>{
+    socket.on('disconnect', () => {
+      if(isDisplayHost[roomId] === userId) socket.to(roomId).broadcast.emit('displayReset_script', roomId, userId) //화면공유 켠 사람이 종료시
+      User.remove({userId : userId}).then((result)=>{
         console.log("delete user id : "+userId+"user name : "+userName);
         console.log(result);
       });
-
-      const cur_part=await Room.findOne({roomId:roomId}, null, {})
-      if(cur_part.participant==1){
-        await Room.remove({roomId : roomId}).then((result)=>{
-          console.log("delete room id : "+roomId);
-          console.log(result);
-        });
-      }
-      else{
-        await Room.updateOne({ roomId: roomId }, { participant: cur_part.participant-1 });
-      }
-
       var exit_msg = userName + '님이 퇴장하셨습니다.'
       socket.to(roomId).emit('updateMessage', { name : 'SERVER', message : exit_msg, roomId: roomId });
       socket.to(roomId).broadcast.emit('user-disconnected', userId)
