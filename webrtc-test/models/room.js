@@ -2,11 +2,11 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const roomSchema = new Schema({
-    userId: {
+    hostId: {
         type: String,
         required: true,
     },
-    roomid: {
+    roomId: {
         type: String,
         required: true,
     },

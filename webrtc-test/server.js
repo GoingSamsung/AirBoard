@@ -148,18 +148,49 @@ io.on('connection', socket => {
       }
       console.log(user);
     });
+    if(ishost==true){
+      const room=new Room({
+        hostId:userId,
+        roomId:roomId,
+        participant:1
+      })
+
+      room.save((err, room)=>{
+        if(err){
+            return console.error(err);
+        }
+        console.log(room);
+      });
+    }
+    else{
+      const cur_part=await Room.findOne({roomId:roomId}, null, {})
+      console.log(cur_part);
+      await Room.updateOne({ roomId: roomId }, { participant: cur_part.participant+1 });
+    }
+
     socket.join(roomId)
     var msg= userName + '님이 접속하셨습니다.'  //이거 뜨는 위치 바꺼야댐
     socket.to(roomId).emit('updateMessage', { name : 'SERVER', message : msg, roomId: roomId });
 
     socket.to(roomId).broadcast.emit('user-connected', userId, userName)
 
-    socket.on('disconnect', () => {
-      if(isDisplayHost[roomId] === userId) socket.to(roomId).broadcast.emit('displayReset_script', roomId, userId) //화면공유 켠 사람이 종료시
-      User.remove({userId : userId}).then((result)=>{
+    socket.on('disconnect', async() => {
+      await User.remove({userId : userId}).then((result)=>{
         console.log("delete user id : "+userId+"user name : "+userName);
         console.log(result);
       });
+
+      const cur_part=await Room.findOne({roomId:roomId}, null, {})
+      if(cur_part.participant==1){
+        await Room.remove({roomId : roomId}).then((result)=>{
+          console.log("delete room id : "+roomId);
+          console.log(result);
+        });
+      }
+      else{
+        await Room.updateOne({ roomId: roomId }, { participant: cur_part.participant-1 });
+      }
+
       var exit_msg = userName + '님이 퇴장하셨습니다.'
       socket.to(roomId).emit('updateMessage', { name : 'SERVER', message : exit_msg, roomId: roomId });
       socket.to(roomId).broadcast.emit('user-disconnected', userId)
