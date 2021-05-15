@@ -91,6 +91,15 @@ videoBackground {
     padding:0;
     background-color: transparent;
 }
+.extract_cam{
+    position: absolute;
+    z-index: 300;
+    margin-left:5px;
+    width: 79.8%;
+    border-radius: 10px;
+    padding:0;
+    visibility: hidden;
+}
 #test {
     position: relative
 }
