@@ -67,7 +67,7 @@ extractColorVideo.height = 0
 myDisplay.id = 'display'
 myVideo.muted = true
 myVideo.width = 160
-myVideo.height = 120
+myVideo.height = 118
 hiddenCamVideo.width = 1024
 hiddenCamVideo.height = 768
 
@@ -137,11 +137,11 @@ function extractDraw() {
     cv.imshow(extractColorVideo,src);
     src.delete()*/
     //extractContext.restore()
-    //let imgData = extractContext.getImageData(0, 0, 160, 120);
+    //let imgData = extractContext.getImageData(0, 0, 160, 118);
     //let src = cv.matFromImageData(imgData)      
   if(isCamWrite2) {
     let imgData = hiddenCamContext.getImageData(0, 0, hiddenCamVideo.width, hiddenCamVideo.height);
-    //let imgData = extractContext.getImageData(0, 0, 160, 120);
+    //let imgData = extractContext.getImageData(0, 0, 160, 118);
     let src = cv.matFromImageData(imgData);
 
     let dst = new cv.Mat();
@@ -326,7 +326,7 @@ function getNewUser()
     const userBox = document.createElement('userBox')
     const videoBackground = document.createElement('videoBackground')
     videoBackground.style.width = '160px'
-    videoBackground.style.height = '120px'
+    videoBackground.style.height = '118px'
 
     call.on('stream', userVideoStream => {
       socket.emit('getMute', call.peer, user_id, ROOM_ID)
@@ -377,7 +377,7 @@ function connectToNewUser(userId, userName) { //기존 유저 입장에서 새�
     const call = myPeer.call(userId, localStream)
     const video = document.createElement('video')
     video.width = 160
-    video.height = 120
+    video.height = 118
     const userBox = document.createElement('userBox')
     userBox.id = userId + '!userBox'
     const videoUserName = document.createElement('videoUserName') //비디오에 이름 표시 코드
@@ -476,7 +476,7 @@ camButton.addEventListener('click', () => {
   else {
     if(isCam) {
       myVideoBackground.style.width = '160px'
-      myVideoBackground.style.height = '120px'
+      myVideoBackground.style.height = '118px'
       myVideo.width = 0
       myVideo.height = 0
       camButton.innerText = '캠 켜기'
@@ -485,7 +485,7 @@ camButton.addEventListener('click', () => {
       myVideoBackground.style.width = '0px'
       myVideoBackground.style.height = '0px'
       myVideo.width = 160
-      myVideo.height = 120
+      myVideo.height = 118
       camButton.innerText = '캠 끄기'
     }
     localStream.flag = 0
@@ -658,7 +658,7 @@ socket.on('streamPlay_script', (userId, roomId, isCam) => {
     const videoBackground = document.getElementById(userId + '!videoBackground')
    if(isCam) {
     videoBackground.style.width = '160px'
-    videoBackground.style.height = '120px'
+    videoBackground.style.height = '118px'
     video.width = 0
     video.height = 0
    }
@@ -666,7 +666,7 @@ socket.on('streamPlay_script', (userId, roomId, isCam) => {
     videoBackground.style.width = '0px'
     videoBackground.style.height = '0px'
     video.width = 160
-    video.height = 120
+    video.height = 118
    }
   }
 })
@@ -719,7 +719,7 @@ socket.on('sendStream_script', (userId_caller, userId_callee, roomId, isCam) => 
     const videoBackground = document.getElementById(userId_callee + '!videoBackground')
     if(!isCam) {
       videoBackground.style.width = '160px'
-      videoBackground.style.height = '120px'
+      videoBackground.style.height = '118px'
       video.width = 0
       video.height = 0
     }
@@ -727,7 +727,7 @@ socket.on('sendStream_script', (userId_caller, userId_callee, roomId, isCam) => 
       videoBackground.style.width = '0px'
       videoBackground.style.height = '0px'
       video.width = 160
-      video.height = 120
+      video.height = 118
     }
   }
 })
@@ -777,7 +777,7 @@ document.addEventListener("keydown", (e) => {
     //localStream.getTracks().forEach(t => localStream.removeTrack(t))
     if(isCam) {
       myVideoBackground.style.width = '160px'
-      myVideoBackground.style.height = '120px'
+      myVideoBackground.style.height = '118px'
       myVideo.width = 0
       myVideo.height = 0
       camButton.innerText = '캠 켜기'
@@ -786,7 +786,7 @@ document.addEventListener("keydown", (e) => {
       myVideoBackground.style.width = '0px'
       myVideoBackground.style.height = '0px'
       myVideo.width = 160
-      myVideo.height = 120
+      myVideo.height = 118
       camButton.innerText = '캠 끄기'
     }
     localStream.flag = 0
