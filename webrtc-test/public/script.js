@@ -208,7 +208,7 @@ function extractDraw() {
     // cv.drawContours(contourtest, contours, 0, contoursColor, 1, 8, hierarchy, 100);
 
     var cntareas=[];
-    for(let i = 0;icontours.size();i++){
+    for(let i = 0;i<contours.size();i++){
       cntareas.push(cv.contourArea(contours.get(i)));
     }
     let areathr = 1;
