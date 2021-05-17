@@ -500,10 +500,15 @@ sendButton.addEventListener('click', function(){
 });
 
 var camButton = document.getElementById('cam_button')
+var camImage = document.getElementById('webc')
 var audioButton = document.getElementById('audio_button')
+var audioImage = document.getElementById('micr')
 var displayButton = document.getElementById('display_button')
+var displayImage = document.getElementById('docu')
 var camWriteButton = document.getElementById('camWrite_button')
+var carwriteImage = document.getElementById('penc')
 var gestureButton = document.getElementById('gesture_button')
+var gestureImage = document.getElementById('hand')
 
 camButton.addEventListener('click', () => {
   if(isNoCamUser) {
@@ -516,6 +521,7 @@ camButton.addEventListener('click', () => {
       myVideo.width = 0
       myVideo.height = 0
       camButton.innerText = '캠 켜기'
+      camImage.src="img/[크기변환]noweb-cam.png"
     }
     else {
       myVideoBackground.style.width = '0px'
@@ -523,6 +529,7 @@ camButton.addEventListener('click', () => {
       myVideo.width = 160
       myVideo.height = 118
       camButton.innerText = '캠 끄기'
+      camImage.src="img/[크기변환]web-cam.png"
     }
     localStream.flag = 0
     socket.emit('streamPlay_server', user_id,ROOM_ID,isCam)
@@ -532,8 +539,14 @@ camButton.addEventListener('click', () => {
 
 audioButton.addEventListener('click', () => {
   if(!isMuteUser) {
-    if(isMute) audioButton.innerText = '마이크 끄기'
-    else audioButton.innerText = '마이크 켜기'
+    if(isMute) {
+      audioImage.src="img/[크기변환]microphone.png"
+      audioButton.innerText = '마이크 끄기'
+    }
+    else {
+      audioImage.src="img/[크기변환]nomicrophone.png"
+      audioButton.innerText = '마이크 켜기'
+    }
     isMute = !isMute
     socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
   }
@@ -542,10 +555,12 @@ audioButton.addEventListener('click', () => {
 
 displayButton.addEventListener('click', () => {
   if(!isDisplaying) {
+    displayImage.src="img/[크기변환]nodocument.png"
     displayButton.innerText = '공유 종료' //일단 4글자로 맞췄음
     displayPlay()
   }
   else if(isDisplayHost) {
+    displayImage.src="img/[크기변환]document.png"
     displayButton.innerText = '화면 공유'
     var displayVideo = document.getElementById('userDisplay')
     displayVideo.remove()
@@ -563,23 +578,21 @@ camWriteButton.addEventListener('click', () => {
   else if(!isCam) alert('캠을 켜주세요')
   else {
     if(!isCamWrite) {
-      alert("캠에서 펜으로 인식할 부분을 다른 위치로 4번 클릭해주세요");
+      alert("캠에서 펜으로 인식할 부분을 클릭해주세요");
       extractColorVideo.style.visibility = 'visible'
       extractColorVideo.width = canvas.width
       extractColorVideo.height = canvas.height
       isCamWrite = true
+      carwriteImage.src="img/[크기변환]nopencil.png"
       camWriteButton.innerText = '캠 필기 끄기'
     }
     else {
-      R = [];
-      G = [];
-      B = [];
-      console.log("clear")
       alert("캠 필기 기능 종료")
       cursor_context.clearRect(0,0, width, height)
       extractColorVideo.style.visibility = 'hidden'
       isCamWrite = false
       isCamWrite2 = false
+      carwriteImage.src="img/[크기변환]pencil.png"
       camWriteButton.innerText = '캠 필기 켜기'
     }
   }
@@ -587,10 +600,17 @@ camWriteButton.addEventListener('click', () => {
 
 gestureButton.addEventListener('click', () => {
   탄지로()
-  if(gesturechk) gestureButton.innerText = '제스처 켜기'
-  else gestureButton.innerText = '제스처 끄기'
+  if(gesturechk) {
+    gestureImage.src="img/[크기변환]hand.png"
+    gestureButton.innerText = '제스처 켜기'
+  }
+  else {
+    gestureImage.src="img/[크기변환]nohand.png"
+    gestureButton.innerText = '제스처 끄기'
+  }
   gesturechk = !gesturechk
 })
+
 
 function connectionDisplayLoop(userId)
 {
