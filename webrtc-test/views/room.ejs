@@ -17,14 +17,45 @@
     <script src="/socket.io/socket.io.js" defer></script>
 
     <script src="script.js" defer></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
+    <script src="fingerpose.js" defer></script>
     <title>AirBoard Room</title>
   </head>
   <body>
+    <div id="extractCamArea"></div>
     <div id="videoarea">
       <div id="video-grid"></div>
     </div>
-    <div id="displayBox"></div>
-    <canvas class='whiteboard' id='<%= roomId %>'></canvas>
+    <div id=buttonArea>
+      <div>
+        <img src="img/[크기변환]web-cam.png" id='webc'alt="My Image">
+        <button class="btn" id ='cam_button'>캠 끄기</button>
+      </div>
+      <div>
+        <img src="img/[크기변환]microphone.png" id='micr'alt="My Image">
+        <button class="btn" id ='audio_button'>마이크 끄기</button>
+      </div>
+      <div>
+        <img src="img/[크기변환]document.png" id='docu'alt="My Image">
+        <button class="btn" id ='display_button'>화면 공유</button>
+      </div>
+      <div>
+        <img src="img/[크기변환]pencil.png" id='penc'alt="My Image">
+        <button class="btn" id ='camWrite_button'>캠 필기 켜기</button>
+      </div>
+      <div>
+        <img src="img/[크기변환]hand.png" id='hand'alt="My Image">
+        <button class="btn" id ='gesture_button'>제스처 키기</button>
+      </div>
+    </div>
+    <div id= "test">
+      <canvas class='whiteboard' id='<%= roomId %>'></canvas>
+      <canvas class='cursor_whiteboard' id='cursorWhiteboard'></canvas>
+      <canvas class='extract_cam' id='extractCam'></canvas>
+      <div id="whiteboard_buttonArea"></div>
+    </div>
     <div class="chatarea">
       <div id="info"></div>
       <div id="chatWindow"></div>
@@ -38,5 +69,6 @@
   <video id="nocam__video">
     <source src="../img/nocam.mp4" type="video/mp4" />
   </video>
+  <video id="hiddenVideo"></video>
   </body>
 </html>

@@ -128,7 +128,7 @@ extractColorVideo.addEventListener('click', (event) => {
   var consoleColorPaletteCSS = "background: #" + (tmpR.toString(16).length == 2 ? tmpR.toString(16) : ('0' + tmpR.toString(16))) + (tmpG.toString(16).length == 2 ? tmpG.toString(16) : ('0' + tmpG.toString(16))) + (tmpB.toString(16).length == 2 ? tmpB.toString(16) : ('0' + tmpB.toString(16))) + ';';
   console.log("Color:" + "%c  ", consoleColorPaletteCSS);
   // console.log now displays actual color palette instead of RGB values
-
+  
   R.push(tmpR);
   G.push(tmpG);
   B.push(tmpB);
@@ -208,7 +208,7 @@ function extractDraw() {
     // cv.drawContours(contourtest, contours, 0, contoursColor, 1, 8, hierarchy, 100);
 
     var cntareas=[];
-    for(let i = 0;i<contours.size();i++){
+    for(let i = 0;icontours.size();i++){
       cntareas.push(cv.contourArea(contours.get(i)));
     }
     let areathr = 1;
