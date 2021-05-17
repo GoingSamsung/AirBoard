@@ -1,7 +1,8 @@
 /*
   화면공유 필기 중에 들어오는 유저는 필기 확인 불가 버그(화면 크기 바꾸면 다시 돌아옴)
   화면공유 했을 때 안넘어가는 경우가있음.(건모-> 형택: X, 형택->건모: O)
-  화면공유한 사람이 나가면 안됨
+  화면공유한 사람이 나가면 안됨(5/12 수정 완료)
+  화면공유 width, height 조절 방식 조정해야될듯.(5/13 수정 완료)
   사람 많아지면 피어 꼬이는 경우 생김(최우선)
   모션 인식 연동
 */
@@ -18,10 +19,40 @@ const nocamVideo = document.getElementById('nocam__video')
 const myVideo = document.createElement('video')
 const myDisplay = document.createElement('video')
 const myVideoBackground = document.createElement('videoBackground')
-const extractColorVideo = document.createElement('canvas')
+const extractColorVideo = document.getElementById('extractCam')
 const hiddenCamVideo = document.createElement('canvas')
 const extractCamArea = document.getElementById('extractCamArea')
 const hiddenVideo = document.getElementById('hiddenVideo')
+
+var canvas = document.getElementById(ROOM_ID)
+var cursor_canvas = document.getElementById('cursorWhiteboard')
+
+var context = canvas.getContext('2d')
+var cursor_context = cursor_canvas.getContext('2d')
+var extractContext = extractColorVideo.getContext('2d')
+var hiddenCamContext = hiddenCamVideo.getContext('2d')
+
+var user_id
+var isCamWrite = false
+var isDisplayHost = false
+var isPause = false
+var isDisplaying = false
+var isCam = true
+var isMute = false
+var isNoCamUser = false
+var isMuteUser = false
+var isFrist = true
+var isCall = {} //콜이 소실되는 경우 판단용
+var isDisplayCall = {}
+var isWriteLoop = true
+var offDisplay = false
+
+var prevImage
+var localStream
+var localDisplay
+var displayCall
+var gesturechk = false
+var chkfirst = 0
 
 hiddenVideo.style.visibility = 'hidden'
 hiddenVideo.width = 1024
@@ -37,38 +68,10 @@ myDisplay.id = 'display'
 myVideo.muted = true
 myVideo.width = 160
 myVideo.height = 120
-
-var user_id
-var isCamWrite = false
-var isDisplayHost = false
-var isPause = false
-var isDisplaying = false
-var drawPause = false
-var isCam = true
-var isMute = true
-var isNoCamUser = false
-var isMuteUser = false
-var isFrist = true
-var isCall = {} //콜이 소실되는 경우 판단용
-var isDisplayCall = {}
-var isWriteLoop = true
-var offDisplay = false
-var canvas = document.getElementById(ROOM_ID)
-var context = canvas.getContext('2d')
-var extractContext = extractColorVideo.getContext('2d')
-var hiddenCamContext = hiddenCamVideo.getContext('2d')
-var prevImage
-var localStream
-var localDisplay
-var displayCall
-var gesturechk = false
-var chkfirst = 0;
-
-
 hiddenCamVideo.width = 1024
 hiddenCamVideo.height = 768
 
-var thrh = 200 //threshold
+navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.oGetUserMedia || navigator.msGetUserMedia;
 
 var rX = 0.79872  //rX, rY는 최대한 마우스 에임에 맞는 필기를 위해 곱해주는 용도
 var rY = 0.8091
@@ -81,7 +84,26 @@ function printz(x)  //디버그용
   console.log(x)
 }
 
-var R,G,B;
+/*
+if (window.Worker) {
+  // Worker 쓰레드를 생성(js파일를 로드)
+  let worker = new Worker("worker.js");
+  // 에러가 발생할 경우 발생!
+  worker.onerror = (e)=>{
+  console.log("error " + e.message);
+  }
+  // worker.js에서 postMessage의 값을 받는다.
+  worker.onmessage = (e)=>{
+  // 콘솔 출력
+  console.log(e.data);
+  }
+  worker.postMessage("hello")
+}
+*/
+
+var R =[];
+var G =[];
+var B =[];
 
 var isCamWrite2 = false
 
@@ -95,34 +117,33 @@ extractColorVideo.addEventListener('click', (event) => {
   var x = event.offsetX;
   var y = event.offsetY;
   alert("현재 좌표는 : "+x+" / " +y);
-  R = imageData.getRGBA(x,y,0);
-  G = imageData.getRGBA(x,y,1);
-  B = imageData.getRGBA(x,y,2);
-  console.log("R : "+R +", G : ," + G + " B : " + B);
+  tmpR = imageData.getRGBA(x,y,0);
+  tmpG = imageData.getRGBA(x,y,1);
+  tmpB = imageData.getRGBA(x,y,2);
+  console.log("R : "+tmpR +", G : ," + tmpG + " B : " + tmpB);
+  R.push(tmpR);
+  G.push(tmpG);
+  B.push(tmpB);
   //const ctest = document.getElementById('coloroutput').getContext("2d");
   //ctest.fillStyle = "rgb("+R+","+G+","+B+")";
   //ctest.fillRect(0,0,50,50);
   //fun_mask();
   isCamWrite2 = true
-  myVideo.style.visibility = 'visible'
-  extractColorVideo.width = 0
-  extractColorVideo.height = 0
-  myVideo.width = 160
-  myVideo.height = 120
-
+  extractColorVideo.style.visibility = 'hidden'
 });
 
-var thr = 15;
+var thr = 5;
 var extractWidth = 1024
 var extractHeight = 768
-function extractDraw( video, context, width, height ) {
+
+function extractDraw() {
   //const test = document.getElementById('output');
   if(isCamWrite) {
     if(!isCamWrite2) {
       extractContext.save()
       extractContext.scale(-1, 1)
-      extractContext.translate(-hiddenCamVideo.width,0)
-      extractContext.drawImage(hiddenVideo, 0, 0, hiddenCamVideo.width, hiddenCamVideo.height)
+      extractContext.translate(-extractColorVideo.width,0)
+      extractContext.drawImage(hiddenVideo, 0, 0, extractColorVideo.width, extractColorVideo.height)
       extractContext.restore()
     }
 
@@ -146,22 +167,26 @@ function extractDraw( video, context, width, height ) {
     let src = cv.matFromImageData(imgData);
 
     let dst = new cv.Mat();
-    cv.cvtColor(src,src,cv.COLOR_RGBA2HSV);
-    let low = new cv.Mat(src.rows, src.cols, src.type(), [R-thr,G-thr,B-thr,0]);
-    let high = new cv.Mat(src.rows, src.cols, src.type(), [R-thr,G-thr,B-thr,255]);
+    //
+    let maxR = Math.max.apply(null,R)+thr;
+    let minR = Math.min.apply(null,R)-thr;
+    let maxG = Math.max.apply(null,G)+thr;
+    let minG = Math.min.apply(null,G)-thr;
+    let maxB = Math.max.apply(null,B)+thr;
+    let minB = Math.min.apply(null,B)-thr;
+
+    let low = new cv.Mat(src.rows, src.cols, src.type(), [minR, minG,minB, 0]);
+    let high = new cv.Mat(src.rows, src.cols, src.type(), [maxR, maxG, maxB, 255]);
+
+    console.log(minR);
+    console.log(maxR);
+  
+    //let low = new cv.Mat(src.rows, src.cols, src.type(), [R-thr, G-thr, B-thr, 0]);
+    //let high = new cv.Mat(src.rows, src.cols, src.type(), [R+thr, G+thr, B+thr, 255]);
   
     cv.inRange(src, low, high, dst);
-        
-    // let dst2 = new cv.Mat();
-    // let M = cv.Mat.ones(160, 120, cv.CV_8U);
-    // let anchor = new cv.Point(-1, -1);
-    // cv.erode(src, dst2, M, anchor, 1, cv.BORDER_CONSTANT, cv.morphologyDefaultBorderValue());
-    // cv.dilate(src, dst2, M, anchor, 1, cv.BORDER_CONSTANT, cv.morphologyDefaultBorderValue());
-    // dst2.delete();
-    // M.delete();
-    // anchor.delete();
     //let tmpimg = new cv.Mat();
-    //cv.cvtColor(src, tmpimg, cv.COLOR_RGBA2GRAY,0);    
+    //cv.cvtColor(src, tmpimg, cv.COLOR_RGBA2GRAY,0);
     
     //cv.imshow(out,tmpimg);
     let ret = new cv.Mat();
@@ -199,13 +224,15 @@ function extractDraw( video, context, width, height ) {
       yy += (cv.boundingRect(temp).y)/sum*cntareas[realareas[i]]*cntareas[realareas[i]];
       temp.delete();
     }
+    cursor_context.clearRect(0,0, width, height)
     if(xx !=0 && yy !=0){
       cam_mouse.pos.x = xx
       cam_mouse.pos.y = yy
-
+      cursor_context.fillStyle = "red"
+      
+      cursor_context.fillRect(xx * (width/hiddenCamVideo.width), yy *  (height/hiddenCamVideo.height), 3, 3)
       if(cam_mouse.pos_prev && cam_mouse.click) {
         socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, size:[hiddenCamVideo.width, hiddenCamVideo.height]})
-        //socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, size:[width, height]})
       }
       cam_mouse.pos_prev = {x: cam_mouse.pos.x, y: cam_mouse.pos.y}
     }
@@ -218,6 +245,42 @@ function extractDraw( video, context, width, height ) {
     high.delete()
   }
   }
+}
+function rgb2hsv (r, g, b) {
+  let rabs, gabs, babs, rr, gg, bb, h, s, v, diff, diffc, percentRoundFn;
+  rabs = r / 255;
+  gabs = g / 255;
+  babs = b / 255;
+  v = Math.max(rabs, gabs, babs),
+  diff = v - Math.min(rabs, gabs, babs);
+  diffc = c => (v - c) / 6 / diff + 1 / 2;
+  percentRoundFn = num => Math.round(num * 100) / 100;
+  if (diff == 0) {
+      h = s = 0;
+  } else {
+      s = diff / v;
+      rr = diffc(rabs);
+      gg = diffc(gabs);
+      bb = diffc(babs);
+
+      if (rabs === v) {
+          h = bb - gg;
+      } else if (gabs === v) {
+          h = (1 / 3) + rr - bb;
+      } else if (babs === v) {
+          h = (2 / 3) + gg - rr;
+      }
+      if (h < 0) {
+          h += 1;
+      }else if (h > 1) {
+          h -= 1;
+      }
+  }
+  return {
+      h: Math.round(h * 360),
+      s: percentRoundFn(s * 100),
+      v: percentRoundFn(v * 100)
+  };
 }
 
 myPeer.on('open', id => { //피어 접속시 맨 처음 실행되는 피어 함수
@@ -237,7 +300,7 @@ function userJoin()
   bold.appendChild(videoUserNameText)
   userBox.appendChild(videoUserName)
   userBox.appendChild(myVideoBackground)
-  userBox.appendChild(extractColorVideo)
+  //userBox.appendChild(extractColorVideo)
   userBox.appendChild(myVideo)
   addVideoStream(myVideo, localStream, userBox)
   hiddenVideo.srcObject = localStream
@@ -302,41 +365,31 @@ function getNewUser()
     videoBackground.style.height = '120px'
 
     call.on('stream', userVideoStream => {
+      socket.emit('getMute', call.peer, user_id, ROOM_ID)
       if(peers[call.peer] == undefined) {
         bold.id = call.peer
         video.id = call.peer+'!video'  // bold랑 차이두기위함
         userBox.id = call.peer + '!userBox'
         videoBackground.id = call.peer + '!videoBackground'
         addVideoStream(video, userVideoStream, userBox)  //원래 있던 유저들 보여주기
-        socket.emit('getName', call.peer)
+        socket.emit('getName', call.peer, ROOM_ID)
         videoUserName.appendChild(bold)
         bold.appendChild(videoUserNameText)
         userBox.appendChild(videoUserName)
         userBox.appendChild(videoBackground)
         userBox.appendChild(video)
       }
-      else if(localStream.flag != 2){
-        const nV = document.getElementById(call.peer+'!video')
-        nV.pause()
-        nV.srcObject = userVideoStream
-        nV.addEventListener('loadedmetadata', () => {
-          nV.play()
-        })
-      }
       peers[call.peer] = call
-      if(localStream.flag != 2)
+      if(localStream.flag != 2) //?
         socket.emit('getStream_server', user_id, call.peer, ROOM_ID)
     })
-    /*
-    call.on('close', () => {
-      userBox.remove()
-    })*/
   })
 }
 
 function connectionLoop(userId, userName) //피어 연결이 제대로 될 때 까지 반복
 {
   if(isCall[userId]) {
+    console.log('peer connections..')
     if(peers[userId] != undefined)
       peers[userId].close()
     peers[userId] = undefined
@@ -349,7 +402,6 @@ function connectionLoop(userId, userName) //피어 연결이 제대로 될 때 �
 
 function firstConnectSocketCall(userId)
 {
-  socket.emit('isDisplaying_script', isDisplaying, ROOM_ID)
   socket.emit('newDisplayConnect_server', ROOM_ID, user_id, userId)
 }
 
@@ -357,9 +409,6 @@ function connectToNewUser(userId, userName) { //기존 유저 입장에서 새�
   localStream.flag = 2
   if(isDisplayHost) firstConnectSocketCall(userId) //화면공유중일때 새로 들어온 유저가 화면공유 보도록
 
-  //if(!isCam)  캠 끈거 들어오자마자 받아들이는 건데 일단 보류
-    //socket.emit('streamPlay_server', user_id,ROOM_ID)
-  //socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
   if(peers[userId] == undefined) {
     const call = myPeer.call(userId, localStream)
     const video = document.createElement('video')
@@ -384,10 +433,7 @@ function connectToNewUser(userId, userName) { //기존 유저 입장에서 새�
       userBox.appendChild(video)
       addVideoStream(video, userVideoStream, userBox)
     })
-    /*
-    call.on('close', () => {
-      userBox.remove()
-    })*/
+
     peers[userId] = call
   }
 }
@@ -402,19 +448,33 @@ function addVideoStream(video, stream, userBox) {
 
 function drawChatMessage(data){
   var wrap = document.createElement('div'); 
-  wrap.className="anotherMsg"
+  if(data.user_id==user_id){
+    wrap.className="myMsg"
+  }
+  else{
+    wrap.className="anotherMsg"
+  }
   var message = document.createElement('span');
   message.className="msg";
-  var name = document.createElement('span'); 
-  name.className="anotherName";
 
-  name.innerText = data.name + ': '; 
-  message.innerText = data.message; 
+  
+  var name = document.createElement('span'); 
+
+  if(data.user_id!=user_id){
+    name.className="anotherName";
+    name.innerText = data.name+":"; 
+  }
+  else{
+    name.className="myName";
+    name.innerText = data.name+"(나):"; 
+  }
+
   name.classList.add('output__user__name'); 
+  wrap.appendChild(name); 
+  message.innerText = data.message; 
   message.classList.add('output__user__message'); 
   wrap.classList.add('output__user'); 
   wrap.dataset.id = socket.id; 
-  wrap.appendChild(name); 
   wrap.appendChild(message); 
   return wrap; 
 }
@@ -425,7 +485,7 @@ document.querySelector('#chatInput').addEventListener('keyup', (e)=>{
   if(!message){
     return false; 
   }
-  socket.emit('sendMessage', { message, ROOM_ID });
+  socket.emit('sendMessage', { message, ROOM_ID, user_id });
   chatInput.value = '';
   }  
 });
@@ -435,9 +495,98 @@ sendButton.addEventListener('click', function(){
   if(!message){
     return false; 
   }
-  socket.emit('sendMessage', { message, ROOM_ID });
+  socket.emit('sendMessage', { message, ROOM_ID, user_id });
   chatInput.value = '';
 });
+
+var camButton = document.getElementById('cam_button')
+var audioButton = document.getElementById('audio_button')
+var displayButton = document.getElementById('display_button')
+var camWriteButton = document.getElementById('camWrite_button')
+var gestureButton = document.getElementById('gesture_button')
+
+camButton.addEventListener('click', () => {
+  if(isNoCamUser) {
+    alert('캠이 없습니다.')
+  }
+  else {
+    if(isCam) {
+      myVideoBackground.style.width = '160px'
+      myVideoBackground.style.height = '120px'
+      myVideo.width = 0
+      myVideo.height = 0
+      camButton.innerText = '캠 켜기'
+    }
+    else {
+      myVideoBackground.style.width = '0px'
+      myVideoBackground.style.height = '0px'
+      myVideo.width = 160
+      myVideo.height = 120
+      camButton.innerText = '캠 끄기'
+    }
+    localStream.flag = 0
+    socket.emit('streamPlay_server', user_id,ROOM_ID,isCam)
+    isCam = !isCam    
+  }
+})
+
+audioButton.addEventListener('click', () => {
+  if(!isMuteUser) {
+    if(isMute) audioButton.innerText = '마이크 끄기'
+    else audioButton.innerText = '마이크 켜기'
+    isMute = !isMute
+    socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
+  }
+  else alert('마이크가 없습니다.')
+})
+
+displayButton.addEventListener('click', () => {
+  if(!isDisplaying) {
+    displayButton.innerText = '공유 종료' //일단 4글자로 맞췄음
+    displayPlay()
+  }
+  else if(isDisplayHost) {
+    displayButton.innerText = '화면 공유'
+    var displayVideo = document.getElementById('userDisplay')
+    displayVideo.remove()
+    canvas.style.backgroundColor = '#ffffff'
+    socket.emit('displayReset_server', ROOM_ID, user_id)
+    socket.emit('displayConnect_server', ROOM_ID, null)
+    isDisplayHost = false
+    isDisplaying = false
+  }
+  else alert('화면공유가 이미 켜져있습니다.')
+})
+
+camWriteButton.addEventListener('click', () => {
+  if(isNoCamUser) alert('캠이 없습니다.')
+  else if(!isCam) alert('캠을 켜주세요')
+  else {
+    if(!isCamWrite) {
+      alert("캠에서 펜으로 인식할 부분을 클릭해주세요");
+      extractColorVideo.style.visibility = 'visible'
+      extractColorVideo.width = canvas.width
+      extractColorVideo.height = canvas.height
+      isCamWrite = true
+      camWriteButton.innerText = '캠 필기 끄기'
+    }
+    else {
+      alert("캠 필기 기능 종료")
+      cursor_context.clearRect(0,0, width, height)
+      extractColorVideo.style.visibility = 'hidden'
+      isCamWrite = false
+      isCamWrite2 = false
+      camWriteButton.innerText = '캠 필기 켜기'
+    }
+  }
+})
+
+gestureButton.addEventListener('click', () => {
+  탄지로()
+  if(gesturechk) gestureButton.innerText = '제스처 켜기'
+  else gestureButton.innerText = '제스처 끄기'
+  gesturechk = !gesturechk
+})
 
 function connectionDisplayLoop(userId)
 {
@@ -455,9 +604,7 @@ function connectionDisplayLoop(userId)
 //---화면 공유---
 function connectToDisplay(userId) {
     var displayVideo = document.createElement('video')
-    var displayBox = document.getElementById('displayBox')
     var test = document.getElementById('test')
-    //var video = document.createElement('video')
     displayVideo.id = 'userDisplay'
     displayVideo.width = canvas.width
     displayVideo.height = canvas.height
@@ -485,9 +632,7 @@ function connectToDisplay(userId) {
 
 function displayPlay() {
   var displayVideo = document.createElement('video')
-  //var displayBox = document.getElementById('displayBox')
   var test = document.getElementById('test')
-  //var video = document.createElement('video')
   displayVideo.id = 'userDisplay'
   displayVideo.width = canvas.width
   displayVideo.height = canvas.height
@@ -498,84 +643,20 @@ function displayPlay() {
   }).then(stream => {
     localStream.flag = 2
     localDisplay = stream
-    //isDisplaying= !isDisplaying
     isDisplayHost= true
-    //socket.emit('isDisplaying_script', isDisplaying, ROOM_ID)
     displayVideo.srcObject = stream
     displayVideo.play();
     socket.emit('displayConnect_server', ROOM_ID, user_id)
   }).catch(error => {
+    displayButton.innerText = '화면 공유'
     console.log(error)
   });
   displayVideo.addEventListener('play', function() {
     canvas.style.backgroundColor = 'transparent'
     isDisplaying = true
-    //draw( this, context, 1024, 768 );
   }, false )
 }
-/*
-function draw( video, context, width, height ) {
-  if(isDisplayHost) {
-    if(localDisplay.active == true && isDisplaying) {
-      width = parseInt(window.innerWidth*rX)
-      height = parseInt(window.innerHeight-200)
-      if(!drawPause) {
-        context.drawImage( video, 0, 0, width, height );
-        prevImage = canvas.toDataURL()
-        if(canvas.width != width || canvas.height != height) {
-          otherDraw(context, prevImage)
-          canvas.width = width
-          //canvas.height = height
-          canvas.height = height
 
-        }
-      }
-      //setTimeout(draw, 50, video, context, width, height)  //20프레임
-    }
-    else{
-      socket.emit('displayReset_server', ROOM_ID, user_id)
-      isDisplayHost = false
-      isDisplaying = false
-      drawPause = false
-      offDisplay = true
-      prevImage = null
-    }
-  }
-  else {
-    if(isDisplaying) {
-      width = parseInt(window.innerWidth*rX)
-      height = parseInt(window.innerHeight-200)
-      if(!drawPause) {
-        context.drawImage( video, 0, 0, width, height );
-        prevImage = canvas.toDataURL()
-        if(canvas.width != width || canvas.height != height) {
-          otherDraw(context, prevImage)
-          canvas.width = width
-          canvas.height = height
-          hiddenCamVideo.width = width
-          hiddenCamVideo.height = height
-        }
-      }
-      //setTimeout(draw, 50, video, context, width, height)  //20프레임
-    }
-    else{
-      displayCall.close()
-      isDisplaying = false
-      drawPause = false
-      offDisplay = true
-      prevImage = null
-    }
-  }
-}
-
-function otherDraw(context, image) {
-  var img = new Image();
-  img.addEventListener('load', ()=> {
-    context.drawImage(img, 0,0, width, height)
-  })
-  img.src = image
-}
-*/
 socket.on('displayConnect_script', (roomId, userId) => {
   if(roomId == ROOM_ID && userId != user_id) {
     isDisplayCall[userId] = true
@@ -595,42 +676,22 @@ socket.on('displayReset_script', (roomId, userId) => {
     canvas.style.backgroundColor = '#ffffff'
     displayVideo.remove()
     isDisplaying = false
-  }
-})
-
-socket.on('drawImage', (roomId,userId,image)=>{
-  if(userId != user_id && roomId == ROOM_ID) {
-    prevImage = image
-    otherDraw(context, image)
+    displayCall.close()
   }
 })
 
 socket.on('muteRequest_script', (userId, roomId, is_mute) => {
   if(roomId == ROOM_ID && userId != user_id) {
     const video = document.getElementById(userId + '!video')
-    video.muted = !is_mute
+    video.muted = is_mute
+    console.log(video.muted)
   }
 })
 
 socket.on('streamPlay_script', (userId, roomId, isCam) => {
   if(roomId == ROOM_ID && userId != user_id) {
-    /*
-    console.log(myPeer._connections)
-    peers[userId].close()
-    const call = myPeer.call(userId, localStream)
-    peers[userId] = call*/
     const video = document.getElementById(userId + '!video')
     const videoBackground = document.getElementById(userId + '!videoBackground')
-    //videoBackground.backgroundColor='black'
-    //videoBackground.display='block'
-    /*
-    call.on('stream', userVideoStream => {
-      video.srcObject = userVideoStream
-      video.addEventListener('loadedmetadata', () => {
-        video.play()
-      })
-    })
-    */
    if(isCam) {
     videoBackground.style.width = '160px'
     videoBackground.style.height = '120px'
@@ -644,16 +705,6 @@ socket.on('streamPlay_script', (userId, roomId, isCam) => {
     video.height = 120
    }
   }
-})
-
-socket.on('drawPause_server', (tf,roomId) =>{
-  if(ROOM_ID==roomId)
-    drawPause = tf
-})
-
-socket.on('isDisplaying_server', (tf,roomId) =>{
-  if(ROOM_ID==roomId)
-    isDisplaying = tf
 })
 
 socket.on('pause_script', (userId, isPause) => {
@@ -726,8 +777,17 @@ socket.on('user-disconnected', userId => {
 })
 
 socket.on('setName', (userId, userName) => {
-  const bold = document.getElementById(userId)
-  bold.innerHTML = userName
+  if(user_id !== userId) {
+    const bold = document.getElementById(userId)
+    bold.innerHTML = userName
+  }
+})
+
+socket.on('setMute', (isMute, muteUserId, userId) => {
+  if(user_id === userId) {
+    const video = document.getElementById(muteUserId + '!video')
+    video.muted = isMute
+  }
 })
 
 document.addEventListener("keydown", (e) => {
@@ -741,18 +801,11 @@ document.addEventListener("keydown", (e) => {
   }
   if(e.key == 'Escape')  {//지우개
     socket.emit('clearWhiteBoard', ROOM_ID)
-    if(isDisplaying && drawPause) {
-      otherDraw(canvas.getContext('2d'), prevImage)
-      socket.emit('imageSend', ROOM_ID, user_id, prevImage)
-    }
   }
-  if(e.key == '*' && !isDisplaying)   //화면공유
+  if(e.key == '*' && !isDisplaying) {  //화면공유
+    displayButton.innerText = '공유 종료'
     displayPlay()
-    /*
-  if(e.key == '-' && isDisplaying && isDisplayHost) {//화면 정지
-    drawPause = !drawPause
-    socket.emit('drawPause_script',drawPause, ROOM_ID)
-  }*/
+  }
   if(e.key == '`') {
     cam_mouse.click = true
   }
@@ -763,66 +816,68 @@ document.addEventListener("keydown", (e) => {
       myVideoBackground.style.height = '120px'
       myVideo.width = 0
       myVideo.height = 0
-      /*
-      navigator.mediaDevices.getUserMedia({
-        video: false,
-        audio: true,
-      }).then(async(stream) => {
-        for(const track of stream.getTracks())
-          localStream.addTrack(track)
-        for(const track of nocamVideo.captureStream().getVideoTracks())
-          localStream.addTrack(track)
-      })*/
-
+      camButton.innerText = '캠 켜기'
     }
     else {
       myVideoBackground.style.width = '0px'
       myVideoBackground.style.height = '0px'
       myVideo.width = 160
       myVideo.height = 120
-      /*
-      navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      }).then(async(stream) => {
-        for(const track of stream.getTracks())
-          localStream.addTrack(track)
-      })*/
+      camButton.innerText = '캠 끄기'
     }
     localStream.flag = 0
     socket.emit('streamPlay_server', user_id,ROOM_ID,isCam)
     isCam = !isCam    
   }
-  /*
-  if(e.key == '+' && !isMuteUser) { 음소거 일단 보류
-    if(isMute)
-      socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
+  
+  if(e.key == '+' && !isMuteUser) {
+    if(isMute) audioButton.innerText = '마이크 끄기'
+    else audioButton.innerText = '마이크 켜기'
     isMute = !isMute
-  }*/
+    socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
+  }
   if(e.key == 'Insert') {  //디버그용
     console.log(thr)
+    console.log(myPeer.connections)
   }
   if(e.key == 'Home' && !isNoCamUser && isCam) {
     if(!isCamWrite) {
       alert("캠에서 펜으로 인식할 부분을 클릭해주세요");
-      myVideo.style.visibility = 'hidden'
-      extractColorVideo.width = 1024
-      extractColorVideo.height = 768
+      extractColorVideo.style.visibility = 'visible'
+      extractColorVideo.width = canvas.width
+      extractColorVideo.height = canvas.height
       isCamWrite = true
+      camWriteButton.innerText = '캠 필기 끄기'
     }
+    //end로 끄게 바꾸자
+    //이따가 얘기
     else {
       alert("캠 필기 기능 종료")
-      extractColorVideo.width = 0
-      extractColorVideo.height = false
-      myVideo.style.visibility = 'visible'
+      cursor_context.clearRect(0,0, width, height)
+      extractColorVideo.style.visibility = 'hidden'
       isCamWrite = false
       isCamWrite2 = false
+      camWriteButton.innerText = '캠 필기 켜기'
     }
+  }
+  if(e.key === 'End'){
+    R = [];
+    G = [];
+    B = [];
+    console.log("clear");
+    alert("캠 필기 기능 종료")
+    cursor_context.clearRect(0,0, width, height)
+    extractColorVideo.style.visibility = 'hidden'
+    isCamWrite = false
+    isCamWrite2 = false
+    camWriteButton.innerText = '캠 필기 켜기'
   }
   if(e.key === 'PageUp') thr += 1
   if(e.key === 'PageDown') thr -= 1
   if(e.key === 'g'){
     탄지로()
+    if(gesturechk) gestureButton.innerText = '제스처 켜기'
+    else gestureButton.innerText = '제스처 끄기'
     gesturechk = !gesturechk
   } 
 })
@@ -857,11 +912,13 @@ document.addEventListener("DOMContentLoaded", ()=> {
   canvas.width = parseInt(width*rX)
   canvas.height = parseInt(height-200)
 
+  cursor_canvas.width = parseInt(width*rX)
+  cursor_canvas.height = parseInt(height-200)
   
-  canvas.onmousedown = (e) => {mouse.click = true}
-  canvas.onmouseup = (e) => {mouse.click = false}
+  cursor_canvas.onmousedown = (e) => {mouse.click = true}
+  cursor_canvas.onmouseup = (e) => {mouse.click = false}
 
-  canvas.onmousemove = (e) => {
+  cursor_canvas.onmousemove = (e) => {
     mouse.pos.x = (e.pageX - relativeX)
     mouse.pos.y = (e.pageY - relativeY)
     mouse.move = true
@@ -871,37 +928,21 @@ document.addEventListener("DOMContentLoaded", ()=> {
     var line = data.line
     var size = data.size
     if(ROOM_ID == data.roomId) {
-      if(chkfirst<2){
-        //context.fillRect(line[1].x * (width/size[1]), line[1].y * (height/size[1]),2,2)
-        //delay(200)
-        chkfirst++;
-        console.log(chkfirst)
+      if(chkfirst < 2) {
+        chkfirst++
       }
       else{
         context.beginPath()
-        context.lineWidth = 5
+        context.lineWidth = 2
         context.moveTo(line[0].x * (width/size[0]), line[0].y * (height/size[1]))
         context.lineTo(line[1].x * (width/size[0]), line[1].y * (height/size[1]))
         context.stroke()
-      }    
+      }
     }
   })
 
-  /*
-  function outerLoop(){
-    if(drawPause) mainLoop()
-    else if(offDisplay) {
-      offDisplay = !offDisplay  //화면공유 껐을 때 알아차리고 루프 빠져나오기 위함
-      mainLoop()
-    }
-    else {
-      //draw(displayVideo, context, 1024, 768)
-      setTimeout(outerLoop, 50)
-    }
-  }*/
-
   function extractLoop() {
-    extractDraw(hiddenVideo, extractContext, 1024, 768)
+    extractDraw()
     setTimeout(extractLoop, 25)
   }
   function mainLoop() {
@@ -912,45 +953,49 @@ document.addEventListener("DOMContentLoaded", ()=> {
       socket.emit('displayReset_server', ROOM_ID, user_id)
       isDisplayHost = false
       isDisplaying = false
+      displayButton.innerText = '화면 공유'
     }
     if(isDisplaying) {
       var displayVideo = document.getElementById('userDisplay')
       if(displayVideo !== null) {
+        
         displayVideo.width = canvas.width
         displayVideo.height = canvas.height
-      }
     }
-    /*
-    if(isDisplaying && !drawPause) {  //다른 루프로 빼기
-      //draw(displayVideo, context, 1024, 768)
     }
-    */
+
     if(isCamWrite && isWriteLoop) {
       isWriteLoop = !isWriteLoop
       extractLoop()
-      //extractDraw(myVideo, extractContext, 160, 120)
     }
 
     width = parseInt(window.innerWidth*rX)
     height = parseInt(window.innerHeight-200)
     if(canvas.width != width || canvas.height != height) {  //웹 페이지 크기가 변할 때
       socket.emit('reDrawing', ROOM_ID)
-      //otherDraw(context, prevImage)
       canvas.width = width
-      //canvas.height = height
       canvas.height = height
+
+      cursor_canvas.width = width
+      cursor_canvas.height = height
+
+      extractColorVideo.width = width
+      extractColorVideo.height = height
     }
-    /*
-    if(isDisplaying && !drawPause) {  //방송중이고 방송 일시정지가 아니면
-      socket.emit('clearWhiteBoard', ROOM_ID)
-      outerLoop()
-    }*/
+
     if(mouse.click && mouse.move && mouse.pos_prev) {
       socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID, size:[width, height]})
+      /*
+      context.beginPath()
+      context.lineWidth = 2
+      context.moveTo(mouse.pos.x, mouse.pos.y )
+      context.lineTo(mouse.pos_prev.x , mouse.pos_prev.y )
+      context.stroke()*/
+
       mouse.move = false
     }
     mouse.pos_prev = {x: mouse.pos.x, y: mouse.pos.y}
-    setTimeout(mainLoop, 25)  //최종은 20
+    setTimeout(mainLoop, 20)  //최종은 20
   }
   socket.emit('reDrawing', ROOM_ID)
   mainLoop()
