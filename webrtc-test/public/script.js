@@ -8,7 +8,10 @@
 */
 var user_name = prompt('대화명을 입력해주세요.', '')
 
-while(user_name == null || user_name == undefined || user_name == '') user_name = prompt('대화명을 다시 입력해주세요.', '')
+while(user_name == null || user_name == undefined || user_name == '' || user_name.length > 6)  {
+  if(user_name.length > 6) user_name = prompt('대화명을 6자 이하로 설정해주세요.', '')
+  else user_name = prompt('대화명을 다시 입력해주세요.', '')
+}
 
 const socket = io('/')
 var chatWindow = document.getElementById('chatWindow'); 
@@ -35,7 +38,6 @@ var hiddenCamContext = hiddenCamVideo.getContext('2d')
 var user_id
 var isCamWrite = false
 var isDisplayHost = false
-var isPause = false
 var isDisplaying = false
 var isCam = true
 var isMute = false
@@ -84,9 +86,29 @@ function printz(x)  //디버그용
   console.log(x)
 }
 
-var R,G,B;
+/*
+if (window.Worker) {
+  // Worker 쓰레드를 생성(js파일를 로드)
+  let worker = new Worker("worker.js");
+  // 에러가 발생할 경우 발생!
+  worker.onerror = (e)=>{
+  console.log("error " + e.message);
+  }
+  // worker.js에서 postMessage의 값을 받는다.
+  worker.onmessage = (e)=>{
+  // 콘솔 출력
+  console.log(e.data);
+  }
+  worker.postMessage("hello")
+}
+*/
 
+var R = []
+var G = []
+var B = []
 var isCamWrite2 = false
+
+var cntt = 0
 
 extractColorVideo.addEventListener('click', (event) => { 
   const test = document.getElementById('output');
@@ -98,19 +120,27 @@ extractColorVideo.addEventListener('click', (event) => {
   var x = event.offsetX;
   var y = event.offsetY;
   alert("현재 좌표는 : "+x+" / " +y);
-  R = imageData.getRGBA(x,y,0);
-  G = imageData.getRGBA(x,y,1);
-  B = imageData.getRGBA(x,y,2);
-  console.log("R : "+R +", G : ," + G + " B : " + B);
+  tmpR = imageData.getRGBA(x,y,0);
+  tmpG = imageData.getRGBA(x,y,1);
+  tmpB = imageData.getRGBA(x,y,2);
+  console.log("R : "+tmpR +", G : ," + tmpG + " B : " + tmpB);
+  R.push(tmpR);
+  G.push(tmpG);
+  B.push(tmpB);
   //const ctest = document.getElementById('coloroutput').getContext("2d");
   //ctest.fillStyle = "rgb("+R+","+G+","+B+")";
   //ctest.fillRect(0,0,50,50);
   //fun_mask();
-  isCamWrite2 = true
-  extractColorVideo.style.visibility = 'hidden'
+
+  cntt++
+  if(cntt === 4) {
+    isCamWrite2 = true
+    extractColorVideo.style.visibility = 'hidden'
+    cntt=0
+  }
 });
 
-var thr = 15;
+var thr = 5;
 var extractWidth = 1024
 var extractHeight = 768
 
@@ -137,22 +167,27 @@ function extractDraw() {
     cv.imshow(extractColorVideo,src);
     src.delete()*/
     //extractContext.restore()
-    //let imgData = extractContext.getImageData(0, 0, 160, 118);
+    //let imgData = extractContext.getImageData(0, 0, 160, 120);
     //let src = cv.matFromImageData(imgData)      
   if(isCamWrite2) {
     let imgData = hiddenCamContext.getImageData(0, 0, hiddenCamVideo.width, hiddenCamVideo.height);
-    //let imgData = extractContext.getImageData(0, 0, 160, 118);
+    //let imgData = extractContext.getImageData(0, 0, 160, 120);
     let src = cv.matFromImageData(imgData);
 
     let dst = new cv.Mat();
-    let low = new cv.Mat(src.rows, src.cols, src.type(), [R-thr, G-thr, B-thr, 0]);
-    let high = new cv.Mat(src.rows, src.cols, src.type(), [R+thr, G+thr, B+thr, 255]);
-  
+
+    let maxR = Math.max.apply(null,R)+thr;
+    let minR = Math.min.apply(null,R)-thr;
+    let maxG = Math.max.apply(null,G)+thr;
+    let minG = Math.min.apply(null,G)-thr;
+    let maxB = Math.max.apply(null,B)+thr;
+    let minB = Math.min.apply(null,B)-thr;
+
+    let low = new cv.Mat(src.rows, src.cols, src.type(), [minR, minG,minB, 0]);
+    let high = new cv.Mat(src.rows, src.cols, src.type(), [maxR, maxG, maxB, 255]);
+
     cv.inRange(src, low, high, dst);
-    //let tmpimg = new cv.Mat();
-    //cv.cvtColor(src, tmpimg, cv.COLOR_RGBA2GRAY,0);
-    
-    //cv.imshow(out,tmpimg);
+
     let ret = new cv.Mat();
     cv.bitwise_and(src, src, ret, dst);
     
@@ -210,6 +245,7 @@ function extractDraw() {
   }
   }
 }
+/*
 function rgb2hsv (r, g, b) {
   let rabs, gabs, babs, rr, gg, bb, h, s, v, diff, diffc, percentRoundFn;
   rabs = r / 255;
@@ -245,7 +281,7 @@ function rgb2hsv (r, g, b) {
       s: percentRoundFn(s * 100),
       v: percentRoundFn(v * 100)
   };
-}
+}*/
 
 myPeer.on('open', id => { //피어 접속시 맨 처음 실행되는 피어 함수
   user_id = id
@@ -527,7 +563,7 @@ camWriteButton.addEventListener('click', () => {
   else if(!isCam) alert('캠을 켜주세요')
   else {
     if(!isCamWrite) {
-      alert("캠에서 펜으로 인식할 부분을 클릭해주세요");
+      alert("캠에서 펜으로 인식할 부분을 다른 위치로 4번 클릭해주세요");
       extractColorVideo.style.visibility = 'visible'
       extractColorVideo.width = canvas.width
       extractColorVideo.height = canvas.height
@@ -535,6 +571,10 @@ camWriteButton.addEventListener('click', () => {
       camWriteButton.innerText = '캠 필기 끄기'
     }
     else {
+      R = [];
+      G = [];
+      B = [];
+      console.log("clear")
       alert("캠 필기 기능 종료")
       cursor_context.clearRect(0,0, width, height)
       extractColorVideo.style.visibility = 'hidden'
@@ -671,14 +711,6 @@ socket.on('streamPlay_script', (userId, roomId, isCam) => {
   }
 })
 
-socket.on('pause_script', (userId, isPause) => {
-  const video = document.getElementById(userId+'!video')
-  if(video) {
-    if(isPause) video.play()
-    else video.pause()
-  }
-})
-
 socket.on('reLoading', (roomId)=>{
   if(roomId == ROOM_ID) {
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
@@ -755,81 +787,16 @@ socket.on('setMute', (isMute, muteUserId, userId) => {
 })
 
 document.addEventListener("keydown", (e) => {
-  if(e.key == ' ') {  
-    if(isPause)
-      myVideo.play()
-    else
-      myVideo.pause()
-    socket.emit('pause_server', user_id, isPause)
-    isPause=!isPause
-  }
-  if(e.key == 'Escape')  {//지우개
-    socket.emit('clearWhiteBoard', ROOM_ID)
-  }
-  if(e.key == '*' && !isDisplaying) {  //화면공유
-    displayButton.innerText = '공유 종료'
-    displayPlay()
-  }
+  if(e.key == 'Escape') socket.emit('clearWhiteBoard', ROOM_ID) //지우개
+
   if(e.key == '`') {
     cam_mouse.click = true
   }
-  if(e.key == '/' && !isNoCamUser) {
-    //localStream.getTracks().forEach(t => localStream.removeTrack(t))
-    if(isCam) {
-      myVideoBackground.style.width = '160px'
-      myVideoBackground.style.height = '118px'
-      myVideo.width = 0
-      myVideo.height = 0
-      camButton.innerText = '캠 켜기'
-    }
-    else {
-      myVideoBackground.style.width = '0px'
-      myVideoBackground.style.height = '0px'
-      myVideo.width = 160
-      myVideo.height = 118
-      camButton.innerText = '캠 끄기'
-    }
-    localStream.flag = 0
-    socket.emit('streamPlay_server', user_id,ROOM_ID,isCam)
-    isCam = !isCam    
-  }
-  
-  if(e.key == '+' && !isMuteUser) {
-    if(isMute) audioButton.innerText = '마이크 끄기'
-    else audioButton.innerText = '마이크 켜기'
-    isMute = !isMute
-    socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
-  }
+
   if(e.key == 'Insert') {  //디버그용
     console.log(thr)
     console.log(myPeer.connections)
   }
-  if(e.key == 'Home' && !isNoCamUser && isCam) {
-    if(!isCamWrite) {
-      alert("캠에서 펜으로 인식할 부분을 클릭해주세요");
-      extractColorVideo.style.visibility = 'visible'
-      extractColorVideo.width = canvas.width
-      extractColorVideo.height = canvas.height
-      isCamWrite = true
-      camWriteButton.innerText = '캠 필기 끄기'
-    }
-    else {
-      alert("캠 필기 기능 종료")
-      cursor_context.clearRect(0,0, width, height)
-      extractColorVideo.style.visibility = 'hidden'
-      isCamWrite = false
-      isCamWrite2 = false
-      camWriteButton.innerText = '캠 필기 켜기'
-    }
-  }
-  if(e.key === 'PageUp') thr += 1
-  if(e.key === 'PageDown') thr -= 1
-  if(e.key === 'g'){
-    탄지로()
-    if(gesturechk) gestureButton.innerText = '제스처 켜기'
-    else gestureButton.innerText = '제스처 끄기'
-    gesturechk = !gesturechk
-  } 
 })
 
 document.addEventListener("keyup", (e) => {

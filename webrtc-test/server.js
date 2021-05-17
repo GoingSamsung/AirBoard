@@ -118,9 +118,6 @@ io.on('connection', socket => {
     users = await User.findOne({userId:muteUserId}, null, {})
     io.sockets.in(roomId).emit('setMute', users.isMute, muteUserId, userId)
   })
-  socket.on('pause_server', (userId, isPause) => {
-    io.emit('pause_script', userId, isPause)
-  })
 
   socket.on('join-room', async(roomId, userId, userName) => {
     socket.userName=userName
