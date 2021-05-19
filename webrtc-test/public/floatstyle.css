@@ -1,0 +1,38 @@
+@import 'https://fonts.googleapis.com/css?family=Open+Sans';
+
+.center {
+  z-index:10;
+  position: fixed;
+  margin: auto;
+  top:1.5%;
+  right: 20.5%;
+}
+
+.menu {
+  z-index:15;
+  width: 40px;
+  height: 40px;
+  color:white;
+}
+
+.item {
+  box-shadow: 1px 1px 1px 1px gray;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 40px;
+  height: 40px;
+  background-color: white;
+  -moz-border-radius: 50%;
+  -webkit-border-radius: 50%;
+  border-radius: 50%;
+  cursor: pointer;
+  text-align: center;
+  line-height: 40px;
+  border:none;
+}
+
+i {
+  font-size: 24px;
+  color: #222222;
+}

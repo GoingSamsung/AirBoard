@@ -21,9 +21,18 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
     <script src="fingerpose.js" defer></script>
+
+    <link href="floatstyle.css" rel="stylesheet" />
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.js"></script>
+    <script src="https://use.fontawesome.com/releases/v5.2.0/js/all.js"></script>
     <title>AirBoard Room</title>
   </head>
   <body>
+    <div class="center menu">
+      <div id="myMenu"></div>
+    </div>
     <div id="extractCamArea"></div>
     <div id="videoarea">
       <div id="video-grid"></div>
@@ -70,5 +79,8 @@
     <source src="../img/nocam.mp4" type="video/mp4" />
   </video>
   <video id="hiddenVideo"></video>
+
+  <script type="text/javascript" src="floatbuttonscript.js"></script>
+  <script type="text/javascript" src="buttonscript.js"></script>
   </body>
 </html>
