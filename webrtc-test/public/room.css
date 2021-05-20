@@ -34,7 +34,7 @@ video {
     -webkit-transform:rotateY(180deg);
     -moz-transform:rotateY(180deg);
     object-fit: cover;
-    z-index: 10;
+    z-index: 1;
     position:relative;
 }
 
