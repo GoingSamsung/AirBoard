@@ -4,7 +4,6 @@ const Schema = mongoose.Schema;
 const roomSchema = new Schema({
     hostId: {
         type: String,
-        required: true,
     },
     roomId: {
         type: String,
@@ -12,8 +11,7 @@ const roomSchema = new Schema({
     },
     participant:{
         type:Number,
-        default:0,
-        
+        default:0,        
     }
 });
 

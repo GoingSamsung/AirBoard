@@ -240,14 +240,20 @@ function extractDraw() {
       temp.delete();
     }
     cursor_context.clearRect(0,0, width, height)
+    
+    var camRelativeMouseY = yy/hiddenCamVideo.height
+    var camRelativeMouseX = xx/hiddenCamVideo.width
+
+    changeCanvasImage(camRelativeMouseX, camRelativeMouseY, cam_selected, 0)
     if(xx !=0 && yy !=0){
       cam_mouse.pos.x = xx
       cam_mouse.pos.y = yy
       cursor_context.fillStyle = "red"
-      
-      cursor_context.fillRect(xx * (width/hiddenCamVideo.width), yy *  (height/hiddenCamVideo.height), 3, 3)
+
+      cursor_context.fillRect(xx * (width/hiddenCamVideo.width), yy * (height/hiddenCamVideo.height), 3, 3)
       if(cam_mouse.pos_prev && cam_mouse.click) {
-        socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, size:[hiddenCamVideo.width, hiddenCamVideo.height]})
+        if(camRelativeMouseY < 0.905 && cam_mouse.pos_prev.y/hiddenCamVideo.height < 0.905)
+          socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, size:[hiddenCamVideo.width, hiddenCamVideo.height], penWidth: penWidth, penColor: penColor})
       }
       cam_mouse.pos_prev = {x: cam_mouse.pos.x, y: cam_mouse.pos.y}
     }
@@ -809,6 +815,105 @@ socket.on('sendStream_script', (userId_caller, userId_callee, roomId, isCam) => 
   }
 })
 
+var newImg = new Image()
+  newImg.onload = function() {
+    context.drawImage(newImg, 0,0, canvas.width, canvas.height)
+  }
+  function selectImage(selectNum) {
+    if(selected !== selectNum) {
+      newImg.src = 'img/select_' + selectNum.toString() + '.png'
+      selected = selectNum
+    }
+  }
+  function camSelectImage(selectNum) {
+    if(cam_selected !== selectNum) {
+      newImg.src = 'img/select_' + selectNum.toString() + '.png'
+      cam_selected = selectNum
+    }
+  }
+
+function changeCanvasImage(relativeMouseX, relativeMouseY, select, flag) {
+  if(relativeMouseY >= 0.91 && relativeMouseY <= 0.99) {
+    if(relativeMouseX >= 0.034 && relativeMouseX <= 0.073) {
+      console.log('zz')
+      if(flag) selectImage(1)
+      else camSelectImage(1)
+    }
+    else if(relativeMouseX >= 0.105 && relativeMouseX <= 0.128) {
+      if(flag) selectImage(2)
+      else camSelectImage(2)
+    }
+    else if(relativeMouseX >= 0.159 && relativeMouseX <= 0.185) {
+      if(flag) selectImage(3)
+      else camSelectImage(3)
+    }
+    else if(relativeMouseX >= 0.218 && relativeMouseX <= 0.247) {
+      if(flag) selectImage(4)
+      else camSelectImage(4)
+    }
+    else if(relativeMouseX >= 0.278 && relativeMouseX <= 0.309) {
+      if(flag) selectImage(5)
+      else camSelectImage(5)
+    }
+    else if(relativeMouseX >= 0.34 && relativeMouseX <= 0.37) {
+      if(flag) selectImage(6)
+      else camSelectImage(6)
+    }
+    else if(relativeMouseX >= 0.401 && relativeMouseX <= 0.431) {
+      if(flag) selectImage(7)
+      else camSelectImage(7)
+    }
+    else if(relativeMouseX >= 0.463 && relativeMouseX <= 0.494) {
+      if(flag) selectImage(8)
+      else camSelectImage(8)
+    }
+    else if(relativeMouseX >= 0.525 && relativeMouseX <= 0.555) {
+      if(flag) selectImage(9)
+      else camSelectImage(9)
+    }
+    else if(relativeMouseX >= 0.586 && relativeMouseX <= 0.617) {
+      if(flag) selectImage(10)
+      else camSelectImage(10)
+    }
+    else if(relativeMouseX >= 0.648 && relativeMouseX <= 0.679) {
+      if(flag) selectImage(11)
+      else camSelectImage(11)
+    }
+    else if(relativeMouseX >= 0.708 && relativeMouseX <= 0.723) {
+      if(flag) selectImage(12)
+      else camSelectImage(12)
+    }
+    else if(relativeMouseX >= 0.752 && relativeMouseX <= 0.772) {
+      if(flag) selectImage(13)
+      else camSelectImage(13)
+    }
+    else if(relativeMouseX >= 0.801 && relativeMouseX <= 0.824) {
+      if(flag) selectImage(14)
+      else camSelectImage(14)
+    }
+    else if(relativeMouseX >= 0.853 && relativeMouseX <= 0.896) {
+      if(flag) selectImage(15)
+      else camSelectImage(15)
+    }
+    else if(relativeMouseX >= 0.927 && relativeMouseX <= 0.968) {
+      if(flag) selectImage(16)
+      else camSelectImage(16)
+    }
+    else if (select !== 0){
+      newImg.src = 'img/canvas.png'
+      context.clearRect(0, canvas.height * 0.905, canvas.width, canvas.height*0.99)
+      if(flag) selected = 0
+      else cam_selected = 0
+    }
+  }
+  else if(select !== 0) {
+    newImg.src = 'img/canvas.png'
+    context.clearRect(0, canvas.height * 0.905, canvas.width, canvas.height*0.99)
+    if(flag) selected = 0
+    else cam_selected = 0
+  } 
+}
+
 socket.on('user-disconnected', userId => {
   if (peers[userId]) {
     peers[userId].close()
@@ -834,6 +939,7 @@ socket.on('setMute', (isMute, muteUserId, userId) => {
 document.addEventListener("keydown", (e) => {
   if(e.key == '`') {
     cam_mouse.click = true
+    clickCanvas(cam_selected)
   }
 
   if(e.key == 'Insert') {  //디버그용
@@ -848,6 +954,26 @@ document.addEventListener("keyup", (e) => {
   }
 })
 
+function clickCanvas(select)
+{
+  if(select === 1) {}
+  else if(select === 2) {}
+  else if(select === 3) socket.emit('clearWhiteBoard', ROOM_ID)
+  else if(select === 4) penColor = 'black'
+  else if(select === 5) penColor = 'red'
+  else if(select === 6) penColor = 'orange'
+  else if(select === 7) penColor = 'yellow'
+  else if(select === 8) penColor = '#1EDF16'
+  else if(select === 9) penColor = '#0054FF'
+  else if(select === 10) penColor = 'blue'
+  else if(select === 11) penColor = 'purple'
+  else if(select === 12) penWidth = 1
+  else if(select === 13) penWidth = 2
+  else if(select === 14) penWidth = 4
+}
+
+var selected = 0
+var cam_selected = 0
 var mouse = {
   click: false,
   move: false,
@@ -884,20 +1010,7 @@ document.addEventListener("DOMContentLoaded", ()=> {
   }
 
   cursor_canvas.onclick = (e) => {
-    if(selected === 1) {}
-    else if(selected === 2) {}
-    else if(selected === 3) socket.emit('clearWhiteBoard', ROOM_ID)
-    else if(selected === 4) penColor = 'black'
-    else if(selected === 5) penColor = 'red'
-    else if(selected === 6) penColor = 'orange'
-    else if(selected === 7) penColor = 'yellow'
-    else if(selected === 8) penColor = '#1EDF16'
-    else if(selected === 9) penColor = '#0054FF'
-    else if(selected === 10) penColor = 'blue'
-    else if(selected === 11) penColor = 'purple'
-    else if(selected === 12) penWidth = 1
-    else if(selected === 13) penWidth = 2
-    else if(selected === 14) penWidth = 4
+    clickCanvas(selected)
   }
   socket.on('drawLine', data => {
     var line = data.line
@@ -916,81 +1029,6 @@ document.addEventListener("DOMContentLoaded", ()=> {
       }
     }
   })
-
-  var selected = 0
-  var newImg = new Image()
-  newImg.onload = function() {
-    context.drawImage(newImg, 0,0, canvas.width, canvas.height)
-  }
-  function selectImage(selectNum) {
-    if(selected !== selectNum) {
-      newImg.src = 'img/select_' + selectNum.toString() + '.png'
-      selected = selectNum
-    }
-  }
-  function changeCanvasImage(relativeMouseX, relativeMouseY) {
-    if(relativeMouseY >= 0.91 && relativeMouseY <= 0.99) {
-      if(relativeMouseX >= 0.034 && relativeMouseX <= 0.073) {
-        selectImage(1)
-      }
-      else if(relativeMouseX >= 0.105 && relativeMouseX <= 0.128) {
-        selectImage(2)
-      }
-      else if(relativeMouseX >= 0.159 && relativeMouseX <= 0.185) {
-        selectImage(3)
-      }
-      else if(relativeMouseX >= 0.218 && relativeMouseX <= 0.247) {
-        selectImage(4)
-      }
-      else if(relativeMouseX >= 0.278 && relativeMouseX <= 0.309) {
-        selectImage(5)
-      }
-      else if(relativeMouseX >= 0.34 && relativeMouseX <= 0.37) {
-        selectImage(6)
-      }
-      else if(relativeMouseX >= 0.401 && relativeMouseX <= 0.431) {
-        selectImage(7)
-      }
-      else if(relativeMouseX >= 0.463 && relativeMouseX <= 0.494) {
-        selectImage(8)
-      }
-      else if(relativeMouseX >= 0.525 && relativeMouseX <= 0.555) {
-        selectImage(9)
-      }
-      else if(relativeMouseX >= 0.586 && relativeMouseX <= 0.617) {
-        selectImage(10)
-      }
-      else if(relativeMouseX >= 0.648 && relativeMouseX <= 0.679) {
-        selectImage(11)
-      }
-      else if(relativeMouseX >= 0.708 && relativeMouseX <= 0.723) {
-        selectImage(12)
-      }
-      else if(relativeMouseX >= 0.752 && relativeMouseX <= 0.772) {
-        selectImage(13)
-      }
-      else if(relativeMouseX >= 0.801 && relativeMouseX <= 0.824) {
-        selectImage(14)
-      }
-      else if(relativeMouseX >= 0.853 && relativeMouseX <= 0.896) {
-        selectImage(15)
-      }
-      else if(relativeMouseX >= 0.927 && relativeMouseX <= 0.968) {
-        selectImage(16)
-      }
-      else if (selected !== 0){
-        newImg.src = 'img/canvas.png'
-        context.clearRect(0, canvas.height * 0.905, canvas.width, canvas.height*0.99)
-        selected = 0
-      }
-    }
-    else if(selected !== 0) {
-      newImg.src = 'img/canvas.png'
-      context.clearRect(0, canvas.height * 0.905, canvas.width, canvas.height*0.99)
-      selected = 0
-    }
-    
-  }
 
   function extractLoop() {
     extractDraw()
@@ -1027,7 +1065,7 @@ document.addEventListener("DOMContentLoaded", ()=> {
     var relativeMouseY = mouse.pos.y/canvas.height
     var relativeMouseX = mouse.pos.x/canvas.width
 
-    changeCanvasImage(relativeMouseX, relativeMouseY)
+    changeCanvasImage(relativeMouseX, relativeMouseY, selected, 1)
 
     if(canvas.width != width || canvas.height != height) {  //웹 페이지 크기가 변할 때
       socket.emit('reDrawing', ROOM_ID)
