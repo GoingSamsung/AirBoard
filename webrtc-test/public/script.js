@@ -854,9 +854,9 @@ document.addEventListener("DOMContentLoaded", ()=> {
         chkfirst++
       }
       else{
-        context.strokeStyle = penColor
+        context.strokeStyle = data.penColor
         context.beginPath()
-        context.lineWidth = penWidth
+        context.lineWidth = data.penWidth
         context.moveTo(line[0].x * (width/size[0]), line[0].y * (height/size[1]))
         context.lineTo(line[1].x * (width/size[0]), line[1].y * (height/size[1]))
         context.stroke()
@@ -990,7 +990,8 @@ document.addEventListener("DOMContentLoaded", ()=> {
     }
 
     if(mouse.click && mouse.move && mouse.pos_prev) {
-      if(relativeMouseY < 0.905 && mouse.pos_prev.y/canvas.height < 0.905) socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID, size:[width, height]})
+      if(relativeMouseY < 0.905 && mouse.pos_prev.y/canvas.height < 0.905)
+        socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID, size:[width, height], penWidth: penWidth, penColor: penColor})
       mouse.move = false
     }
     mouse.pos_prev = {x: mouse.pos.x, y: mouse.pos.y}
