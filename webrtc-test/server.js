@@ -17,6 +17,7 @@ const { v4: uuidV4 } = require('uuid')
 
 const mongoose = require('mongoose');
 const User = require('./models/user');
+const Room = require('./models/room');
 
 //로컬 테스트시 여기서 복붙
 //mongoose 연결
