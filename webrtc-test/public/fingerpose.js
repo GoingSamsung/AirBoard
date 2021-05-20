@@ -60,8 +60,10 @@
         }
         n.r(r), n.d(r, "VictoryGesture", (function() {
             return C
-        })), n.d(r, "ThumbsUpGesture", (function() {
-            return j
+        })), n.d(r, "GyuGesture", (function() {
+            return Gyu
+        })), n.d(r,"PalmGesture",(function(){
+            return palm
         }));
         var o = {
                 Thumb: 0,
@@ -724,6 +726,17 @@
             R.addCurl(_, a.FullCurl, 1), R.addDirection(_, l.HorizontalLeft, 1), R.addDirection(_, l.HorizontalRight, 1)
         }
         var j = R;
+        
+        //Gyu 추가
+        var Gyu = new S("gyu");
+        Gyu.addCurl(o.Thumb,a.NoCurl,1),Gyu.addCurl(o.Index,a.FullCurl,1),Gyu.addCurl(o.Middle,a.FullCurl,1),Gyu.addCurl(o.Ring,a.FullCurl,1),Gyu.addCurl(o.Pinky,a.NoCurl,1);
+        Gyu.addDirection(o.Thumb,l.DiagonalUpLeft,.5),Gyu.addDirection(o.Index,l.VerticalUp,1),Gyu.addDirection(o.Middle,l.VerticalUp,1),Gyu.addDirection(o.Ring,l.VerticalUp,1),Gyu.addDirection(o.Pinky,l.DiagonalUpRight,.5);
+
+        //Palm 추가
+        var palm = new S("palm");
+        palm.addCurl(o.Thumb,a.NoCurl,1), palm.addCurl(o.Index,a.NoCurl,1), palm.addCurl(o.Middle,a.NoCurl,1), palm.addCurl(o.Ring,a.NoCurl,1), palm.addCurl(o.Pinky,a.NoCurl,1);
+        palm.addDirection(o.Thumb,l.VerticalUp,1), palm.addDirection(o.Index,l.VerticalUp,1), palm.addDirection(o.Index,l.Middle,1), palm.addDirection(o.Ring,l.VerticalUp,1), palm.addDirection(o.Pinky,l.VerticalUp,1);
+        
         e.default = {
             GestureEstimator: m,
             GestureDescription: S,

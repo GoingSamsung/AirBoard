@@ -49,8 +49,8 @@ app.get('/newroom', (req, res) => {
 })
 
 app.get('/:room', async(req, res) => {
-  const test = await Room.findOne({roomId: req.params.room}, null, {})
-  if(test !== null) res.render('room', { roomId: req.params.room })
+  const room = await Room.findOne({roomId: req.params.room}, null, {})
+  if(room !== null) res.render('room', { roomId: req.params.room })
   else {
     res.render('noPage')
   }

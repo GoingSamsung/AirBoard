@@ -66,6 +66,7 @@ var localDisplay
 var displayCall
 var gesturechk = false
 var chkfirst = 0
+var palmcnt = 0
 
 hiddenVideo.style.visibility = 'hidden'
 hiddenVideo.width = 1024
@@ -1105,7 +1106,8 @@ async function 탄지로() {
 
   const knownGestures = [
     fp.Gestures.VictoryGesture,
-    fp.Gestures.ThumbsUpGesture
+    fp.Gestures.GyuGesture,
+    fp.Gestures.PalmGesture
   ];
   const GE = new fp.GestureEstimator(knownGestures);
 
@@ -1129,7 +1131,17 @@ async function 탄지로() {
         });
 
         console.log(result.name);
+        if(result.name == "palm"){
+          palmcnt+=2;
+        }
+        if(palmcnt>=10){
+          socket.emit('clearWhiteBoard', ROOM_ID);
+        }
       }
+
+    }
+    if(palmcnt>=1){
+      palmcnt--;
     }
 
     // ...and so on
