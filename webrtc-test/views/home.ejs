@@ -1,71 +1,87 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html>
-  <head>
-    <meta charset="utf-8"/>
-    <!-- 모바일 대응을 위한 뷰포트 기본 설정 -->
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"> 
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link rel="stylesheet" href="scrollhomecss.css">
-    <link rel="stylesheet" href="btnstyle.css">
-    <link rel="stylesheet" href="arcod.css">
-    <script src="http://code.jquery.com/jquery-latest.js"></script>
-  </head>
-  <body>
-    <header class="maincontent" id="slider">
-      <center>
-        <h1 id='first_airboard'>AirBoard</h1>
-      </center>
-      <div id="btncon">
-        <div class="mouse"></div>
-        <p>Scroll</p>
-      </div>
-    </header>
-    <main class="maincontent sa" id='main'>
-      <div class="movecontainer">
-        <h3 class="title">
-          <span>Main Page</span>
-        </h3>
-      </div>
-      <section id="content">
-        <div class="container blue circleBehind">
-          <a href="#main">MAIN PAGE</a>
-          <a href='/newroom'>NEW ROOM</a>
-          <a href="#howtouse">HOW TO USE</a>
-          <a href="#aboutus">ABOUT US</a>
-      </div>
-      </section>
-    </main>
-    <main class="maincontent sa" id='howtouse'>
-      <div class="movecontainer">
-        <h3 class="title">
-          <span>HOW TO USE</span>
-        </h3>
-      </div>
-      <section id="content">
-        <div class="container blue circleBehind">
-          <a href="#main">MAIN PAGE</a>
-          <a href='/newroom'>NEW ROOM</a>
-          <a href="#howtouse">HOW TO USE</a>
-          <a href="#aboutus">ABOUT US</a>
-      </div>
-      </section>
-    </main>
-    <main class="maincontent sa" id='aboutus'>
-      <div class="movecontainer">
-        <h3 class="title">
-          <span>ABOUT US</span>
-        </h3>
-      </div>
-      <section id="content">
-        <div class="container blue circleBehind">
-          <a href="#main">MAIN PAGE</a>
-          <a href='/newroom'>NEW ROOM</a>
-          <a href="#howtouse">HOW TO USE</a>
-          <a href="#aboutus">ABOUT US</a>
-      </div>
-      </section>
-    </main>
-    <script type="text/javascript" src="scrollpage.js"></script>
-    <script type="text/javascript" src="scroll.js"></script>
-  </body>
+	<head>
+		<title>AIRBOARD</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="stylesheet" href="assets/css/slide.css" />
+	</head>
+	<body>
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+					<header id="header" class="alt">
+						<span class="logo"><img id="mylogo" src="images/로고.png" alt="" /></span>
+						<h1>AIRBOARD</h1>
+					</header>
+
+					<nav id="nav">
+						<ul>
+							<li><a href="#functions" class="active">서비스</a></li>
+							<li><a href="#first">How to Use</a></li>
+						</ul>
+					</nav>
+
+					<div id="main">
+							<section id="functions" class="main special">
+								<header class="major">
+									<h2>AIRBOARD 서비스</h2>
+								</header>
+								<div class="container">
+									<div class="bx">
+										<img id="participate" src="images/회의참가.jpg">
+										<span>회의 참여</span>
+									</div>
+									<div class="bx">
+										<img src="images/회의생성.jpg" onclick='javascript:location.href="/newroom"' style="cursor:pointer">
+										<span>회의 생성</span>
+									</div>
+									<div class="bx">
+										<img src="images/회원가입.jpg">
+										<span>회원 가입</span>
+									</div>
+									<div class="bx">
+										<img src="images/계정확인.jpg">
+										<span>계정 정보</span>
+									</div>
+									</div>
+							</section>
+
+						<!-- First Section -->
+							<section id="first" class="main special">
+								<header class="major">
+									<h2>How to Use</h2>
+								</header>
+							</section>
+
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<section>
+							<h2>개발자 정보</h2>
+							<dl class="alt">
+								<dt>Address</dt>
+								<dd>경기도 수원시, 대한민국</dd>
+								<dt>Phone</dt>
+								<dd>(000) 000-0000 x 0000</dd>
+								<dt>Email</dt>
+								<dd>helloworld@gmail.com</dd>
+							</dl>
+						</section>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/skel.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
+			<script src="assets/js/main.js"></script>
+
+	</body>
 </html>
