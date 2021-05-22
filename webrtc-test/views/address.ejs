@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>회의실 주소</title>
+    <style>
+    </style>
+  </head>
+  <body>
+    <textarea id="copyText" readonly>https://airboard.ga/<%= roomId %></textarea>   
+    <button onclick="copyAddress()">복사</button> 
+    <script>
+      function copyAddress()
+      {
+        const copyText = document.getElementById('copyText')
+        copyText.select()
+        copyText.setSelectionRange(0,100)
+        document.execCommand("Copy")
+      }
+    </script>
+  </body>
+</html>

@@ -1,19 +1,19 @@
 /*
-  화면공유 필기 중에 들어오는 유저는 필기 확인 불가 버그(화면 크기 바꾸면 다시 돌아옴)
   화면공유 했을 때 안넘어가는 경우가있음.(건모-> 형택: X, 형택->건모: O)
-  화면공유한 사람이 나가면 안됨(5/12 수정 완료)
-  화면공유 width, height 조절 방식 조정해야될듯.(5/13 수정 완료)
-  사람 많아지면 피어 꼬이는 경우 생김(최우선)
-  모션 인식 연동
+  호스트 기능들 추가
+  시나리오 보여줄 기능들 다 넣기
 */
-
 var user_name = prompt('대화명을 입력해주세요.', '')
 
 while(user_name == null || user_name == undefined || user_name == '' || user_name.length > 6)  {
   if(user_name.length > 6) user_name = prompt('대화명을 6자 이하로 설정해주세요.', '')
   else user_name = prompt('대화명을 다시 입력해주세요.', '')
 }
-
+window.onload =function () {
+  window.open("/address/"+ ROOM_ID,  "popup", "width=300, \
+  status=no, menubars=0, height=300, scrollbars=0, top=100px, left=100px\
+  resizable=0, toolbar=0, directories=0, location=0, menubar=no");
+}
 const socket = io('/')
 var chatWindow = document.getElementById('chatWindow'); 
 const videoGrid = document.getElementById('video-grid')
@@ -47,6 +47,7 @@ canvasImage.onload = function() {
 }
 
 var user_id
+var isHost = false
 var isCamWrite = false
 var isDisplayHost = false
 var isDisplaying = false
@@ -318,7 +319,7 @@ function userJoin()
   var videoUserName = document.createElement('videoUserName') //비디오에 이름 표시 코드
   var bold = document.createElement('b')
   var videoUserNameText = document.createTextNode(user_name)
-
+  bold.id = user_id + '!bold'
   videoUserName.appendChild(bold)
   bold.appendChild(videoUserNameText)
   userBox.appendChild(videoUserName)
@@ -390,8 +391,8 @@ function getNewUser()
     call.on('stream', userVideoStream => {
       socket.emit('getMute', call.peer, user_id, ROOM_ID)
       if(peers[call.peer] == undefined) {
-        bold.id = call.peer
-        video.id = call.peer+'!video'  // bold랑 차이두기위함
+        bold.id = call.peer + '!bold'
+        video.id = call.peer+'!video'
         userBox.id = call.peer + '!userBox'
         videoBackground.id = call.peer + '!videoBackground'
         addVideoStream(video, userVideoStream, userBox)  //원래 있던 유저들 보여주기
@@ -446,7 +447,8 @@ function connectToNewUser(userId, userName) { //기존 유저 입장에서 새�
 
     call.on('stream', userVideoStream => {
       isCall[userId] = false
-      video.id = userId + '!video' //bold랑 차이두기 위해 !붙임
+      bold.id = userId + '!bold'
+      video.id = userId + '!video'
       videoBackground.id = userId + '!videoBackground'
       videoUserName.appendChild(bold)
 
@@ -709,6 +711,17 @@ socket.on('streamPlay_script', (userId, roomId, isCam) => {
   }
 })
 
+socket.on('setHost', (userId)=>{
+  if(userId === user_id) isHost = true
+})
+
+socket.on('hostChange', (userId, userName)=>{
+  if(userId !== user_id) {
+    const bold = document.getElementById(userId+'!bold')
+    bold.innerHTML = userName + '(호스트)'
+  }
+})
+
 socket.on('reLoading', (roomId)=>{
   if(roomId == ROOM_ID) {
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
@@ -925,7 +938,7 @@ socket.on('user-disconnected', userId => {
 
 socket.on('setName', (userId, userName) => {
   if(user_id !== userId) {
-    const bold = document.getElementById(userId)
+    const bold = document.getElementById(userId + '!bold')
     bold.innerHTML = userName
   }
 })

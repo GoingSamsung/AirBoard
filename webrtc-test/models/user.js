@@ -10,7 +10,7 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
-    roomid: {
+    roomId: {
         type: String,
         required: true,
     },
