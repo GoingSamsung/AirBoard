@@ -11,7 +11,7 @@ html{
 }
 
 body{
-    background-color: #887b7b;
+    background-color: #8cc9f0;
     width:100%;
     height:100%;
     padding:0px;
@@ -44,7 +44,7 @@ userBox {
 }
 
 videoUserName {        
-    background-color: #887b7b;
+    background-color: #8cc9f0;
     display:block;
     color: white; width: 160px;
     text-align: center;
@@ -163,7 +163,7 @@ videoBackground {
     padding-top:10px;
     text-align: center;
     font-weight: 800;
-    border-bottom: 3px solid #887b7b;
+    border-bottom: 3px solid #8cc9f0;
 }
 #nocam__video {
     visibility: hidden;
@@ -259,4 +259,28 @@ image{
     width:35px;
     height:35px;
     margin-right:0px;
+}
+
+.btn{
+    float:right;
+    height:35px;
+    border:none;
+    background-color: white;
+    display: block;
+    position: relative;
+    overflow: hidden;
+    transition: all .2s ease-in-out .2s;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.btn:hover {
+    background: #8cc9f0;
+    border-radius:4px;
+    color: #fff;
+    transition: all .2s ease-in-out .2s;
+}
+
+#docu, #penc, #hand {
+    margin-right:7px;
 }

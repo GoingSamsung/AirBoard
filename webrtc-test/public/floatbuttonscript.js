@@ -159,7 +159,7 @@ class Menu {
 }
 
 var menu = new Menu("#myMenu");
-var item1 = new Item("list", "fas fa-bars", "#887b7b");
+var item1 = new Item("list", "fas fa-bars", "#8cc9f0");
 var item2 = new Item("exit", "fas fa-sign-out-alt", "#FF5C5C");
 var item3 = new Item("pallet", "fas fa-palette", "#5CD1FF");
 var item4 = new Item("userlist", "far fa-address-book", "#FFF15C");
