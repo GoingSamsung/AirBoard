@@ -55,7 +55,6 @@ app.get('/:room', async(req, res) => {
   const room = await Room.findOne({roomId: req.params.room}, null, {})
   if(room !== null) res.render('room', { roomId: req.params.room })
   else {
-    alert("존재하지 않는 회의실입니다.")
     res.render('noPage')
   }
 })
@@ -69,7 +68,6 @@ app.post('/joinroom', (req, res) => {
     res.redirect(`/${tmp[3]}`);
   }
   else{
-    alert("존재하지 않는 회의실입니다.")
     res.render('noPage')
   }
 })
