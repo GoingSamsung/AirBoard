@@ -91,7 +91,7 @@ navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia 
 var rX = 0.79872  //rX, rY는 최대한 마우스 에임에 맞는 필기를 위해 곱해주는 용도
 var rY = 0.8091
 
-const myPeer = new Peer({ })
+const myPeer = new Peer({host:'peerjs-server.herokuapp.com', secure:true, port:443})
 const peers = {}
 
 function printz(x)  //디버그용

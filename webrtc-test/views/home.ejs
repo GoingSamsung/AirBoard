@@ -6,6 +6,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="stylesheet" href="assets/css/main.css" />
 		<link rel="stylesheet" href="assets/css/slide.css" />
+		<link rel="stylesheet" href="assets/css/input.css" />
 	</head>
 	<body>
 
@@ -28,14 +29,22 @@
 								<header class="major">
 									<h2>AIRBOARD 서비스</h2>
 								</header>
+								<div class="subscribe-box">
+									<form class="subscribe" action="/joinroom" method="POST">
+										<input type="text" name="address" placeholder="회의 주소를 입력하세요" autocomplete="off" required="required" />
+										<button type="submit"> 
+											<span>회의 참가</span>
+										</button>
+									</form>
+								</div>
 								<div class="container">
-									<div class="bx">
-										<img id="participate" src="images/회의참가.jpg">
-										<span>회의 참여</span>
-									</div>
 									<div class="bx">
 										<img src="images/회의생성.jpg" onclick='javascript:location.href="/newroom"' style="cursor:pointer">
 										<span>회의 생성</span>
+									</div>
+									<div class="bx">
+										<img id="participate" src="images/회의참가.jpg">
+										<span>로그인</span>
 									</div>
 									<div class="bx">
 										<img src="images/회원가입.jpg">

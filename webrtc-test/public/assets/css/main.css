@@ -439,6 +439,10 @@
 		margin-top: 3em;
 	}
 
+	footer{
+		margin-top:10px;
+	}
+
 	@media screen and (max-width: 736px) {
 
 		header.major {

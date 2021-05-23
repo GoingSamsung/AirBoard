@@ -1,0 +1,43 @@
+.subscribe-box {
+    color:black;
+    text-align: center;
+}
+.subscribe-box .subscribe {
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+}
+.subscribe-box .subscribe input {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid;
+    padding: 1em 0 0.8em;
+    text-align: center;
+    font-size: 18px;
+    font-family: inherit;
+    font-weight: 300;
+    line-height: 1.5;
+    color: inherit;
+    outline: none;
+}
+.subscribe-box .subscribe input::placeholder {
+    color: black;
+}
+.subscribe-box .subscribe button {
+    all: unset;
+    margin-top: 2.4em;
+    background: transparent;
+    border: 2px solid black;
+    padding: 1em 4em;
+    border-radius: 50px;
+    cursor: pointer;
+    display: inline-block;
+    font-weight: 700;
+    position: relative;
+    transition: all 300ms ease;
+}
+.subscribe-box .subscribe button span {
+    display: inline-block;
+    transition: all 300ms ease;
+}
