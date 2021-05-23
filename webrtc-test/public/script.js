@@ -31,6 +31,7 @@ const hiddenVideo = document.getElementById('hiddenVideo')
 var canvas = document.getElementById(ROOM_ID)
 var cursor_canvas = document.getElementById('cursorWhiteboard')
 
+var penStyle = 'pen'
 var penColor = 'black'
 var penWidth = 2
 
@@ -91,7 +92,7 @@ navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia 
 var rX = 0.79872  //rX, rY는 최대한 마우스 에임에 맞는 필기를 위해 곱해주는 용도
 var rY = 0.8091
 
-const myPeer = new Peer({host:'peerjs-server.herokuapp.com', secure:true, port:443})
+const myPeer = new Peer({host:'goingsamsung-peerjs-server.herokuapp.com', secure:true, port:443})
 const peers = {}
 
 function printz(x)  //디버그용
@@ -253,10 +254,11 @@ function extractDraw() {
       cursor_context.fillStyle = "red"
 
       cursor_context.fillRect(xx * (width/hiddenCamVideo.width), yy * (height/hiddenCamVideo.height), 3, 3)
-      if(cam_mouse.pos_prev && cam_mouse.click) {
+      if(cam_mouse.pos_prev && cam_mouse.click && penStyle === 'pen') {
         if(camRelativeMouseY < 0.905 && cam_mouse.pos_prev.y/hiddenCamVideo.height < 0.905)
           socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, size:[hiddenCamVideo.width, hiddenCamVideo.height], penWidth: penWidth, penColor: penColor})
       }
+      else if(cam_mouse.click && penStyle === 'eraser') socket.emit('erase_server', ROOM_ID, user_id, cam_mouse.pos.x, cam_mouse.pos.y, width, height)
       cam_mouse.pos_prev = {x: cam_mouse.pos.x, y: cam_mouse.pos.y}
     }
     src.delete()
@@ -286,7 +288,6 @@ function rgb2hsv (r, g, b) {
       rr = diffc(rabs);
       gg = diffc(gabs);
       bb = diffc(babs);
-
       if (rabs === v) {
           h = bb - gg;
       } else if (gabs === v) {
@@ -722,12 +723,23 @@ socket.on('hostChange', (userId, userName)=>{
   }
 })
 
-socket.on('reLoading', (roomId)=>{
-  if(roomId == ROOM_ID) {
-    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
-    //socket.emit('reDrawing', ROOM_ID)
-    context.drawImage(canvasImage, 0,0, canvas.width, canvas.height)
-  }
+socket.on('reLoading', () =>{
+  console.log('clear')
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+  //socket.emit('reDrawing', ROOM_ID)
+  context.drawImage(canvasImage, 0,0, canvas.width, canvas.height)
+})
+
+socket.on('stroke', (data)=>{ //지우개 보류
+  var line = data.line
+  var size = data.size
+
+  context.strokeStyle = data.penColor
+  context.beginPath()
+  context.lineWidth = data.penWidth
+  context.moveTo(line[0].x * (width/size[0]), line[0].y * (height/size[1]))
+  context.lineTo(line[1].x * (width/size[0]), line[1].y * (height/size[1]))
+  context.stroke()
 })
 
 function drawChatMessage(data){
@@ -849,7 +861,6 @@ var newImg = new Image()
 function changeCanvasImage(relativeMouseX, relativeMouseY, select, flag) {
   if(relativeMouseY >= 0.91 && relativeMouseY <= 0.99) {
     if(relativeMouseX >= 0.034 && relativeMouseX <= 0.073) {
-      console.log('zz')
       if(flag) selectImage(1)
       else camSelectImage(1)
     }
@@ -970,8 +981,8 @@ document.addEventListener("keyup", (e) => {
 
 function clickCanvas(select)
 {
-  if(select === 1) {}
-  else if(select === 2) {}
+  if(select === 1) penStyle = 'pen'
+  else if(select === 2) penStyle = 'eraser'
   else if(select === 3) socket.emit('clearWhiteBoard', ROOM_ID)
   else if(select === 4) penColor = 'black'
   else if(select === 5) penColor = 'red'
@@ -984,6 +995,8 @@ function clickCanvas(select)
   else if(select === 12) penWidth = 1
   else if(select === 13) penWidth = 2
   else if(select === 14) penWidth = 4
+  else if(select === 15) socket.emit('undo_server', ROOM_ID, user_id)  
+  else if(select === 16) socket.emit('redo_server', ROOM_ID, user_id)
 }
 
 var selected = 0
@@ -1095,10 +1108,13 @@ document.addEventListener("DOMContentLoaded", ()=> {
     }
 
     if(mouse.click && mouse.move && mouse.pos_prev) {
-      if(relativeMouseY < 0.905 && mouse.pos_prev.y/canvas.height < 0.905)
-        socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID, size:[width, height], penWidth: penWidth, penColor: penColor})
+      if(relativeMouseY < 0.905 && mouse.pos_prev.y/canvas.height < 0.905){
+        if(penStyle === 'pen') socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID, userId: user_id, size:[width, height], penWidth: penWidth, penColor: penColor})
+        //else socket.emit('erase_server', ROOM_ID, mouse.pos.x, mouse.pos.y)
+      }
       mouse.move = false
     }
+    else if(mouse.click && penStyle === 'eraser') socket.emit('erase_server', ROOM_ID, mouse.pos.x, mouse.pos.y, width, height)
     mouse.pos_prev = {x: mouse.pos.x, y: mouse.pos.y}
     setTimeout(mainLoop, 20)  //최종은 20
   }

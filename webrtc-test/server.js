@@ -35,6 +35,8 @@ app.set('view engine', 'ejs')
 app.use(express.static('public'))
 
 var line_track = [] //캔버스용 라인따기
+var line_track_backup = [] //캔버스용 라인따기
+var backup_track = []
 var isDisplayHost = []
 app.get('/', (req, res) => {
   res.render('home');
@@ -71,7 +73,6 @@ app.post('/joinroom', (req, res) => {
     res.render('noPage')
   }
 })
-
 
 app.get('/address/:room', (req, res) => {
   res.render('address', {roomId: req.params.room})
@@ -152,7 +153,69 @@ io.on('connection', socket => {
     users = await User.findOne({userId:muteUserId}, null, {})
     io.sockets.in(roomId).emit('setMute', users.isMute, muteUserId, userId)
   })
-
+  socket.on('undo_server', (roomId, userId) => {
+    //io.sockets.in(roomId).emit('undo_script', roomId)
+    var flag = true
+      if(line_track[roomId][userId] !== undefined) {
+      var length = line_track[roomId][userId].length
+      if(length >= 3) {
+        line_track[roomId][userId].pop()
+        line_track[roomId][userId].pop()
+        line_track[roomId][userId].pop()
+        backup_track[roomId][userId].push(3)
+      }
+      else if(length === 2) {
+        line_track[roomId][userId].pop()
+        line_track[roomId][userId].pop()
+        backup_track[roomId][userId].push(2)
+      }
+      else if(length === 1) {
+        line_track[roomId][userId].pop()
+        backup_track[roomId][userId].push(1)
+      }
+      else flag = false
+      if(flag) {
+        io.sockets.in(roomId).emit('reLoading')
+        for(var i in line_track[roomId])
+          for(var j in line_track[roomId][i])
+            io.sockets.in(roomId).emit('stroke', {line: line_track[roomId][i][j].line, roomId:line_track[roomId][i][j].roomId, size: line_track[roomId][i][j].size, penWidth: line_track[roomId][i][j].penWidth, penColor: line_track[roomId][i][j].penColor})
+      }
+    }
+  })
+  socket.on('redo_server', (roomId, userId) => {
+    //io.sockets.in(roomId).emit('undo_script', roomId)
+    var flag = true
+    if(backup_track[roomId][userId] !== undefined && line_track[roomId][userId] !== undefined) {
+      var line_length = line_track[roomId][userId].length
+      var length = backup_track[roomId][userId].length
+      var backup_length = backup_track[roomId][userId][length-1]
+      if(length > 0) {
+      for(var i=0; i<backup_length; i++) {
+        //console.log(line_track_backup[roomId][userId][line_length+i])
+        line_track[roomId][userId].push(line_track_backup[roomId][userId][line_length + i])
+      }
+      backup_track[roomId][userId].pop()
+      /*
+      if(length >= 3) {
+        line_track[roomId][userId].splice(length-3, 4)
+        backup_track[roomId][userId].push(4)
+      }
+      else if(length === 2) {
+        line_track[roomId][userId].splice(length-2, 3)
+        backup_track[roomId][userId].push(3)
+      }
+      else if(length === 1) {
+        line_track[roomId][userId].splice(length-1, 2)
+        backup_track[roomId][userId].push(2)
+      }
+      else flag = false*/
+        io.sockets.in(roomId).emit('reLoading')
+        for(var i in line_track[roomId])
+          for(var j in line_track[roomId][i])
+            io.sockets.in(roomId).emit('stroke', {line: line_track[roomId][i][j].line, roomId:line_track[roomId][i][j].roomId, size: line_track[roomId][i][j].size, penWidth: line_track[roomId][i][j].penWidth, penColor: line_track[roomId][i][j].penColor})
+      }
+    }
+  })
   socket.on('join-room', async(roomId, userId, userName) => {
     socket.userName=userName
     socket.userId = userId
@@ -226,12 +289,38 @@ io.on('connection', socket => {
   //---캔버스 코드---
   socket.on('clearWhiteBoard', roomId => {
     line_track[roomId]=[]
-    io.sockets.in(roomId).emit('reLoading', roomId)
+    io.sockets.in(roomId).emit('reLoading')
   })
   socket.on('reDrawing', roomId => {
     for(var i in line_track[roomId]) {
-      socket.emit('drawLine', {line: line_track[roomId][i].line, roomId:line_track[roomId][i].roomId, size: line_track[roomId][i].size, penWidth: line_track[roomId][i].penWidth, penColor: line_track[roomId][i].penColor});
+      for(var j in line_track[roomId][i])
+        socket.emit('drawLine', {line: line_track[roomId][i][j].line, roomId:line_track[roomId][i][j].roomId, userId:line_track[roomId][i][j].userId, size: line_track[roomId][i][j].size, penWidth: line_track[roomId][i][j].penWidth, penColor: line_track[roomId][i][j].penColor});
     }
+  })
+
+  socket.on('erase_server', (roomId, userId, click_x, click_y, width, height) => {
+    var line_x = 0
+    var line_y = 0
+    var pos_line_x = 0
+    var pos_line_y = 0
+    for(var i in line_track[roomId]) {
+      line_x = line_track[roomId][userId][i].line[0].x / line_track[roomId][userId][i].size[0]
+      line_y = line_track[roomId][userId][i].line[0].y / line_track[roomId][userId][i].size[1]
+      pos_line_x = line_track[roomId][userId][i].line[1].x / line_track[roomId][userId][i].size[0]
+      pos_line_y = line_track[roomId][userId][i].line[1].y / line_track[roomId][userId][i].size[1]
+      var deg_x = (pos_line_x - line_x)
+      var deg_y = (pos_line_y - line_y)
+      var result_x = click_x/width - line_x
+      var result_y = click_y/height - line_y
+      //deg_x, deg_y 같을 경우 고려
+      console.log(click_y, height)
+     // console.log('[' + result_y, parseInt((result_x*deg_y)/deg_x) + ']'+ i)  
+      if(result_y < (result_x*deg_y)/deg_x + 0.005 && result_y > (result_x*deg_y)/deg_x - 0.005)
+        line_track[roomId].splice(i,1) 
+    }
+    io.sockets.in(roomId).emit('reLoading')
+    for(var i in line_track[roomId])
+     io.sockets.in(roomId).emit('stroke', {line: line_track[roomId][userId][i].line, roomId:line_track[roomId][userId][i].roomId, size: line_track[roomId][userId][i].size, penWidth: line_track[roomId][userId][i].penWidth, penColor: line_track[roomId][userId][i].penColor}) 
   })
   /*
   for(var i in line_track[roomId]) {
@@ -239,8 +328,24 @@ io.on('connection', socket => {
   } //트랙보고 새로 들어온 사람이 원래 그렸던 그림 볼 수 있도록
   */
   socket.on('drawLine', data => {
-    if(line_track[data.roomId] == undefined) {
-      line_track[data.roomId] = new Array(1)
+    if(line_track[data.roomId] === undefined) {
+      line_track[data.roomId] = new Array(0)
+    }
+    if(line_track_backup[data.roomId] === undefined) {
+      line_track_backup[data.roomId] = new Array(0)
+    }
+    if(backup_track[data.roomId] === undefined) {
+      backup_track[data.roomId] = new Array(0)
+    }
+    if(line_track[data.roomId][data.userId] === undefined)
+      line_track[data.roomId][data.userId] = new Array(0)
+    if(line_track_backup[data.roomId][data.userId] === undefined)
+      line_track_backup[data.roomId][data.userId] = new Array(0)
+    if(backup_track[data.roomId][data.userId] === undefined)
+      backup_track[data.roomId][data.userId] = new Array(0)
+    if(line_track[data.roomId][data.userId].length !== line_track_backup[data.roomId][data.userId].length) {
+      line_track_backup[data.roomId][data.userId] = line_track[data.roomId][data.userId].slice()
+      backup_track[data.roomId][data.userId] = new Array(0)
     }
     const dt ={
       line: data.line,
@@ -249,11 +354,13 @@ io.on('connection', socket => {
       penWidth: data.penWidth,
       penColor: data.penColor
     }
-    line_track[data.roomId].push(dt)
-    io.emit('drawLine', {line: data.line, roomId:data.roomId, size: data.size, penWidth:data.penWidth, penColor: data.penColor})
+    line_track[data.roomId][data.userId].push(dt)
+    line_track_backup[data.roomId][data.userId].push(dt)
+    io.emit('drawLine', {line: data.line, roomId:data.roomId, userId: data.userId, size: data.size, penWidth:data.penWidth, penColor: data.penColor})
   })
   //---캔버스 코드---
 
 })
+
 
 server.listen(443)
