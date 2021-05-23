@@ -15,6 +15,9 @@ const server = https.createServer(
 const io = require('socket.io')(server)
 const { v4: uuidV4 } = require('uuid')
 
+const bodyParser = require('body-parser');   
+app.use(bodyParser.urlencoded({ extended: true }));  
+
 const mongoose = require('mongoose');
 const User = require('./models/user');
 const Room = require('./models/room');
