@@ -275,12 +275,25 @@ image{
 }
 
 .btn:hover {
-    background: #8cc9f0;
-    border-radius:4px;
-    color: #fff;
-    transition: all .2s ease-in-out .2s;
+    color: #8cc9f0;
 }
-
-#docu, #penc, #hand {
-    margin-right:7px;
+.btn:hover:before {
+    transform: none;
+    opacity: 1;
+    transition-duration: 0.4s;
+}
+.btn:before {
+    content: "";
+    position: absolute;
+    width: 90%;
+    height: 2px;
+    margin-left:4px;
+    margin-bottom:3px;
+    left: 0;
+    bottom: 0px;
+    background: #8cc9f0;
+    transform: translateY(6px);
+    opacity: 0;
+    transition: 1.8s cubic-bezier(0.2, 1, 0.3, 1);
+    pointer-events: none;
 }
