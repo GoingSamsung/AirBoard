@@ -4,14 +4,41 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta name="google" content="notranslate">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <title>회의실 주소</title>
     <style>
+
+      #container{
+        width:100%;
+        height:70px;
+        display:flex;
+      }
+
+      textarea{
+        font-size:5px;
+        display:inline;
+        width:80%;
+        float:left;
+      }
+
+      button{
+        display:inline;
+        width:20%;
+        float:right;
+      }
     </style>
   </head>
   <body>
-    <textarea id="copyText" readonly>https://airboard.ga/<%= roomId %></textarea>   
-    <button onclick="copyAddress()">복사</button> 
+    <div id='container'>
+      <textarea id="copyText" class="form-control" style="resize: none;" readonly>https://airboard.ga/<%= roomId %></textarea>   
+      <button type="button" class="btn btn-primary" onclick="copyAddress()">복사</button> 
+    </div>
     <script>
+      window.onload=function(){
+        window.focus;
+        window.resizeTo(514,136);
+      }
       function copyAddress()
       {
         const copyText = document.getElementById('copyText')
