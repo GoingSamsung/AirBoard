@@ -2,6 +2,7 @@
   화면공유 했을 때 안넘어가는 경우가있음.(건모-> 형택: X, 형택->건모: O)
   호스트 기능들 추가
   시나리오 보여줄 기능들 다 넣기
+  되돌리기 했을 때 맨 처음 필기 늘어나는 현상 있음
 */
 var user_name = prompt('대화명을 입력해주세요.', '')
 
@@ -9,11 +10,7 @@ while(user_name == null || user_name == undefined || user_name == '' || user_nam
   if(user_name.length > 6) user_name = prompt('대화명을 6자 이하로 설정해주세요.', '')
   else user_name = prompt('대화명을 다시 입력해주세요.', '')
 }
-window.onload =function () {
-  window.open("/address/"+ ROOM_ID,  "popup", "width=300, \
-  status=no, menubars=0, height=300, scrollbars=0, top=100px, left=100px\
-  resizable=0, toolbar=0, directories=0, location=0, menubar=no");
-}
+
 const socket = io('/')
 var chatWindow = document.getElementById('chatWindow'); 
 const videoGrid = document.getElementById('video-grid')
@@ -92,7 +89,8 @@ navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia 
 var rX = 0.79872  //rX, rY는 최대한 마우스 에임에 맞는 필기를 위해 곱해주는 용도
 var rY = 0.8091
 
-const myPeer = new Peer({host:'goingsamsung-peerjs-server.herokuapp.com', secure:true, port:443})
+//const myPeer = new Peer({host:'goingsamsung-peerjs-server.herokuapp.com', secure:true, port:443})
+const myPeer = new Peer({})
 const peers = {}
 
 function printz(x)  //디버그용
@@ -256,7 +254,7 @@ function extractDraw() {
       cursor_context.fillRect(xx * (width/hiddenCamVideo.width), yy * (height/hiddenCamVideo.height), 3, 3)
       if(cam_mouse.pos_prev && cam_mouse.click && penStyle === 'pen') {
         if(camRelativeMouseY < 0.905 && cam_mouse.pos_prev.y/hiddenCamVideo.height < 0.905)
-          socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, size:[hiddenCamVideo.width, hiddenCamVideo.height], penWidth: penWidth, penColor: penColor})
+          socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, userId:user_id, size:[hiddenCamVideo.width, hiddenCamVideo.height], penWidth: penWidth, penColor: penColor})
       }
       else if(cam_mouse.click && penStyle === 'eraser') socket.emit('erase_server', ROOM_ID, user_id, cam_mouse.pos.x, cam_mouse.pos.y, width, height)
       cam_mouse.pos_prev = {x: cam_mouse.pos.x, y: cam_mouse.pos.y}
@@ -310,7 +308,6 @@ function rgb2hsv (r, g, b) {
 
 myPeer.on('open', id => { //피어 접속시 맨 처음 실행되는 피어 함수
   user_id = id
-  socket.emit('join-room', ROOM_ID, id, user_name)
 })
 
 function userJoin()
@@ -327,10 +324,19 @@ function userJoin()
   userBox.appendChild(myVideoBackground)
   //userBox.appendChild(extractColorVideo)
   userBox.appendChild(myVideo)
-  addVideoStream(myVideo, localStream, userBox)
+  myVideo.srcObject = localStream
+  myVideo.addEventListener('loadedmetadata', () => {
+    myVideo.play()
+  })
   hiddenVideo.srcObject = localStream
-  hiddenVideo.addEventListener('loadedmetadata', () => {
+  hiddenVideo.addEventListener('loadedmetadata', async() => { //모든 비디오 로드 된 후 시작
     hiddenVideo.play()
+    await 탄지로()
+    videoGrid.append(userBox)
+    socket.emit('join-room', ROOM_ID, user_id, user_name)
+    window.open("/address/"+ ROOM_ID,  "popup", "width=300, \
+    status=no, menubars=0, height=300, scrollbars=0, top=100px, left=100px\
+    resizable=0, toolbar=0, directories=0, location=0, menubar=no");
   })
   getNewUser()
 
@@ -563,6 +569,9 @@ camWriteButton.addEventListener('click', () => {
     }
     else {
       alert("캠 필기 기능 종료")
+      R=[]
+      G=[]
+      B=[]
       cursor_context.clearRect(0,0, width, height)
       extractColorVideo.style.visibility = 'hidden'
       isCamWrite = false
@@ -578,7 +587,6 @@ gestureButton.addEventListener('click', () => {
   if(isNoCamUser) alert("캠이 없습니다.")
   else if(!isCam) alert("캠을 켜주세요.")
   else {
-    탄지로()
     if(gesturechk) {
       gestureImage.src="img/[크기변환]hand.png"
       gestureButton.innerText = '제스처 켜기'
@@ -964,6 +972,7 @@ socket.on('setMute', (isMute, muteUserId, userId) => {
 document.addEventListener("keydown", (e) => {
   if(e.key == '`') {
     cam_mouse.click = true
+    gestureFlag = true
     clickCanvas(cam_selected)
   }
 
@@ -975,6 +984,7 @@ document.addEventListener("keydown", (e) => {
 document.addEventListener("keyup", (e) => {
   if(e.key == '`') {  
     cam_mouse.click = false
+    gestureFlag = false
     chkfirst = 0
   }
 })
@@ -995,7 +1005,7 @@ function clickCanvas(select)
   else if(select === 12) penWidth = 1
   else if(select === 13) penWidth = 2
   else if(select === 14) penWidth = 4
-  else if(select === 15) socket.emit('undo_server', ROOM_ID, user_id)  
+  else if(select === 15) socket.emit('undo_server', ROOM_ID, user_id)
   else if(select === 16) socket.emit('redo_server', ROOM_ID, user_id)
 }
 
@@ -1107,6 +1117,9 @@ document.addEventListener("DOMContentLoaded", ()=> {
       context.drawImage(canvasImage, 0,0, canvas.width, canvas.height)
     }
 
+    if(mouse.click) gestureFlag = true
+    else gestureFlag = false
+
     if(mouse.click && mouse.move && mouse.pos_prev) {
       if(relativeMouseY < 0.905 && mouse.pos_prev.y/canvas.height < 0.905){
         if(penStyle === 'pen') socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID, userId: user_id, size:[width, height], penWidth: penWidth, penColor: penColor})
@@ -1123,6 +1136,7 @@ document.addEventListener("DOMContentLoaded", ()=> {
   //---캔버스 코드 끝---
 })
 
+var gestureFlag = false
 
 //=제스처
 const config = {
@@ -1130,9 +1144,6 @@ const config = {
 };
 
 async function 탄지로() {
-
-  const video = document.getElementById('hiddenVideo')
-
   const knownGestures = [
     fp.Gestures.VictoryGesture,
     fp.Gestures.GyuGesture,
@@ -1146,38 +1157,44 @@ async function 탄지로() {
 
   // main estimation loop
   const estimateHands = async () => {
+    if(!gestureFlag) {
+      const predictions = await model.estimateHands(hiddenVideo, true);
+      for(let i = 0; i < predictions.length; i++) {
+        
+        const est = GE.estimate(predictions[i].landmarks, 7.5);
 
-    const predictions = await model.estimateHands(video, true);
+        if(est.gestures.length > 0) {
 
-    for(let i = 0; i < predictions.length; i++) {
+          let result = est.gestures.reduce((p, c) => { 
+            return (p.confidence > c.confidence) ? p : c;
+          });
 
-      const est = GE.estimate(predictions[i].landmarks, 7.5);
-
-      if(est.gestures.length > 0) {
-
-        let result = est.gestures.reduce((p, c) => { 
-          return (p.confidence > c.confidence) ? p : c;
-        });
-
-        console.log(result.name);
-        if(result.name == "palm"){
-          palmcnt+=2;
-        }
-        if(palmcnt>=10){
-          socket.emit('clearWhiteBoard', ROOM_ID);
+          console.log(result.name);
+          if(result.name == "palm"){
+            palmcnt+=2;
+          }
+          if(palmcnt>=10){
+            palmcnt = 0;
+            socket.emit('clearWhiteBoard', ROOM_ID);
+          }
         }
       }
-
-    }
+  }    
+    if(gestureFlag) config.video.fps = 1
+    else config.video.fps = 30
     if(palmcnt>=1){
       palmcnt--;
     }
-
     // ...and so on
     if(gesturechk)
       setTimeout(() => { estimateHands(); }, 1000 / config.video.fps);
+    else gestureLoop()
   };
-
+  function gestureLoop() {
+    if(!gesturechk)
+      setTimeout(gestureLoop, 1000)
+    else estimateHands()
+  }
   estimateHands();
   console.log("Starting predictions");
 }
