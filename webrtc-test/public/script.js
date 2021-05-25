@@ -33,7 +33,6 @@ var penColor = 'black'
 var penWidth = 2
 
 var canvasImage = new Image()
-canvasImage.src = 'img/canvas.png'
 
 var context = canvas.getContext('2d')
 var cursor_context = cursor_canvas.getContext('2d')
@@ -336,7 +335,117 @@ function userJoin()
     socket.emit('join-room', ROOM_ID, user_id, user_name)
     window.open("/address/"+ ROOM_ID,  "popup", "width=300, \
     status=no, menubars=0, height=300, scrollbars=0, top=100px, left=100px\
-    resizable=0, toolbar=0, directories=0, location=0, menubar=no");
+    resizable=0, toolbar=0, directories=0, location=0, menubar=no")
+    canvasImage.src = 'img/canvas.png'
+    allLoaded()
+    camButton.addEventListener('click', () => {
+      if(isNoCamUser) alert('캠이 없습니다.')
+      else if(isCamWrite2) alert('캠 필기가 켜져있습니다.')
+      else if(gesturechk) alert('제스처가 켜져있습니다.')
+      else {
+        if(isCam) {
+          myVideoBackground.style.width = '160px'
+          myVideoBackground.style.height = '118px'
+          myVideo.width = 0
+          myVideo.height = 0
+          camButton.innerText = '캠 켜기'
+          camImage.src="img/[크기변환]noweb-cam.png"
+        }
+        else {
+          myVideoBackground.style.width = '0px'
+          myVideoBackground.style.height = '0px'
+          myVideo.width = 160
+          myVideo.height = 118
+          camButton.innerText = '캠 끄기'
+          camImage.src="img/[크기변환]web-cam.png"
+        }
+        localStream.flag = 0
+        socket.emit('streamPlay_server', user_id,ROOM_ID,isCam)
+        isCam = !isCam    
+      }
+    })
+    
+    audioButton.addEventListener('click', () => {
+      if(!isMuteUser) {
+        if(isMute) {
+          audioImage.src="img/[크기변환]microphone.png"
+          audioButton.innerText = '마이크 끄기'
+        }
+        else {
+          audioImage.src="img/[크기변환]nomicrophone.png"
+          audioButton.innerText = '마이크 켜기'
+        }
+        isMute = !isMute
+        socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
+      }
+      else alert('마이크가 없습니다.')
+    })
+    
+    displayButton.addEventListener('click', () => {
+      if(!isDisplaying) {
+        displayImage.src="img/[크기변환]nodocument.png"
+        displayButton.innerText = '공유 종료' //일단 4글자로 맞췄음
+        displayPlay()
+      }
+      else if(isDisplayHost) {
+        displayImage.src="img/[크기변환]document.png"
+        displayButton.innerText = '화면 공유'
+        var displayVideo = document.getElementById('userDisplay')
+        const stream = displayVideo.srcObject
+        stream.getVideoTracks()[0].stop()
+        displayVideo.remove()
+        canvas.style.backgroundColor = '#ffffff'
+        isDisplayHost = false
+        isDisplaying = false
+        if(displayCall !== undefined) displayCall.close()
+      }
+      else alert('화면공유가 이미 켜져있습니다.')
+    })
+    
+    camWriteButton.addEventListener('click', () => {
+      if(isNoCamUser) alert('캠이 없습니다.')
+      else if(!isCam) alert('캠을 켜주세요')
+      else {
+        if(!isCamWrite) {
+          alert("캠에서 펜으로 인식할 부분을 클릭해주세요");
+          extractColorVideo.style.visibility = 'visible'
+          extractColorVideo.width = canvas.width
+          extractColorVideo.height = canvas.height
+          isCamWrite = true
+          carwriteImage.src="img/[크기변환]nopencil.png"
+          camWriteButton.innerText = '캠 필기 끄기'
+        }
+        else {
+          alert("캠 필기 기능 종료")
+          R=[]
+          G=[]
+          B=[]
+          cursor_context.clearRect(0,0, width, height)
+          extractColorVideo.style.visibility = 'hidden'
+          isCamWrite = false
+          isCamWrite2 = false
+          cntt = 0
+          carwriteImage.src="img/[크기변환]pencil.png"
+          camWriteButton.innerText = '캠 필기 켜기'
+        }
+      }
+    })
+    
+    gestureButton.addEventListener('click', () => {
+      if(isNoCamUser) alert("캠이 없습니다.")
+      else if(!isCam) alert("캠을 켜주세요.")
+      else {
+        if(gesturechk) {
+          gestureImage.src="img/[크기변환]hand.png"
+          gestureButton.innerText = '제스처 켜기'
+        }
+        else if(!gesturechk) {
+          gestureImage.src="img/[크기변환]nohand.png"
+          gestureButton.innerText = '제스처 끄기'
+        }
+        gesturechk = !gesturechk
+      }
+    })
   })
   getNewUser()
 
@@ -491,115 +600,6 @@ var carwriteImage = document.getElementById('penc')
 var gestureButton = document.getElementById('gesture_button')
 var gestureImage = document.getElementById('hand')
 
-camButton.addEventListener('click', () => {
-  if(isNoCamUser) alert('캠이 없습니다.')
-  else if(isCamWrite2) alert('캠 필기가 켜져있습니다.')
-  else if(gesturechk) alert('제스처가 켜져있습니다.')
-  else {
-    if(isCam) {
-      myVideoBackground.style.width = '160px'
-      myVideoBackground.style.height = '118px'
-      myVideo.width = 0
-      myVideo.height = 0
-      camButton.innerText = '캠 켜기'
-      camImage.src="img/[크기변환]noweb-cam.png"
-    }
-    else {
-      myVideoBackground.style.width = '0px'
-      myVideoBackground.style.height = '0px'
-      myVideo.width = 160
-      myVideo.height = 118
-      camButton.innerText = '캠 끄기'
-      camImage.src="img/[크기변환]web-cam.png"
-    }
-    localStream.flag = 0
-    socket.emit('streamPlay_server', user_id,ROOM_ID,isCam)
-    isCam = !isCam    
-  }
-})
-
-audioButton.addEventListener('click', () => {
-  if(!isMuteUser) {
-    if(isMute) {
-      audioImage.src="img/[크기변환]microphone.png"
-      audioButton.innerText = '마이크 끄기'
-    }
-    else {
-      audioImage.src="img/[크기변환]nomicrophone.png"
-      audioButton.innerText = '마이크 켜기'
-    }
-    isMute = !isMute
-    socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
-  }
-  else alert('마이크가 없습니다.')
-})
-
-displayButton.addEventListener('click', () => {
-  if(!isDisplaying) {
-    displayImage.src="img/[크기변환]nodocument.png"
-    displayButton.innerText = '공유 종료' //일단 4글자로 맞췄음
-    displayPlay()
-  }
-  else if(isDisplayHost) {
-    displayImage.src="img/[크기변환]document.png"
-    displayButton.innerText = '화면 공유'
-    var displayVideo = document.getElementById('userDisplay')
-    displayVideo.remove()
-    canvas.style.backgroundColor = '#ffffff'
-    socket.emit('displayReset_server', ROOM_ID, user_id)
-    socket.emit('displayConnect_server', ROOM_ID, null)
-    isDisplayHost = false
-    isDisplaying = false
-  }
-  else alert('화면공유가 이미 켜져있습니다.')
-})
-
-camWriteButton.addEventListener('click', () => {
-  if(isNoCamUser) alert('캠이 없습니다.')
-  else if(!isCam) alert('캠을 켜주세요')
-  else {
-    if(!isCamWrite) {
-      alert("캠에서 펜으로 인식할 부분을 클릭해주세요");
-      extractColorVideo.style.visibility = 'visible'
-      extractColorVideo.width = canvas.width
-      extractColorVideo.height = canvas.height
-      isCamWrite = true
-      carwriteImage.src="img/[크기변환]nopencil.png"
-      camWriteButton.innerText = '캠 필기 끄기'
-    }
-    else {
-      alert("캠 필기 기능 종료")
-      R=[]
-      G=[]
-      B=[]
-      cursor_context.clearRect(0,0, width, height)
-      extractColorVideo.style.visibility = 'hidden'
-      isCamWrite = false
-      isCamWrite2 = false
-      cntt = 0
-      carwriteImage.src="img/[크기변환]pencil.png"
-      camWriteButton.innerText = '캠 필기 켜기'
-    }
-  }
-})
-
-gestureButton.addEventListener('click', () => {
-  if(isNoCamUser) alert("캠이 없습니다.")
-  else if(!isCam) alert("캠을 켜주세요.")
-  else {
-    if(gesturechk) {
-      gestureImage.src="img/[크기변환]hand.png"
-      gestureButton.innerText = '제스처 켜기'
-    }
-    else if(!gesturechk) {
-      gestureImage.src="img/[크기변환]nohand.png"
-      gestureButton.innerText = '제스처 끄기'
-    }
-    gesturechk = !gesturechk
-  }
-})
-
-
 function connectionDisplayLoop(userId)
 {
   if(isDisplayCall[userId]) {
@@ -632,7 +632,15 @@ function connectToDisplay(userId) {
         canvas.style.backgroundColor = 'transparent'
         displayVideo.play()
       })
-
+      stream.getVideoTracks()[0].addEventListener('ended', () => {
+        displayVideo.remove()
+        canvas.style.backgroundColor = '#ffffff'
+        isDisplayHost = false
+        isDisplaying = false
+        displayButton.innerText = '화면 공유'
+        displayImage.src="img/[크기변환]document.png"
+        if(displayCall !== undefined) displayCall.close()
+      });
       displayVideo.addEventListener('play', function() {
         isDisplaying = true
         //draw( this, context, 1024, 768 );
@@ -658,6 +666,17 @@ function displayPlay() {
     isDisplayHost= true
     displayVideo.srcObject = stream
     displayVideo.play();
+    stream.getVideoTracks()[0].addEventListener('ended', () => {
+      console.log('display end')
+      displayVideo.remove()
+      canvas.style.backgroundColor = '#ffffff'
+      isDisplayHost = false
+      isDisplaying = false
+      displayButton.innerText = '화면 공유'
+      displayImage.src="img/[크기변환]document.png"
+      socket.emit('displayReset_server', ROOM_ID, user_id)
+      if(displayCall !== undefined) displayCall.close()
+    })
     socket.emit('displayConnect_server', ROOM_ID, user_id)
   }).catch(error => {
     displayButton.innerText = '화면 공유'
@@ -683,14 +702,14 @@ socket.on('newDisplayConnect_script', (roomId, userId, newUserId) => {
   }
 })
 
+
 socket.on('displayReset_script', (roomId, userId) => {
   if(userId != user_id) {
     var displayVideo = document.getElementById('userDisplay')
     canvas.style.backgroundColor = '#ffffff'
     displayVideo.remove()
     isDisplaying = false
-    displayCall.close()
-  }
+    }
 })
 
 socket.on('muteRequest_script', (userId, roomId, is_mute) => {
@@ -1029,7 +1048,8 @@ var relativeY = 188
 var width = window.innerWidth
 var height = window.innerHeight
 //---캔버스 코드 시작---
-document.addEventListener("DOMContentLoaded", ()=> {
+
+function allLoaded() {
   var socket = io.connect()
   canvas.width = parseInt(width*rX)
   canvas.height = parseInt(height-200)
@@ -1072,6 +1092,7 @@ document.addEventListener("DOMContentLoaded", ()=> {
     setTimeout(extractLoop, 25)
   }
   function mainLoop() {
+    /*
     if(isDisplayHost && localDisplay.active === false) {
       var displayVideo = document.getElementById('userDisplay')
       displayVideo.remove()
@@ -1081,11 +1102,10 @@ document.addEventListener("DOMContentLoaded", ()=> {
       isDisplaying = false
       displayButton.innerText = '화면 공유'
       displayImage.src="img/[크기변환]document.png"
-    }
+    }*/
     if(isDisplaying) {
       var displayVideo = document.getElementById('userDisplay')
-      if(displayVideo !== null) {
-        
+      if(displayVideo !== null) {        
         displayVideo.width = canvas.width
         displayVideo.height = canvas.height
     }
@@ -1134,7 +1154,7 @@ document.addEventListener("DOMContentLoaded", ()=> {
   socket.emit('reDrawing', ROOM_ID)
   mainLoop()
   //---캔버스 코드 끝---
-})
+}
 
 var gestureFlag = false
 
