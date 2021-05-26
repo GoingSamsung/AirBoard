@@ -832,7 +832,8 @@ socket.on('setHost', (userId)=>{
       hostCanvas = false
       hostEachCanvas = false
       isEachCanvas = false
-      if(flag) socket.emit('canvasControl_server', ROOM_ID, userId, hostCanvas, hostEachCanvas)
+      socket.emit('canvasControl_server', ROOM_ID, userId, hostCanvas, hostEachCanvas)
+      if(flag) socket.emit('clearWhiteBoard', ROOM_ID, user_id)
     })
 
     eachcanvasButton.addEventListener('click', () => {
@@ -881,7 +882,6 @@ socket.on('stroke', (data)=>{ //지우개 보류
   var size = data.size
 
   if(isEachCanvas) {
-    console.log(data.userId === user_id)
     if(data.userId === user_id) {
       context.strokeStyle = data.penColor
       context.beginPath()
