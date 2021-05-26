@@ -451,7 +451,7 @@ function userJoin()
 
   socket.on('user-connected', (userId, userName) => {
     isCall[userId] = true
-    connectionLoop(userId, userName)
+    connectionLoop(userId, userName, 0)
   })
 }
 
@@ -526,7 +526,7 @@ function getNewUser()
   })
 }
 
-function connectionLoop(userId, userName) //피어 연결이 제대로 될 때 까지 반복
+function connectionLoop(userId, userName, connectionCnt) //피어 연결이 제대로 될 때 까지 반복
 {
   if(isCall[userId]) {
     console.log('peer connections..')
@@ -534,7 +534,8 @@ function connectionLoop(userId, userName) //피어 연결이 제대로 될 때 �
       peers[userId].close()
     peers[userId] = undefined
     connectToNewUser(userId, userName)
-    setTimeout(connectionLoop, 2000, userId, userName)
+    if(connectionCnt < 5)
+      setTimeout(connectionLoop, 2000, userId, userName, connectionCnt + 1)
   }
   else {
   }
@@ -1011,7 +1012,7 @@ document.addEventListener("keyup", (e) => {
 function clickCanvas(select)
 {
   if(select === 1) penStyle = 'pen'
-  else if(select === 2) penStyle = 'eraser'
+  //else if(select === 2) penStyle = 'eraser' 보류
   else if(select === 3) socket.emit('clearWhiteBoard', ROOM_ID)
   else if(select === 4) penColor = 'black'
   else if(select === 5) penColor = 'red'
