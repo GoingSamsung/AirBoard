@@ -66,6 +66,8 @@ var gesturechk = false
 var chkfirst = 0
 var palmcnt = 0
 
+var menu;
+
 hiddenVideo.style.visibility = 'hidden'
 hiddenVideo.width = 1024
 hiddenVideo.height = 768
@@ -363,6 +365,22 @@ function userJoin()
         socket.emit('streamPlay_server', user_id,ROOM_ID,isCam)
         isCam = !isCam    
       }
+    })
+
+    menu = new Menu("#myMenu");
+    var item1 = new Item("list", "fas fa-bars", "#8cc9f0");
+    var item2 = new Item("exit", "fas fa-sign-out-alt", "#FF5C5C", "방에서 퇴장");
+    var item3 = new Item("setting", "fas fa-cog", "#64F592", "설정");
+    var item4 = new Item("rename", "fas fa-exchange-alt", "#EE82EE", "이름 변경")
+
+    menu.add(item1);
+    menu.add(item2);
+    menu.add(item3);
+    menu.add(item4);
+
+    var exitbutton=document.getElementById("exit")
+    exitbutton.addEventListener('click', () => {
+        window.location.href = '/'
     })
     
     audioButton.addEventListener('click', () => {
@@ -741,6 +759,15 @@ socket.on('streamPlay_script', (userId, roomId, isCam) => {
 
 socket.on('setHost', (userId)=>{
   if(userId === user_id) isHost = true
+  if(isHost==true){
+    var item1 = new Item("everyuser", "fas fa-user", "#5CD1FF", "모든 사용자 캠 필기 사용");
+    var item2 = new Item("onlyhost", "fas fa-user-times", "#FFF15C", "호스트만 캠 필기 사용");
+    var item3 = new Item("eachcanvas", "fas fa-chalkboard-teacher", "#FFFFE0", "각자 캔버스 사용");
+
+    menu.add(item1);
+    menu.add(item2);
+    menu.add(item3);
+  }
 })
 
 socket.on('hostChange', (userId, userName)=>{
