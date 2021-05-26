@@ -26,6 +26,7 @@ const extractCamArea = document.getElementById('extractCamArea')
 const hiddenVideo = document.getElementById('hiddenVideo')
 
 var canvas = document.getElementById(ROOM_ID)
+var capture = document.getElementById('capture')
 var cursor_canvas = document.getElementById('cursorWhiteboard')
 
 var penStyle = 'pen'
@@ -35,6 +36,7 @@ var penWidth = 2
 var canvasImage = new Image()
 
 var context = canvas.getContext('2d')
+var captureContext = capture.getContext('2d')
 var cursor_context = cursor_canvas.getContext('2d')
 var extractContext = extractColorVideo.getContext('2d')
 var hiddenCamContext = hiddenCamVideo.getContext('2d')
@@ -778,7 +780,6 @@ socket.on('muteRequest_script', (userId, roomId, is_mute) => {
   if(roomId == ROOM_ID && userId != user_id) {
     const video = document.getElementById(userId + '!video')
     video.muted = is_mute
-    console.log(video.muted)
   }
 })
 
@@ -1135,6 +1136,23 @@ document.addEventListener("keydown", (e) => {
     gestureFlag = true
     if(isCanvas)
       clickCanvas(cam_selected)
+  }
+  if(e.key === 'End') {
+    capture.width = canvas.width
+    capture.height = canvas.height
+    if(isDisplaying) {
+      var displayVideo = document.getElementById('userDisplay')
+      captureContext.drawImage(displayVideo, 0, 0, width, height)
+    }
+    var img = new Image()
+    img.src = canvas.toDataURL()
+    img.addEventListener('load', ()=> {
+      captureContext.drawImage(img, 0, 0, width, height)
+      var link = document.getElementById('download')
+      link.href = capture.toDataURL()
+      link.download = 'AirBoard_screenshot.png'
+      link.click()
+    })
   }
   if(e.key == 'Insert') {  //디버그용
     console.log(isCanvas, isEachCanvas)
