@@ -12,6 +12,14 @@ const roomSchema = new Schema({
     participant:{
         type:Number,
         default:0,        
+    },
+    isCanvas:{
+        type: Boolean,
+        default: true,        
+    },
+    isEachCanvas:{
+        type: Boolean,
+        default: false,        
     }
 });
 

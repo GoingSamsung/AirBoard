@@ -119,7 +119,7 @@ io.on('connection', socket => {
     io.sockets.in(roomId).emit('sendStream_script', userId_caller, userId_callee, roomId, isCam)
   })
   socket.on('sendMessage', function(data){ 
-    data.name = socket.userName;
+    data.name = data.user_name;
     io.sockets.emit('updateMessage', data); 
   });
   socket.on('displayConnect_server', (roomId, userId) => {
@@ -153,8 +153,8 @@ io.on('connection', socket => {
     users = await User.findOne({userId:muteUserId}, null, {})
     io.sockets.in(roomId).emit('setMute', users.isMute, muteUserId, userId)
   })
-  socket.on('undo_server', (roomId, userId) => {
-    //io.sockets.in(roomId).emit('undo_script', roomId)
+  socket.on('undo_server', async(roomId, userId) => {
+    const room = await Room.findOne({roomId: roomId}, null, {})
     var flag = true
       if(line_track[roomId] !== undefined) {
         if(line_track[roomId][userId] !== undefined) {
@@ -176,17 +176,20 @@ io.on('connection', socket => {
           }
           else flag = false
           if(flag) {
-            io.sockets.in(roomId).emit('reLoading')
-            for(var i in line_track[roomId])
-              for(var j in line_track[roomId][i])
-                io.sockets.in(roomId).emit('stroke', {line: line_track[roomId][i][j].line, roomId:line_track[roomId][i][j].roomId, size: line_track[roomId][i][j].size, penWidth: line_track[roomId][i][j].penWidth, penColor: line_track[roomId][i][j].penColor})
+            io.sockets.in(roomId).emit('reLoading', userId)
+            if(!room.isEachCanvas)
+              for(var i in line_track[roomId])
+                for(var j in line_track[roomId][i])
+                  io.sockets.in(roomId).emit('stroke', {line: line_track[roomId][i][j].line, roomId:line_track[roomId][i][j].roomId, userId: userId, size: line_track[roomId][i][j].size, penWidth: line_track[roomId][i][j].penWidth, penColor: line_track[roomId][i][j].penColor})
+            else
+              for(var i in line_track[roomId][userId])
+                socket.emit('stroke', {line: line_track[roomId][userId][i].line, roomId:line_track[roomId][userId][i].roomId, userId:line_track[roomId][userId][i].userId, size: line_track[roomId][userId][i].size, penWidth: line_track[roomId][userId][i].penWidth, penColor: line_track[roomId][userId][i].penColor}); 
           }
         }
     }
   })
-  socket.on('redo_server', (roomId, userId) => {
-    //io.sockets.in(roomId).emit('undo_script', roomId)
-    var flag = true
+  socket.on('redo_server', async(roomId, userId) => {
+    const room = await Room.findOne({roomId: roomId}, null, {})
     if(backup_track[roomId] !== undefined && line_track[roomId] !== undefined) {
       if(backup_track[roomId][userId] !== undefined && line_track[roomId][userId] !== undefined) {
         var line_length = line_track[roomId][userId].length
@@ -194,18 +197,36 @@ io.on('connection', socket => {
         var backup_length = backup_track[roomId][userId][length-1]
         if(length > 0) {
         for(var i=0; i<backup_length; i++) {
-          //console.log(line_track_backup[roomId][userId][line_length+i])
           line_track[roomId][userId].push(line_track_backup[roomId][userId][line_length + i])
         }
         backup_track[roomId][userId].pop()
-          io.sockets.in(roomId).emit('reLoading')
-          for(var i in line_track[roomId])
-            for(var j in line_track[roomId][i])
-              io.sockets.in(roomId).emit('stroke', {line: line_track[roomId][i][j].line, roomId:line_track[roomId][i][j].roomId, size: line_track[roomId][i][j].size, penWidth: line_track[roomId][i][j].penWidth, penColor: line_track[roomId][i][j].penColor})
+          io.sockets.in(roomId).emit('reLoading', userId)
+          if(!room.isEachCanvas)
+            for(var i in line_track[roomId])
+              for(var j in line_track[roomId][i])
+                io.sockets.in(roomId).emit('stroke', {line: line_track[roomId][i][j].line, roomId:line_track[roomId][i][j].roomId, userId: userId, size: line_track[roomId][i][j].size, penWidth: line_track[roomId][i][j].penWidth, penColor: line_track[roomId][i][j].penColor})
+          else 
+            for(var i in line_track[roomId][userId])
+              socket.emit('stroke', {line: line_track[roomId][userId][i].line, roomId:line_track[roomId][userId][i].roomId, userId:line_track[roomId][userId][i].userId, size: line_track[roomId][userId][i].size, penWidth: line_track[roomId][userId][i].penWidth, penColor: line_track[roomId][userId][i].penColor}); 
         }
       }
     }
   })
+  socket.on('nameChange_server', async(roomId, userId, isHost, userName) => {
+    users = await User.findOne({userId:userId}, null, {})
+    console.log(users)
+    users.userName = userName
+    users.save()
+    io.sockets.in(roomId).emit('nameChange_script', userId, isHost, userName)
+  })
+  socket.on('canvasControl_server', async(roomId, userId, isCanvas, isEachCanvas) => {
+    io.sockets.in(roomId).emit('canvasControl_script', userId, isCanvas, isEachCanvas)
+    const room = await Room.findOne({roomId: roomId}, null, {})
+    room.isCanvas = isCanvas
+    room.isEachCanvas = isEachCanvas
+    room.save()
+  })
+
   socket.on('join-room', async(roomId, userId, userName) => {
     socket.userName=userName
     socket.userId = userId
@@ -219,10 +240,11 @@ io.on('connection', socket => {
       ishost=false
     if(ishost) {
       room.hostId = userId
-      socket.to(roomId).emit('setHost', userId);
+      socket.emit('setHost', userId);
     }
     room.participant += 1
     room.save()
+    io.emit('setIsCanvas', userId, room.isCanvas, room.isEachCanvas)
     //---호스트 판별 끝---//
     const user = new User({
       userName:userName,
@@ -277,14 +299,24 @@ io.on('connection', socket => {
     })
   })
   //---캔버스 코드---
-  socket.on('clearWhiteBoard', roomId => {
-    line_track[roomId]=[]
-    io.sockets.in(roomId).emit('reLoading')
+  socket.on('clearWhiteBoard', async(roomId, userId) => {
+    const room = await Room.findOne({roomId: roomId}, null, {})
+    if(!room.isEachCanvas) line_track[roomId] = []
+    else line_track[roomId][userId] = []
+    io.sockets.in(roomId).emit('reLoading', userId)
   })
-  socket.on('reDrawing', roomId => {
-    for(var i in line_track[roomId]) {
-      for(var j in line_track[roomId][i])
-        socket.emit('drawLine', {line: line_track[roomId][i][j].line, roomId:line_track[roomId][i][j].roomId, userId:line_track[roomId][i][j].userId, size: line_track[roomId][i][j].size, penWidth: line_track[roomId][i][j].penWidth, penColor: line_track[roomId][i][j].penColor});
+  socket.on('reDrawing', async(roomId, userId) => {
+    const room = await Room.findOne({roomId: roomId}, null, {})
+    if(!room.isEachCanvas)
+      for(var i in line_track[roomId]) {
+        for(var j in line_track[roomId][i])
+          socket.emit('drawLine', {line: line_track[roomId][i][j].line, roomId:line_track[roomId][i][j].roomId, userId:line_track[roomId][i][j].userId, size: line_track[roomId][i][j].size, penWidth: line_track[roomId][i][j].penWidth, penColor: line_track[roomId][i][j].penColor});
+      }
+    else {
+      if(userId !== null && userId !== undefined)
+        if(line_track[roomId][userId] !== null && line_track[roomId][userId] !== undefined)
+        for(var i in line_track[roomId][userId])
+          socket.emit('drawLine', {line: line_track[roomId][userId][i].line, roomId:line_track[roomId][userId][i].roomId, userId:line_track[roomId][userId][i].userId, size: line_track[roomId][userId][i].size, penWidth: line_track[roomId][userId][i].penWidth, penColor: line_track[roomId][userId][i].penColor});
     }
   })
 
@@ -308,9 +340,9 @@ io.on('connection', socket => {
       if(result_y < (result_x*deg_y)/deg_x + 0.005 && result_y > (result_x*deg_y)/deg_x - 0.005)
         line_track[roomId].splice(i,1) 
     }
-    io.sockets.in(roomId).emit('reLoading')
+    io.sockets.in(roomId).emit('reLoading', userId)
     for(var i in line_track[roomId])
-     io.sockets.in(roomId).emit('stroke', {line: line_track[roomId][userId][i].line, roomId:line_track[roomId][userId][i].roomId, size: line_track[roomId][userId][i].size, penWidth: line_track[roomId][userId][i].penWidth, penColor: line_track[roomId][userId][i].penColor}) 
+     io.sockets.in(roomId).emit('stroke', {line: line_track[roomId][userId][i].line, roomId:line_track[roomId][userId][i].roomId, userId: userId, size: line_track[roomId][userId][i].size, penWidth: line_track[roomId][userId][i].penWidth, penColor: line_track[roomId][userId][i].penColor}) 
   })
   /*
   for(var i in line_track[roomId]) {
@@ -342,7 +374,8 @@ io.on('connection', socket => {
       roomId: data.roomId,
       size: data.size,
       penWidth: data.penWidth,
-      penColor: data.penColor
+      penColor: data.penColor,
+      userId: data.userId
     }
     line_track[data.roomId][data.userId].push(dt)
     line_track_backup[data.roomId][data.userId].push(dt)

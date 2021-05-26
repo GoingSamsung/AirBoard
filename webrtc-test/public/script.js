@@ -5,7 +5,7 @@
   되돌리기 했을 때 맨 처음 필기 늘어나는 현상 있음
 */
 var user_name = prompt('대화명을 입력해주세요.', '')
-
+if(user_name === null) window.location.href = '/'
 while(user_name == null || user_name == undefined || user_name == '' || user_name.length > 6)  {
   if(user_name.length > 6) user_name = prompt('대화명을 6자 이하로 설정해주세요.', '')
   else user_name = prompt('대화명을 다시 입력해주세요.', '')
@@ -57,6 +57,10 @@ var isCall = {} //콜이 소실되는 경우 판단용
 var isDisplayCall = {}
 var isWriteLoop = true
 var offDisplay = false
+var isCanvas = true
+var hostCanvas = true
+var isEachCanvas = false
+var hostEachCanvas = false
 
 var prevImage
 var localStream
@@ -66,7 +70,7 @@ var gesturechk = false
 var chkfirst = 0
 var palmcnt = 0
 
-var menu;
+var menu
 
 hiddenVideo.style.visibility = 'hidden'
 hiddenVideo.width = 1024
@@ -253,7 +257,7 @@ function extractDraw() {
       cursor_context.fillStyle = "red"
 
       cursor_context.fillRect(xx * (width/hiddenCamVideo.width), yy * (height/hiddenCamVideo.height), 3, 3)
-      if(cam_mouse.pos_prev && cam_mouse.click && penStyle === 'pen') {
+      if(cam_mouse.pos_prev && cam_mouse.click && penStyle === 'pen' && isCanvas) {
         if(camRelativeMouseY < 0.905 && cam_mouse.pos_prev.y/hiddenCamVideo.height < 0.905)
           socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, userId:user_id, size:[hiddenCamVideo.width, hiddenCamVideo.height], penWidth: penWidth, penColor: penColor})
       }
@@ -311,6 +315,24 @@ myPeer.on('open', id => { //피어 접속시 맨 처음 실행되는 피어 함�
   user_id = id
 })
 
+socket.on('setIsCanvas', (userId, flag, flag_2) => {
+  if(user_id === userId) {
+    isCanvas = flag
+    isEachCanvas = flag_2
+  }
+})
+
+socket.on('setIsEachCanvas', (userId, flag) => {
+  if(user_id === userId)
+    isEachCanvas = flag
+})
+
+function joinLoop()
+{
+  if(user_id === null || user_id === undefined) setTimeout(joinLoop, 1000)
+  else socket.emit('join-room', ROOM_ID, user_id, user_name)
+}
+
 function userJoin()
 {
   localStream.flag = 0
@@ -318,7 +340,7 @@ function userJoin()
   var videoUserName = document.createElement('videoUserName') //비디오에 이름 표시 코드
   var bold = document.createElement('b')
   var videoUserNameText = document.createTextNode(user_name)
-  bold.id = user_id + '!bold'
+  bold.id = 'mybold'
   videoUserName.appendChild(bold)
   bold.appendChild(videoUserNameText)
   userBox.appendChild(videoUserName)
@@ -334,7 +356,9 @@ function userJoin()
     hiddenVideo.play()
     await 탄지로()
     videoGrid.append(userBox)
-    socket.emit('join-room', ROOM_ID, user_id, user_name)
+    if(user_id !== null && user_id !== undefined)
+      socket.emit('join-room', ROOM_ID, user_id, user_name)
+    else joinLoop()
     window.open("/address/"+ ROOM_ID,  "popup", "width=300, \
     status=no, menubars=0, height=300, scrollbars=0, top=100px, left=100px\
     resizable=0, toolbar=0, directories=0, location=0, menubar=no")
@@ -366,7 +390,7 @@ function userJoin()
         isCam = !isCam    
       }
     })
-
+    
     menu = new Menu("#myMenu");
     var item1 = new Item("list", "fas fa-bars", "#8cc9f0");
     var item2 = new Item("exit", "fas fa-sign-out-alt", "#FF5C5C", "방에서 퇴장");
@@ -378,11 +402,28 @@ function userJoin()
     menu.add(item3);
     menu.add(item4);
 
-    var exitbutton=document.getElementById("exit")
-    exitbutton.addEventListener('click', () => {
+    var exitButton=document.getElementById("exit")
+    var renameButton=document.getElementById("rename")
+
+    exitButton.addEventListener('click', () => {
         window.location.href = '/'
     })
-    
+
+    renameButton.addEventListener('click', () => {
+      var flag = true
+      var inputName = prompt('바꿀 이름을 입력해주세요','')
+      if(inputName === null || inputName === undefined || inputName === '' || inputName.length > 6) {
+        alert('1~6자리 이름을 입력해주세요.')
+        flag = false
+      }
+      if(flag) {
+        var bold = document.getElementById('mybold')
+        bold.innerText = inputName
+        user_name = inputName
+        socket.emit('nameChange_server', ROOM_ID, user_id, isHost, inputName)
+      }
+   })
+
     audioButton.addEventListener('click', () => {
       if(!isMuteUser) {
         if(isMute) {
@@ -423,6 +464,7 @@ function userJoin()
     camWriteButton.addEventListener('click', () => {
       if(isNoCamUser) alert('캠이 없습니다.')
       else if(!isCam) alert('캠을 켜주세요')
+      else if(!isCanvas) alert('캔버스 권한이 없습니다.')
       else {
         if(!isCamWrite) {
           alert("캠에서 펜으로 인식할 부분을 클릭해주세요");
@@ -452,6 +494,7 @@ function userJoin()
     gestureButton.addEventListener('click', () => {
       if(isNoCamUser) alert("캠이 없습니다.")
       else if(!isCam) alert("캠을 켜주세요.")
+      else if(!isCanvas) alert('캔버스 권한이 없습니다.')
       else {
         if(gesturechk) {
           gestureImage.src="img/[크기변환]hand.png"
@@ -552,8 +595,8 @@ function connectionLoop(userId, userName, connectionCnt) //피어 연결이 제�
       peers[userId].close()
     peers[userId] = undefined
     connectToNewUser(userId, userName)
-    if(connectionCnt < 5)
-      setTimeout(connectionLoop, 2000, userId, userName, connectionCnt + 1)
+    if(connectionCnt < 6)
+      setTimeout(connectionLoop, 2000, userId, userName, connectionCnt +1)
   }
   else {
   }
@@ -759,15 +802,53 @@ socket.on('streamPlay_script', (userId, roomId, isCam) => {
 })
 
 socket.on('setHost', (userId)=>{
-  if(userId === user_id) isHost = true
-  if(isHost==true){
-    var item1 = new Item("everyuser", "fas fa-user", "#5CD1FF", "모든 사용자 캠 필기 사용");
-    var item2 = new Item("onlyhost", "fas fa-user-times", "#FFF15C", "호스트만 캠 필기 사용");
+  if(userId === user_id) {
+    isHost = true
+    var item1 = new Item("everyuser", "fas fa-user", "#5CD1FF", "모든 사용자 캔버스 사용");
+    var item2 = new Item("onlyhost", "fas fa-user-times", "#FFF15C", "호스트만 캔버스 사용");
     var item3 = new Item("eachcanvas", "fas fa-chalkboard-teacher", "#FFFFE0", "각자 캔버스 사용");
 
     menu.add(item1);
     menu.add(item2);
     menu.add(item3);
+
+    var everyuserButton = document.getElementById("everyuser")
+    var onlyhostButton = document.getElementById("onlyhost")
+    var eachcanvasButton = document.getElementById("eachcanvas")
+
+    everyuserButton.addEventListener('click', () => {
+      var flag = false
+      if(hostEachCanvas) flag = true
+      hostCanvas = true
+      hostEachCanvas = false
+      isEachCanvas = false
+      socket.emit('canvasControl_server', ROOM_ID, userId, hostCanvas, hostEachCanvas)
+      if(flag) socket.emit('clearWhiteBoard', ROOM_ID, user_id)
+    })
+
+    onlyhostButton.addEventListener('click', () => {
+      var flag = false
+      if(hostEachCanvas) flag = true
+      hostCanvas = false
+      hostEachCanvas = false
+      isEachCanvas = false
+      if(flag) socket.emit('canvasControl_server', ROOM_ID, userId, hostCanvas, hostEachCanvas)
+    })
+
+    eachcanvasButton.addEventListener('click', () => {
+      isEachCanvas = true
+      hostEachCanvas = true
+      hostCanvas = true
+      socket.emit('clearWhiteBoard', ROOM_ID, user_id)
+      socket.emit('canvasControl_server', ROOM_ID, userId, hostCanvas, hostEachCanvas)
+    })
+  }
+})
+
+socket.on('canvasControl_script', (userId, flag, flag_2) => {
+  if(userId !== user_id) {
+    isCanvas = flag
+    isEachCanvas = flag_2
   }
 })
 
@@ -778,23 +859,46 @@ socket.on('hostChange', (userId, userName)=>{
   }
 })
 
-socket.on('reLoading', () =>{
-  console.log('clear')
-  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
-  //socket.emit('reDrawing', ROOM_ID)
-  context.drawImage(canvasImage, 0,0, canvas.width, canvas.height)
+socket.on('reLoading', (userId) =>{
+  if(isEachCanvas) {
+    if(userId === user_id) {
+      console.log('clear')
+      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+      //socket.emit('reDrawing', ROOM_ID)
+      context.drawImage(canvasImage, 0,0, canvas.width, canvas.height)
+    }
+  }
+  else {
+    console.log('clear')
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+    //socket.emit('reDrawing', ROOM_ID)
+    context.drawImage(canvasImage, 0,0, canvas.width, canvas.height)
+  }
 })
 
 socket.on('stroke', (data)=>{ //지우개 보류
   var line = data.line
   var size = data.size
 
-  context.strokeStyle = data.penColor
-  context.beginPath()
-  context.lineWidth = data.penWidth
-  context.moveTo(line[0].x * (width/size[0]), line[0].y * (height/size[1]))
-  context.lineTo(line[1].x * (width/size[0]), line[1].y * (height/size[1]))
-  context.stroke()
+  if(isEachCanvas) {
+    console.log(data.userId === user_id)
+    if(data.userId === user_id) {
+      context.strokeStyle = data.penColor
+      context.beginPath()
+      context.lineWidth = data.penWidth
+      context.moveTo(line[0].x * (width/size[0]), line[0].y * (height/size[1]))
+      context.lineTo(line[1].x * (width/size[0]), line[1].y * (height/size[1]))
+      context.stroke()
+    }
+  }
+  else {
+    context.strokeStyle = data.penColor
+    context.beginPath()
+    context.lineWidth = data.penWidth
+    context.moveTo(line[0].x * (width/size[0]), line[0].y * (height/size[1]))
+    context.lineTo(line[1].x * (width/size[0]), line[1].y * (height/size[1]))
+    context.stroke()
+  }
 })
 
 function drawChatMessage(data){
@@ -836,7 +940,7 @@ document.querySelector('#chatInput').addEventListener('keyup', (e)=>{
   if(!message){
     return false; 
   }
-  socket.emit('sendMessage', { message, ROOM_ID, user_id });
+  socket.emit('sendMessage', { message, ROOM_ID, user_id, user_name });
   chatInput.value = '';
   }  
 });
@@ -846,7 +950,7 @@ sendButton.addEventListener('click', function(){
   if(!message){
     return false; 
   }
-  socket.emit('sendMessage', { message, ROOM_ID, user_id });
+  socket.emit('sendMessage', { message, ROOM_ID, user_id, user_name });
   chatInput.value = '';
 });
 
@@ -895,6 +999,15 @@ socket.on('sendStream_script', (userId_caller, userId_callee, roomId, isCam) => 
     }
   }
 })
+
+socket.on('nameChange_script', (userId, isHost, userName) => {
+  if(userId !== user_id) {
+    var bold = document.getElementById(userId + '!bold')
+    if(isHost) bold.innerText = userName + '(호스트)'
+    else bold.innerText = userName
+  }
+})
+
 
 var newImg = new Image()
   newImg.onload = function() {
@@ -1020,11 +1133,11 @@ document.addEventListener("keydown", (e) => {
   if(e.key == '`') {
     cam_mouse.click = true
     gestureFlag = true
-    clickCanvas(cam_selected)
+    if(isCanvas)
+      clickCanvas(cam_selected)
   }
-
   if(e.key == 'Insert') {  //디버그용
-    console.log(mouse.pos.x, mouse.pos.y, canvas.width)
+    console.log(isCanvas, isEachCanvas)
   }
 })
 
@@ -1040,7 +1153,7 @@ function clickCanvas(select)
 {
   if(select === 1) penStyle = 'pen'
   //else if(select === 2) penStyle = 'eraser' 보류
-  else if(select === 3) socket.emit('clearWhiteBoard', ROOM_ID)
+  else if(select === 3) socket.emit('clearWhiteBoard', ROOM_ID, user_id)
   else if(select === 4) penColor = 'black'
   else if(select === 5) penColor = 'red'
   else if(select === 6) penColor = 'orange'
@@ -1095,12 +1208,14 @@ function allLoaded() {
   }
 
   cursor_canvas.onclick = (e) => {
-    clickCanvas(selected)
+    if(isCanvas)
+      clickCanvas(selected)
   }
+
   socket.on('drawLine', data => {
     var line = data.line
     var size = data.size
-    if(ROOM_ID == data.roomId) {
+    if(ROOM_ID == data.roomId && !isEachCanvas) {
       if(chkfirst < 2) {
         chkfirst++
       }
@@ -1111,6 +1226,21 @@ function allLoaded() {
         context.moveTo(line[0].x * (width/size[0]), line[0].y * (height/size[1]))
         context.lineTo(line[1].x * (width/size[0]), line[1].y * (height/size[1]))
         context.stroke()
+      }
+    }
+    if(ROOM_ID == data.roomId && isEachCanvas) {
+      if(data.userId === user_id) {
+        if(chkfirst < 2) {
+          chkfirst++
+        }
+        else{
+          context.strokeStyle = data.penColor
+          context.beginPath()
+          context.lineWidth = data.penWidth
+          context.moveTo(line[0].x * (width/size[0]), line[0].y * (height/size[1]))
+          context.lineTo(line[1].x * (width/size[0]), line[1].y * (height/size[1]))
+          context.stroke()
+        }
       }
     }
   })
@@ -1153,7 +1283,7 @@ function allLoaded() {
     changeCanvasImage(relativeMouseX, relativeMouseY, selected, 1)
 
     if(canvas.width != width || canvas.height != height) {  //웹 페이지 크기가 변할 때
-      socket.emit('reDrawing', ROOM_ID)
+      socket.emit('reDrawing', ROOM_ID, user_id)
       canvas.width = width
       canvas.height = height
 
@@ -1168,18 +1298,18 @@ function allLoaded() {
     if(mouse.click) gestureFlag = true
     else gestureFlag = false
 
-    if(mouse.click && mouse.move && mouse.pos_prev) {
+    if(mouse.click && mouse.move && mouse.pos_prev && isCanvas) {
       if(relativeMouseY < 0.905 && mouse.pos_prev.y/canvas.height < 0.905){
         if(penStyle === 'pen') socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID, userId: user_id, size:[width, height], penWidth: penWidth, penColor: penColor})
         //else socket.emit('erase_server', ROOM_ID, mouse.pos.x, mouse.pos.y)
       }
       mouse.move = false
     }
-    else if(mouse.click && penStyle === 'eraser') socket.emit('erase_server', ROOM_ID, mouse.pos.x, mouse.pos.y, width, height)
+    //else if(mouse.click && penStyle === 'eraser') socket.emit('erase_server', ROOM_ID, mouse.pos.x, mouse.pos.y, width, height) 보류
     mouse.pos_prev = {x: mouse.pos.x, y: mouse.pos.y}
     setTimeout(mainLoop, 20)  //최종은 20
   }
-  socket.emit('reDrawing', ROOM_ID)
+  socket.emit('reDrawing', ROOM_ID, user_id)
   mainLoop()
   //---캔버스 코드 끝---
 }
@@ -1223,7 +1353,7 @@ async function 탄지로() {
           }
           if(palmcnt>=10){
             palmcnt = 0;
-            socket.emit('clearWhiteBoard', ROOM_ID);
+            socket.emit('clearWhiteBoard', ROOM_ID, user_id);
           }
         }
       }
