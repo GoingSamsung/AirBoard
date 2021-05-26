@@ -36,3 +36,53 @@ i {
   font-size: 24px;
   color: #222222;
 }
+
+.item span {
+  position: absolute;
+  top: 60%;
+  margin-top: 10px;
+  padding: 0px 10px 0px 10px;
+  font-size: 14px;
+  font-weight: 1000;
+  white-space: nowrap;
+  color: #000;
+  border-radius: 50px;
+  background-color: #fff;
+  box-shadow: 0 15px 35px rgba(50, 50, 93, 0.1), 0 5px 15px rgba(0, 0, 0, 0.07);
+  pointer-events: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  opacity: 0;
+  transition: all 0.2s ease-in-out;
+}
+
+.item:hover span {
+  top: 100%;
+  opacity: 0.9;
+}
+
+#exit span{
+  left:-25px;
+}
+
+#setting span{
+  left:-4px;
+}
+
+#rename span{
+  left:-20px;
+}
+
+#everyuser span{
+  left:-65px;
+}
+
+#onlyhost span{
+  left:-55px;
+}
+
+#eachcanvas span{
+  left:-40px;
+}

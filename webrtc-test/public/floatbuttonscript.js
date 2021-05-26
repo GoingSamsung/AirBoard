@@ -1,7 +1,7 @@
 var timeOut;
 
 class Item {
-    constructor(icon, fw, backgroundColor) {
+    constructor(icon, fw, backgroundColor, message) {
         if(icon=="list"){
             this.$element = $(document.createElement("div"));
         }
@@ -14,8 +14,14 @@ class Item {
         this.$element.attr("id",icon);
         this.$element.css("background-color", backgroundColor);
         var i = document.createElement("i");
+        if(icon!="list"){
+            var span = document.createElement("span");
+            span.innerHTML=message;
+            span.style.backgroundColor=backgroundColor;
+        }
         $(i).addClass(fw + " fa-lg");
         this.$element.append(i);
+        this.$element.append(span);
         this.prev = null;
         this.next = null;
         this.isMoving = false;
@@ -116,9 +122,7 @@ class Menu {
         var current = this.first.next;
         var iterator = 1;
         var head = this.first;
-        console.log(parseInt(head.$element.css("left"), 10)+500);
         var sens = parseInt(head.$element.css("left"), 10)+500 < 0 ? 1 : -1;
-        //var sens = head.$element.css("left") < head.$element.css("right") ? 1 : -1;
         while (current != null) {
             anime({
                 targets: current.$element[0],
@@ -157,16 +161,3 @@ class Menu {
     }
     
 }
-
-var menu = new Menu("#myMenu");
-var item1 = new Item("list", "fas fa-bars", "#8cc9f0");
-var item2 = new Item("exit", "fas fa-sign-out-alt", "#FF5C5C");
-var item3 = new Item("pallet", "fas fa-palette", "#5CD1FF");
-var item4 = new Item("userlist", "far fa-address-book", "#FFF15C");
-var item5 = new Item("setting", "fas fa-cog", "#64F592");
-
-menu.add(item1);
-menu.add(item2);
-menu.add(item3);
-menu.add(item4);
-menu.add(item5);
