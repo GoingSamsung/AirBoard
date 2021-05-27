@@ -1194,7 +1194,7 @@ var height = window.innerHeight
 //---캔버스 코드 시작---
 
 var mainFrame = 20
-var camWriteFrame = 1000
+var camWriteFrame = 25
 
 function allLoaded() {
   var socket = io.connect()
