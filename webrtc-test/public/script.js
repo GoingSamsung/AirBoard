@@ -357,7 +357,7 @@ function userJoin()
   hiddenVideo.srcObject = localStream
   hiddenVideo.addEventListener('loadedmetadata', async() => { //모든 비디오 로드 된 후 시작
     hiddenVideo.play()
-    await 탄지로()
+    await gestureLoad()
     videoGrid.append(userBox)
     if(user_id !== null && user_id !== undefined)
       socket.emit('join-room', ROOM_ID, user_id, user_name)
@@ -499,10 +499,12 @@ function userJoin()
         if(gesturechk) {
           gestureImage.src="img/[크기변환]hand.png"
           gestureButton.innerText = '제스처 켜기'
+          isGestureOff = true
         }
         else if(!gesturechk) {
           gestureImage.src="img/[크기변환]nohand.png"
           gestureButton.innerText = '제스처 끄기'
+          test()
         }
         gesturechk = !gesturechk
       }
@@ -1136,9 +1138,6 @@ socket.on('setMute', (isMute, muteUserId, userId) => {
 document.addEventListener("keydown", (e) => {
   if(e.key == '`') {
     cam_mouse.click = true
-    gestureFlag = true
-    if(isCanvas)
-      clickCanvas(cam_selected)
   }    
   if(e.key == 'Insert') {  //디버그용
     console.log(isCanvas, isEachCanvas)
@@ -1148,7 +1147,6 @@ document.addEventListener("keydown", (e) => {
 document.addEventListener("keyup", (e) => {
   if(e.key == '`') {  
     cam_mouse.click = false
-    gestureFlag = false
     chkfirst = 0
   }
 })
@@ -1299,9 +1297,18 @@ function allLoaded() {
       context.drawImage(canvasImage, 0,0, canvas.width, canvas.height)
     }
 
-    if(mouse.click) gestureFlag = true
-    else gestureFlag = false
-
+    if(gesturechk) {
+      if(mouse.click || cam_mouse.click){ 
+        isGestureOff = true
+      }
+      else {
+        isGestureOff = false
+        if(gestureFlag) {
+          gestureFlag = false
+          test()
+        }
+      }
+    }
     if(mouse.click && mouse.move && mouse.pos_prev && isCanvas) {
       if(relativeMouseY < 0.905 && mouse.pos_prev.y/canvas.height < 0.905){
         if(penStyle === 'pen') socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID, userId: user_id, size:[width, height], penWidth: penWidth, penColor: penColor})
@@ -1325,7 +1332,11 @@ const config = {
   video: { width: 1024, height: 768, fps: 30 }
 };
 
-async function 탄지로() {
+var test
+
+var isGestureOff = false
+
+async function gestureLoad() {
   const knownGestures = [
     fp.Gestures.VictoryGesture,
     fp.Gestures.GyuGesture,
@@ -1336,72 +1347,54 @@ async function 탄지로() {
   // load handpose model
   const model = await handpose.load();
   console.log("Handpose model loaded");
-
+  await model.estimateHands(hiddenVideo, true);
   // main estimation loop
-  const estimateHands = async () => {
-    if(!gestureFlag) {
-      const predictions = await model.estimateHands(hiddenVideo, true);
-      for(let i = 0; i < predictions.length; i++) {
-        
-        const est = GE.estimate(predictions[i].landmarks, 7.5);
+  test = async () => {
+    predictions = await model.estimateHands(hiddenVideo, true);
+    for(let i = 0; i < predictions.length; i++) {
+      
+      const est = GE.estimate(predictions[i].landmarks, 7.5);
 
-        if(est.gestures.length > 0) {
+      if(est.gestures.length > 0) {
+        let result = est.gestures.reduce((p, c) => { 
+          return (p.confidence > c.confidence) ? p : c;
+        });
 
-          let result = est.gestures.reduce((p, c) => { 
-            return (p.confidence > c.confidence) ? p : c;
-          });
+        //console.log(result.name);
+        if(result.name == "palm") palmcnt+=2;
+        if(palmcnt>=10){
+          palmcnt = 0;
+          socket.emit('clearWhiteBoard', ROOM_ID, user_id);
+        }
+        if(result.name == "victory") victorycnt+=2;      
 
-          console.log(result.name);
-          if(result.name == "palm"){
-            palmcnt+=2;
+        if(victorycnt>=10){
+          victorycnt = 0;
+          capture.width = canvas.width
+          capture.height = canvas.height
+          if(isDisplaying) {
+            var displayVideo = document.getElementById('userDisplay')
+            captureContext.drawImage(displayVideo, 0, 0, width, height)
           }
-          if(palmcnt>=10){
-            palmcnt = 0;
-            socket.emit('clearWhiteBoard', ROOM_ID, user_id);
-          }
-          if(result.name == "victory"){
-            victorycnt+=2;            
-          }
-          if(victorycnt>=10){
-            victorycnt = 0;
-            capture.width = canvas.width
-            capture.height = canvas.height
-            if(isDisplaying) {
-              var displayVideo = document.getElementById('userDisplay')
-              captureContext.drawImage(displayVideo, 0, 0, width, height)
-            }
-            var img = new Image()
-            img.src = canvas.toDataURL()
-            img.addEventListener('load', ()=> {
-              captureContext.drawImage(img, 0, 0, width, height)
-              var link = document.getElementById('download')
-              link.href = capture.toDataURL()
-              link.download = 'AirBoard_screenshot.png'
-              link.click()
-            })
-          }
+          var img = new Image()
+          img.src = canvas.toDataURL()
+          img.addEventListener('load', ()=> {
+            captureContext.drawImage(img, 0, 0, width, height)
+            var link = document.getElementById('download')
+            link.href = capture.toDataURL()
+            link.download = 'AirBoard_screenshot.png'
+            link.click()
+          })
         }
       }
-  }    
-    if(gestureFlag) config.video.fps = 1
-    else config.video.fps = 30
-    if(palmcnt>=1){
-      palmcnt--;
     }
-    if(victorycnt>=1){
-      victorycnt--;
-    }
+    if(palmcnt>=1) palmcnt--;
+    if(victorycnt>=1) victorycnt--;
     // ...and so on
-    if(gesturechk)
-      setTimeout(() => { estimateHands(); }, 1000 / config.video.fps);
-    else gestureLoop()
+    if(!isGestureOff && gesturechk)
+      setTimeout(() => { test(); }, 1000 / config.video.fps);
+    else
+      gestureFlag = true
   };
-  function gestureLoop() {
-    if(!gesturechk)
-      setTimeout(gestureLoop, 1000)
-    else estimateHands()
-  }
-  estimateHands();
-  console.log("Starting predictions");
 }
 //-제스처
