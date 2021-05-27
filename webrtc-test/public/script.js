@@ -1371,7 +1371,7 @@ async function gestureLoad() {
         }
         if(result.name == "victory") victorycnt+=2;      
 
-        if(victorycnt>=10){
+        if(victorycnt>=20){
           victorycnt = 0;
           capture.width = canvas.width
           capture.height = canvas.height
