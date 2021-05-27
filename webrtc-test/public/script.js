@@ -361,9 +361,6 @@ function userJoin()
     if(user_id !== null && user_id !== undefined)
       socket.emit('join-room', ROOM_ID, user_id, user_name)
     else joinLoop()
-    window.open("/address/"+ ROOM_ID,  "popup", "width=300, \
-    status=no, menubars=0, height=300, scrollbars=0, top=100px, left=100px\
-    resizable=0, toolbar=0, directories=0, location=0, menubar=no")
     canvasImage.src = 'img/canvas.png'
     allLoaded()
     camButton.addEventListener('click', () => {
@@ -802,9 +799,14 @@ socket.on('streamPlay_script', (userId, roomId, isCam) => {
   }
 })
 
-socket.on('setHost', (userId)=>{
+socket.on('setHost', (userId, participant)=>{
   if(userId === user_id) {
     isHost = true
+    if(participant === 0)
+      window.open("/address/"+ ROOM_ID,  "popup", "width=300, \
+      status=no, menubars=0, height=300, scrollbars=0, top=100px, left=100px\
+      resizable=0, toolbar=0, directories=0, location=0, menubar=no")
+
     var item1 = new Item("everyuser", "fas fa-user", "#5CD1FF", "모든 사용자 캔버스 사용");
     var item2 = new Item("onlyhost", "fas fa-user-times", "#FFF15C", "호스트만 캔버스 사용");
     var item3 = new Item("eachcanvas", "fas fa-chalkboard-teacher", "#FFFFE0", "각자 캔버스 사용");

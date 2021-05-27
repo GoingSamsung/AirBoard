@@ -240,7 +240,7 @@ io.on('connection', socket => {
       ishost=false
     if(ishost) {
       room.hostId = userId
-      socket.emit('setHost', userId);
+      socket.emit('setHost', userId, room.participant);
     }
     room.participant += 1
     room.save()
@@ -289,7 +289,7 @@ io.on('connection', socket => {
           room.hostId = newHost.userId
           room.save()
           newHost.save()
-          socket.to(roomId).broadcast.emit('setHost', newHost.userId);
+          socket.to(roomId).broadcast.emit('setHost', newHost.userId, 1);
           socket.to(roomId).broadcast.emit('hostChange', newHost.userId, newHost.userName)
         }
       });
