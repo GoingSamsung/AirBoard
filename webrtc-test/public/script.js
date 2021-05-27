@@ -252,7 +252,8 @@ function extractDraw() {
     
     var camRelativeMouseY = yy/hiddenCamVideo.height
     var camRelativeMouseX = xx/hiddenCamVideo.width
-
+    if(cam_mouse.click)
+      clickCanvas(cam_selected)
     changeCanvasImage(camRelativeMouseX, camRelativeMouseY, cam_selected, 0)
     if(xx !=0 && yy !=0){
       cam_mouse.pos.x = xx
@@ -504,7 +505,7 @@ function userJoin()
         else if(!gesturechk) {
           gestureImage.src="img/[크기변환]nohand.png"
           gestureButton.innerText = '제스처 끄기'
-          test()
+          gesturePred()
         }
         gesturechk = !gesturechk
       }
@@ -1140,7 +1141,7 @@ document.addEventListener("keydown", (e) => {
     cam_mouse.click = true
   }    
   if(e.key == 'Insert') {  //디버그용
-    console.log(isCanvas, isEachCanvas)
+    console.log(mainFrame)
   }
 })
 
@@ -1191,6 +1192,9 @@ var relativeY = 188
 var width = window.innerWidth
 var height = window.innerHeight
 //---캔버스 코드 시작---
+
+var mainFrame = 20
+var camWriteFrame = 1000
 
 function allLoaded() {
   var socket = io.connect()
@@ -1246,10 +1250,9 @@ function allLoaded() {
       }
     }
   })
-
   function extractLoop() {
     extractDraw()
-    setTimeout(extractLoop, 25)
+    setTimeout(extractLoop, camWriteFrame)
   }
   function mainLoop() {
     /*
@@ -1305,7 +1308,7 @@ function allLoaded() {
         isGestureOff = false
         if(gestureFlag) {
           gestureFlag = false
-          test()
+          gesturePred()
         }
       }
     }
@@ -1318,7 +1321,7 @@ function allLoaded() {
     }
     //else if(mouse.click && penStyle === 'eraser') socket.emit('erase_server', ROOM_ID, mouse.pos.x, mouse.pos.y, width, height) 보류
     mouse.pos_prev = {x: mouse.pos.x, y: mouse.pos.y}
-    setTimeout(mainLoop, 20)  //최종은 20
+    setTimeout(mainLoop, mainFrame)
   }
   socket.emit('reDrawing', ROOM_ID, user_id)
   mainLoop()
@@ -1332,7 +1335,7 @@ const config = {
   video: { width: 1024, height: 768, fps: 30 }
 };
 
-var test
+var gesturePred
 
 var isGestureOff = false
 
@@ -1349,7 +1352,7 @@ async function gestureLoad() {
   console.log("Handpose model loaded");
   await model.estimateHands(hiddenVideo, true);
   // main estimation loop
-  test = async () => {
+  gesturePred = async () => {
     predictions = await model.estimateHands(hiddenVideo, true);
     for(let i = 0; i < predictions.length; i++) {
       
@@ -1392,7 +1395,7 @@ async function gestureLoad() {
     if(victorycnt>=1) victorycnt--;
     // ...and so on
     if(!isGestureOff && gesturechk)
-      setTimeout(() => { test(); }, 1000 / config.video.fps);
+      setTimeout(() => { gesturePred(); }, 1000 / config.video.fps);
     else
       gestureFlag = true
   };
