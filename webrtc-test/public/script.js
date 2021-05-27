@@ -71,6 +71,7 @@ var displayCall
 var gesturechk = false
 var chkfirst = 0
 var palmcnt = 0
+var victorycnt = 0
 
 var menu
 
@@ -1138,24 +1139,7 @@ document.addEventListener("keydown", (e) => {
     gestureFlag = true
     if(isCanvas)
       clickCanvas(cam_selected)
-  }
-  if(e.key === 'End') {
-    capture.width = canvas.width
-    capture.height = canvas.height
-    if(isDisplaying) {
-      var displayVideo = document.getElementById('userDisplay')
-      captureContext.drawImage(displayVideo, 0, 0, width, height)
-    }
-    var img = new Image()
-    img.src = canvas.toDataURL()
-    img.addEventListener('load', ()=> {
-      captureContext.drawImage(img, 0, 0, width, height)
-      var link = document.getElementById('download')
-      link.href = capture.toDataURL()
-      link.download = 'AirBoard_screenshot.png'
-      link.click()
-    })
-  }
+  }    
   if(e.key == 'Insert') {  //디버그용
     console.log(isCanvas, isEachCanvas)
   }
@@ -1375,6 +1359,27 @@ async function 탄지로() {
             palmcnt = 0;
             socket.emit('clearWhiteBoard', ROOM_ID, user_id);
           }
+          if(result.name == "victory"){
+            victorycnt+=2;            
+          }
+          if(victorycnt>=10){
+            victorycnt = 0;
+            capture.width = canvas.width
+            capture.height = canvas.height
+            if(isDisplaying) {
+              var displayVideo = document.getElementById('userDisplay')
+              captureContext.drawImage(displayVideo, 0, 0, width, height)
+            }
+            var img = new Image()
+            img.src = canvas.toDataURL()
+            img.addEventListener('load', ()=> {
+              captureContext.drawImage(img, 0, 0, width, height)
+              var link = document.getElementById('download')
+              link.href = capture.toDataURL()
+              link.download = 'AirBoard_screenshot.png'
+              link.click()
+            })
+          }
         }
       }
   }    
@@ -1382,6 +1387,9 @@ async function 탄지로() {
     else config.video.fps = 30
     if(palmcnt>=1){
       palmcnt--;
+    }
+    if(victorycnt>=1){
+      victorycnt--;
     }
     // ...and so on
     if(gesturechk)
