@@ -805,8 +805,8 @@ socket.on('streamPlay_script', (userId, roomId, isCam) => {
 socket.on('setHost', (userId)=>{
   if(userId === user_id) {
     isHost = true
-    var item1 = new Item("everyuser", "fas fa-user", "#5CD1FF", "모든 사용자 제스처 사용");
-    var item2 = new Item("onlyhost", "fas fa-user-times", "#FFF15C", "호스트만 제스처 사용");
+    var item1 = new Item("everyuser", "fas fa-user", "#5CD1FF", "모든 사용자 캔버스 사용");
+    var item2 = new Item("onlyhost", "fas fa-user-times", "#FFF15C", "호스트만 캔버스 사용");
     var item3 = new Item("eachcanvas", "fas fa-chalkboard-teacher", "#FFFFE0", "각자 캔버스 사용");
 
     menu.add(item1);
