@@ -152,6 +152,181 @@ var user_name;
   }
   */
 
+  function camfunc(){
+    if(isNoCamUser) {
+      swal({
+        text:'캠이 없습니다',
+        icon:'error'
+      })
+    }
+    else if(isCamWrite2) {
+      swal({
+        text:'캠 필기가 켜져있습니다',
+        icon:'error'
+      })
+      
+    }
+    else if(gesturechk) {
+      swal({
+        text:'제스처가 켜져있습니다',
+        icon:'error'
+      })
+    }
+    else {
+      if(isCam) {
+        myVideoBackground.style.width = '160px'
+        myVideoBackground.style.height = '118px'
+        myVideo.width = 0
+        myVideo.height = 0
+        camButton.innerText = '캠 켜기'
+        camImage.src="img/[크기변환]noweb-cam.png"
+      }
+      else {
+        myVideoBackground.style.width = '0px'
+        myVideoBackground.style.height = '0px'
+        myVideo.width = 160
+        myVideo.height = 118
+        camButton.innerText = '캠 끄기'
+        camImage.src="img/[크기변환]web-cam.png"
+      }
+      localStream.flag = 0
+      socket.emit('streamPlay_server', user_id,ROOM_ID,isCam)
+      isCam = !isCam    
+    }
+  }
+
+  function audiofunc(){
+    if(!isMuteUser) {
+      if(isMute) {
+        audioImage.src="img/[크기변환]microphone.png"
+        audioButton.innerText = '마이크 끄기'
+      }
+      else {
+        audioImage.src="img/[크기변환]nomicrophone.png"
+        audioButton.innerText = '마이크 켜기'
+      }
+      isMute = !isMute
+      socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
+    }
+    else {
+      swal({
+        text:'마이크가 없습니다',
+        icon:'error'
+      })
+    }
+  }
+
+  function displayfunc(){
+    if(!isDisplaying) {
+      displayImage.src="img/[크기변환]nodocument.png"
+      displayButton.innerText = '공유 종료' //일단 4글자로 맞췄음
+      displayPlay()
+    }
+    else if(isDisplayHost) {
+      displayImage.src="img/[크기변환]document.png"
+      displayButton.innerText = '화면 공유'
+      var displayVideo = document.getElementById('userDisplay')
+      const stream = displayVideo.srcObject
+      stream.getVideoTracks()[0].stop()
+      displayVideo.remove()
+      canvas.style.backgroundColor = '#ffffff'
+      isDisplayHost = false
+      isDisplaying = false
+      if(displayCall !== undefined) displayCall.close()
+    }
+    else {
+      swal({
+        text:'화면 궁유가 이미 켜져 있습니다.',
+        icon:'error'
+      })
+    }
+  }
+
+  function camwritefunc(){
+    if(isNoCamUser) {
+      swal({
+        text:'캠이 없습니다',
+        icon:'error'
+      })
+    }
+    else if(!isCam) {
+      swal({
+        text:'캠을 켜주세요',
+        icon:'error'
+      })
+    }
+    else if(!isCanvas) {
+      swal({
+        text:'캔버스 권한이 없습니다',
+        icon:'error'
+      })
+    }
+    else {
+      if(!isCamWrite) {
+        swal({
+          text:'펜으로 인식할 부분을 클릭해주세요',
+          icon:'info'
+        })
+        extractColorVideo.style.visibility = 'visible'
+        extractColorVideo.width = canvas.width
+        extractColorVideo.height = canvas.height
+        isCamWrite = true
+        camwriteImage.src="img/[크기변환]nopencil.png"
+        camWriteButton.innerText = '캠 필기 끄기'
+      }
+      else {
+        swal({
+          text:'캠 필기 기능 종료',
+          icon:'info'
+        })
+        R=[]
+        G=[]
+        B=[]
+        cursor_context.clearRect(0,0, width, height)
+        extractColorVideo.style.visibility = 'hidden'
+        isCamWrite = false
+        isCamWrite2 = false
+        cntt = 0
+        camwriteImage.src="img/[크기변환]pencil.png"
+        camWriteButton.innerText = '캠 필기 켜기'
+      }
+    }
+  }
+
+  function gesturefunc(){
+    if(isNoCamUser) {
+      swal({
+        text:'캠이 없습니다',
+        icon:'error'
+      })
+    }
+    else if(!isCam) {
+      swal({
+        text:'캠을 켜주세요',
+        icon:'error'
+      })
+    }
+    else if(!isCanvas) {
+      swal({
+        text:'캔버스 권한이 없습니다',
+        icon:'error'
+      })
+    }
+    else {
+      if(gesturechk) {
+        gestureImage.src="img/[크기변환]hand.png"
+        gestureButton.innerText = '제스처 켜기'
+        isGestureOff = true
+      }
+      else if(!gesturechk) {
+        gestureImage.src="img/[크기변환]nohand.png"
+        gestureButton.innerText = '제스처 끄기'
+        gesturePred()
+      }
+      gesturechk = !gesturechk
+    }
+  }
+
   var R = []
   var G = []
   var B = []
@@ -398,48 +573,6 @@ var user_name;
       else joinLoop()
       canvasImage.src = 'img/canvas.png'
       allLoaded()
-      camButton.addEventListener('click', () => {
-        if(isNoCamUser) {
-          swal({
-            text:'캠이 없습니다',
-            icon:'error'
-          })
-        }
-        else if(isCamWrite2) {
-          swal({
-            text:'캠 필기가 켜져있습니다',
-            icon:'error'
-          })
-          
-        }
-        else if(gesturechk) {
-          swal({
-            text:'제스처가 켜져있습니다',
-            icon:'error'
-          })
-        }
-        else {
-          if(isCam) {
-            myVideoBackground.style.width = '160px'
-            myVideoBackground.style.height = '118px'
-            myVideo.width = 0
-            myVideo.height = 0
-            camButton.innerText = '캠 켜기'
-            camImage.src="img/[크기변환]noweb-cam.png"
-          }
-          else {
-            myVideoBackground.style.width = '0px'
-            myVideoBackground.style.height = '0px'
-            myVideo.width = 160
-            myVideo.height = 118
-            camButton.innerText = '캠 끄기'
-            camImage.src="img/[크기변환]web-cam.png"
-          }
-          localStream.flag = 0
-          socket.emit('streamPlay_server', user_id,ROOM_ID,isCam)
-          isCam = !isCam    
-        }
-      })
       
       menu = new Menu("#myMenu");
       var item1 = new Item("list", "fas fa-bars", "#8cc9f0");
@@ -487,137 +620,20 @@ var user_name;
         })()
       })
 
-      audioButton.addEventListener('click', () => {
-        if(!isMuteUser) {
-          if(isMute) {
-            audioImage.src="img/[크기변환]microphone.png"
-            audioButton.innerText = '마이크 끄기'
-          }
-          else {
-            audioImage.src="img/[크기변환]nomicrophone.png"
-            audioButton.innerText = '마이크 켜기'
-          }
-          isMute = !isMute
-          socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
-        }
-        else {
-          swal({
-            text:'마이크가 없습니다',
-            icon:'error'
-          })
-        }
-      })
+      camButton.addEventListener('click', camfunc)
+      camImage.addEventListener('click', camfunc)
+
+      audioButton.addEventListener('click', audiofunc)
+      audioImage.addEventListener('click', audiofunc)
+
+      displayButton.addEventListener('click', displayfunc)
+      displayImage.addEventListener('click', displayfunc)
       
-      displayButton.addEventListener('click', () => {
-        if(!isDisplaying) {
-          displayImage.src="img/[크기변환]nodocument.png"
-          displayButton.innerText = '공유 종료' //일단 4글자로 맞췄음
-          displayPlay()
-        }
-        else if(isDisplayHost) {
-          displayImage.src="img/[크기변환]document.png"
-          displayButton.innerText = '화면 공유'
-          var displayVideo = document.getElementById('userDisplay')
-          const stream = displayVideo.srcObject
-          stream.getVideoTracks()[0].stop()
-          displayVideo.remove()
-          canvas.style.backgroundColor = '#ffffff'
-          isDisplayHost = false
-          isDisplaying = false
-          if(displayCall !== undefined) displayCall.close()
-        }
-        else {
-          swal({
-            text:'화면 궁유가 이미 켜져 있습니다.',
-            icon:'error'
-          })
-        }
-      })
+      camWriteButton.addEventListener('click', camwritefunc)
+      camwriteImage.addEventListener('click', camwritefunc)
       
-      camWriteButton.addEventListener('click', () => {
-        if(isNoCamUser) {
-          swal({
-            text:'캠이 없습니다',
-            icon:'error'
-          })
-        }
-        else if(!isCam) {
-          swal({
-            text:'캠을 켜주세요',
-            icon:'error'
-          })
-        }
-        else if(!isCanvas) {
-          swal({
-            text:'캔버스 권한이 없습니다',
-            icon:'error'
-          })
-        }
-        else {
-          if(!isCamWrite) {
-            swal({
-              text:'펜으로 인식할 부분을 클릭해주세요',
-              icon:'info'
-            })
-            extractColorVideo.style.visibility = 'visible'
-            extractColorVideo.width = canvas.width
-            extractColorVideo.height = canvas.height
-            isCamWrite = true
-            carwriteImage.src="img/[크기변환]nopencil.png"
-            camWriteButton.innerText = '캠 필기 끄기'
-          }
-          else {
-            swal({
-              text:'캠 필기 기능 종료',
-              icon:'info'
-            })
-            R=[]
-            G=[]
-            B=[]
-            cursor_context.clearRect(0,0, width, height)
-            extractColorVideo.style.visibility = 'hidden'
-            isCamWrite = false
-            isCamWrite2 = false
-            cntt = 0
-            carwriteImage.src="img/[크기변환]pencil.png"
-            camWriteButton.innerText = '캠 필기 켜기'
-          }
-        }
-      })
-      
-      gestureButton.addEventListener('click', () => {
-        if(isNoCamUser) {
-          swal({
-            text:'캠이 없습니다',
-            icon:'error'
-          })
-        }
-        else if(!isCam) {
-          swal({
-            text:'캠을 켜주세요',
-            icon:'error'
-          })
-        }
-        else if(!isCanvas) {
-          swal({
-            text:'캔버스 권한이 없습니다',
-            icon:'error'
-          })
-        }
-        else {
-          if(gesturechk) {
-            gestureImage.src="img/[크기변환]hand.png"
-            gestureButton.innerText = '제스처 켜기'
-            isGestureOff = true
-          }
-          else if(!gesturechk) {
-            gestureImage.src="img/[크기변환]nohand.png"
-            gestureButton.innerText = '제스처 끄기'
-            gesturePred()
-          }
-          gesturechk = !gesturechk
-        }
-      })
+      gestureButton.addEventListener('click', gesturefunc)
+      gestureImage.addEventListener('click', gesturefunc)
     })
     getNewUser()
 
@@ -769,7 +785,7 @@ var user_name;
   var displayButton = document.getElementById('display_button')
   var displayImage = document.getElementById('docu')
   var camWriteButton = document.getElementById('camWrite_button')
-  var carwriteImage = document.getElementById('penc')
+  var camwriteImage = document.getElementById('penc')
   var gestureButton = document.getElementById('gesture_button')
   var gestureImage = document.getElementById('hand')
 
