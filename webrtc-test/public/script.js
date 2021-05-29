@@ -391,6 +391,7 @@ var user_name;
     hiddenVideo.addEventListener('loadedmetadata', async() => { //모든 비디오 로드 된 후 시작
       hiddenVideo.play()
       await gestureLoad()
+      $(".loading").fadeOut();
       videoGrid.append(userBox)
       if(user_id !== null && user_id !== undefined)
         socket.emit('join-room', ROOM_ID, user_id, user_name)
