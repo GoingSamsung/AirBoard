@@ -587,7 +587,7 @@ var user_name;
 
       var exitButton=document.getElementById("exit")
       var renameButton=document.getElementById("rename")
-
+      
       exitButton.addEventListener('click', () => {
           window.location.href = '/'
       })
@@ -934,18 +934,25 @@ var user_name;
         window.open("/address/"+ ROOM_ID,  "popup", "width=300, \
         status=no, menubars=0, height=300, scrollbars=0, top=100px, left=100px\
         resizable=0, toolbar=0, directories=0, location=0, menubar=no")
-
-      var item1 = new Item("everyuser", "fas fa-user", "#5CD1FF", "모든 사용자 캔버스 사용");
-      var item2 = new Item("onlyhost", "fas fa-user-times", "#FFF15C", "호스트만 캔버스 사용");
-      var item3 = new Item("eachcanvas", "fas fa-chalkboard-teacher", "#FFFFE0", "각자 캔버스 사용");
+      else 
+        swal({
+          text:'호스트가 되었습니다.',
+          icon:'info'
+        })
+      var item1 = new Item("everyuser", "fas fa-user", "#5CD1FF", "모든 사용자 캔버스 사용")
+      var item2 = new Item("onlyhost", "fas fa-user-times", "#FFF15C", "호스트만 캔버스 사용")
+      var item3 = new Item("eachcanvas", "fas fa-chalkboard-teacher", "#FFFFE0", "각자 캔버스 사용")
+      var item4 = new Item("userlist", "fas fa-book", '#e9f0f5', "유저 리스트 보기")
 
       menu.add(item1);
       menu.add(item2);
       menu.add(item3);
+      menu.add(item4);
 
       var everyuserButton = document.getElementById("everyuser")
       var onlyhostButton = document.getElementById("onlyhost")
       var eachcanvasButton = document.getElementById("eachcanvas")
+      var userlistButton = document.getElementById("userlist")
 
       everyuserButton.addEventListener('click', () => {
         var flag = false
@@ -973,6 +980,15 @@ var user_name;
         hostCanvas = true
         socket.emit('clearWhiteBoard', ROOM_ID, user_id)
         socket.emit('canvasControl_server', ROOM_ID, userId, hostCanvas, hostEachCanvas)
+      })
+
+      userlistButton.addEventListener('click', () => {
+        var popupX = (window.screen.width / 2) - (620 / 2)
+        var popupY= (window.screen.height / 2) - (500 / 2)
+
+        window.open("/userlist/"+ ROOM_ID,  "popup", "width=620, \
+        status=no, menubars=0, height=500, scrollbars=0, top="+popupY+",\ left=" + popupX+ "\
+        resizable=0, toolbar=0, directories=0, location=0, menubar=no")
       })
     }
   })

@@ -78,6 +78,30 @@ app.get('/address/:room', (req, res) => {
   res.render('address', {roomId: req.params.room})
 })
 
+app.get('/userlist/:room', (req, res) => {
+  fs.readFile('views/userlist.ejs', async(err, tmpl) => {
+    var roomId = req.params.room
+    var userlist = await User.find({roomId:roomId, isHost: false}, null, {})
+    var cnt = 1
+    var topText = "<li style=\"background-color:white; border:2px solid black; width: 600px;\"><h5"
+    +" style = \"display:inline-block; width:150px; padding:0; margin:0;\">순번</h5>"
+    + "<h5 style=\"display:inline-block; width:100px; padding:0; margin:0;\">이름</h5>"
+    var userinfo = ""
+    let html=tmpl.toString().replace('%', topText)
+    for(var i=0; i<userlist.length; i++) {   
+      userinfo += "<li style=\"background-color:#a3a3a3; border:2px solid black;width: 600px;\"><h5 style ="
+    + " \"display:inline-block; width:150px; cursor:pointer; overflow: hidden; white-space:nowrap; text-overflow:ellipsis; padding:0; margin:0;\">"
+    + cnt++ + "</h5>" + "<h5 style=\"display:inline-block; width:100px; padding:0; margin:0;\">"+ userlist[i].userName +"</h5>"
+    + "<button onclick='camOffUser(" + "\"" + userlist[i].userId + "\"" + ");'>캠 끄기</button>"
+    + "<button onclick='muteUser(" + "\"" + userlist[i].userId + "\"" + ");'>마이크 끄기</button>"
+    + "<button onclick='quitUser(" + "\"" + userlist[i].userId + "\"" + ");'>강퇴</button>"
+    }
+    html = html.toString().replace('|', userinfo)
+    res.writeHead(200,{'Content-Type':'text/html'})
+    res.end(html)
+  })
+})
+
 /*
 app.get('/views/settingPage', (req, res) => {
   console.log("Hh")
