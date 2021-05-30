@@ -65,10 +65,9 @@ app.get('/address/:room', (req, res) => {
   res.render('address', {roomId: req.params.room})
 })
 
-// 새 창으로 시도했을 때
-// app.get('/newGes/:room', (req, res) => {
-//   res.render('newGes')
-// })
+app.post('/newGes/', (req, res) => {
+  res.render('newGes')
+})
 
 /*
 app.get('/views/settingPage', (req, res) => {

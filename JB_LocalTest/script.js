@@ -1,3 +1,5 @@
+const { render } = require("ejs")
+
 /*
   화면공유 했을 때 안넘어가는 경우가있음.(건모-> 형택: X, 형택->건모: O)
   호스트 기능들 추가
@@ -454,6 +456,7 @@ function userJoin()
         gesturechk = !gesturechk
       }
     })
+
   })
   getNewUser()
 
@@ -607,6 +610,7 @@ var displayImage = document.getElementById('docu')
 var camWriteButton = document.getElementById('camWrite_button')
 var carwriteImage = document.getElementById('penc')
 var gestureButton = document.getElementById('gesture_button')
+var testButton = document.getElementById('test_button')
 var gestureImage = document.getElementById('hand')
 
 function connectionDisplayLoop(userId)

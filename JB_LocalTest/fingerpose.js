@@ -10,7 +10,7 @@ var DiagonalDownLeft = 0;
 var HorizontalLeft = 0;
 var DiagonalUpLeft = 0;
 
-var thu = [NoCurl,1,VirticalUp,1];
+var thu = [HalfCurl,1,VirticalDown,1];
 var ind = [NoCurl,1,VirticalUp,1];
 var mid = [NoCurl,1,VirticalUp,1];
 var rin = [NoCurl,1,VirticalUp,1];
@@ -171,18 +171,6 @@ var pin = [NoCurl,1,VirticalUp,1];
                     return void 0 !== i(this.nameMapping[t]) && this.nameMapping[t]
                 }
             };
-
-        NoCurl = a.NoCurl;
-        HalfCurl = a.HalfCurl;
-        FullCurl = a.FullCurl;
-        VirticalUp = l.VerticalUp;
-        DiagonalUpRight = l.DiagonalUpRight;
-        HorizontalRight = l.HorizontalRight;
-        DiagonalDownRight = l.DiagonalDownRight;
-        VirticalDown = l.VirticalDown;
-        DiagonalDownLeft = l.DiagonalDownLeft;
-        HorizontalLeft = l.HorizontalLeft;
-        DiagonalUpLeft = l.DiagonalUpLeft;
 
         function u(t) {
             if ("undefined" == typeof Symbol || null == t[Symbol.iterator]) {
@@ -746,11 +734,23 @@ var pin = [NoCurl,1,VirticalUp,1];
                 }]) && M(e.prototype, n), r && M(e, r), t
             }(),
             T = new S("custom");
+            NoCurl = a.NoCurl;
+            HalfCurl = a.HalfCurl;
+            FullCurl = a.FullCurl;
+            VirticalUp = l.VerticalUp;
+            DiagonalUpRight = l.DiagonalUpRight;
+            HorizontalRight = l.HorizontalRight;
+            DiagonalDownRight = l.DiagonalDownRight;
+            VirticalDown = l.VirticalDown;
+            DiagonalDownLeft = l.DiagonalDownLeft;
+            HorizontalLeft = l.HorizontalLeft;
+            DiagonalUpLeft = l.DiagonalUpLeft;
         console.log(thu);
         console.log(ind);
         console.log(mid);
         console.log(rin);
         console.log(pin);
+        console.log(yummy);
         T.addCurl(o.Thumb, thu[0], thu[1]),T.addCurl(o.Index, ind[0], ind[1]),T.addCurl(o.Middle, mid[0], mid[1]),T.addCurl(o.Ring, rin[0], rin[1]),T.addCurl(o.pin, pin[0], pin[1])
         T.addDirection(o.Thumb,thu[2],thu[3]),T.addDirection(o.Index,ind[2],ind[3]),T.addDirection(o.Middle,mid[2],mid[3]),T.addDirection(o.Ring,rin[2],rin[3]),T.addDirection(o.Pinky,pin[2],pin[3])
         var C = T,
