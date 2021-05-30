@@ -57,13 +57,15 @@ app.get('/:room', async(req, res) => {
   const room = await Room.findOne({roomId: req.params.room}, null, {})
   if(room !== null) res.render('room', { roomId: req.params.room })
   else {
-    res.render('noPage')
+    fs.readFile('views/noPage.ejs', async(err, tmpl) => {
+      let html=tmpl.toString().replace('%', '회의실이 없습니다.')
+      res.writeHead(200,{'Content-Type':'text/html'})
+      res.end(html)
+    })
   }
 })
 
 app.post('/joinroom', (req, res) => {
-  console.log(req.body.address)
-  //res.render('room', { roomId: req.body.address })
   var tmp = req.body.address.split("/");
   console.log(tmp);
   if(tmp[2]=='airboard.ga'){
@@ -72,6 +74,22 @@ app.post('/joinroom', (req, res) => {
   else{
     res.render('noPage')
   }
+})
+
+app.get('/home/quit', async(req, res) => {
+  fs.readFile('views/noPage.ejs', async(err, tmpl) => {
+    let html=tmpl.toString().replace('%', '강제 퇴장 당하셨습니다.')
+    res.writeHead(200,{'Content-Type':'text/html'})
+    res.end(html)
+  })
+})
+
+app.get('/quitUser/:room/:userId', async(req, res) => {
+  var userId = req.params.userId
+  io.emit('quit', userId)
+  var roomId = req.params.room
+  await User.deleteOne({userId : userId})
+  res.redirect('/userlist/'+roomId)
 })
 
 app.get('/address/:room', (req, res) => {
@@ -88,13 +106,15 @@ app.get('/userlist/:room', (req, res) => {
     + "<h5 style=\"display:inline-block; width:100px; padding:0; margin:0;\">이름</h5>"
     var userinfo = ""
     let html=tmpl.toString().replace('%', topText)
-    for(var i=0; i<userlist.length; i++) {   
-      userinfo += "<li style=\"background-color:#a3a3a3; border:2px solid black;width: 600px;\"><h5 style ="
-    + " \"display:inline-block; width:150px; cursor:pointer; overflow: hidden; white-space:nowrap; text-overflow:ellipsis; padding:0; margin:0;\">"
-    + cnt++ + "</h5>" + "<h5 style=\"display:inline-block; width:100px; padding:0; margin:0;\">"+ userlist[i].userName +"</h5>"
-    + "<button onclick='camOffUser(" + "\"" + userlist[i].userId + "\"" + ");'>캠 끄기</button>"
-    + "<button onclick='muteUser(" + "\"" + userlist[i].userId + "\"" + ");'>마이크 끄기</button>"
-    + "<button onclick='quitUser(" + "\"" + userlist[i].userId + "\"" + ");'>강퇴</button>"
+    if(userlist) {
+      for(var i=0; i<userlist.length; i++) {   
+        userinfo += "<li style=\"background-color:#a3a3a3; border:2px solid black;width: 600px;\"><h5 style ="
+      + " \"display:inline-block; width:150px; cursor:pointer; overflow: hidden; white-space:nowrap; text-overflow:ellipsis; padding:0; margin:0;\">"
+      + cnt++ + "</h5>" + "<h5 style=\"display:inline-block; width:100px; padding:0; margin:0;\">"+ userlist[i].userName +"</h5>"
+      + "<button onclick='camOffUser(" + "\"" + userlist[i].userId + "\"" + ");'>캠 끄기</button>"
+      + "<button onclick='muteUser(" + "\"" + userlist[i].userId + "\"" + ");'>마이크 끄기</button>"
+      + "<button onclick='quitUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + ");'>강제 퇴장</button>"
+      }
     }
     html = html.toString().replace('|', userinfo)
     res.writeHead(200,{'Content-Type':'text/html'})

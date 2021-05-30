@@ -13,6 +13,14 @@
       %
       <p style="display:none;">|</p>
     <script>
+      function quitUser(userId, roomId){
+            const form=document.createElement('form')
+            form.method='get'
+            form.action="/quitUser/" + roomId + '/' + userId
+            const hiddenField=document.createElement('input')
+            document.body.appendChild(form)
+            form.submit()
+        }
     </script>
   </body>
 </html>

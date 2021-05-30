@@ -538,6 +538,16 @@ var user_name;
       isEachCanvas = flag
   })
 
+  socket.on('quit', (userId) => {
+    if(userId === user_id) {
+      window.location.href = '/home/quit'
+      swal({
+        text:"강퇴당하셨습니다.",
+        icon: "warning"
+      })
+    }
+  })
+
   function joinLoop()
   {
     if(user_id === null || user_id === undefined) setTimeout(joinLoop, 1000)
