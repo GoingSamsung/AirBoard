@@ -189,9 +189,9 @@ var user_name;
         camButton.innerText = '캠 끄기'
         camImage.src="img/[크기변환]web-cam.png"
       }
+      isCam = !isCam
       localStream.flag = 0
-      socket.emit('streamPlay_server', user_id,ROOM_ID,isCam)
-      isCam = !isCam    
+      socket.emit('streamPlay_server', user_id,ROOM_ID,isCam) 
     }
   }
 
@@ -538,6 +538,31 @@ var user_name;
       isEachCanvas = flag
   })
 
+  socket.on('cam', (userId) => {
+    if(userId === user_id) {
+      isCam = false
+      myVideoBackground.style.width = '160px'
+      myVideoBackground.style.height = '118px'
+      myVideo.width = 0
+      myVideo.height = 0
+      camButton.innerText = '캠 켜기'
+      camImage.src="img/[크기변환]noweb-cam.png"
+      localStream.flag = 0
+      socket.emit('streamPlay_server', user_id,ROOM_ID,isCam)
+    }
+  })
+
+  socket.on('mute', (userId) => {
+    if(userId === user_id) {
+      if(!isMuteUser) {
+        audioImage.src="img/[크기변환]nomicrophone.png"
+        audioButton.innerText = '마이크 켜기'
+        isMute = true
+        socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
+      }
+    }
+  })
+
   socket.on('quit', (userId) => {
     if(userId === user_id) {
       window.location.href = '/home/quit'
@@ -704,6 +729,7 @@ var user_name;
 
       call.on('stream', userVideoStream => {
         socket.emit('getMute', call.peer, user_id, ROOM_ID)
+        socket.emit('getCam', call.peer, user_id, ROOM_ID)
         if(peers[call.peer] == undefined) {
           bold.id = call.peer + '!bold'
           video.id = call.peer+'!video'
@@ -718,8 +744,8 @@ var user_name;
           userBox.appendChild(video)
         }
         peers[call.peer] = call
-        if(localStream.flag != 2) //?
-          socket.emit('getStream_server', user_id, call.peer, ROOM_ID)
+   //     if(localStream.flag != 2) //?
+   //       socket.emit('getStream_server', user_id, call.peer, ROOM_ID)
       })
     })
   }
@@ -922,7 +948,7 @@ var user_name;
     if(roomId == ROOM_ID && userId != user_id) {
       const video = document.getElementById(userId + '!video')
       const videoBackground = document.getElementById(userId + '!videoBackground')
-    if(isCam) {
+    if(!isCam) {
       videoBackground.style.width = '160px'
       videoBackground.style.height = '118px'
       video.width = 0
@@ -1117,7 +1143,7 @@ var user_name;
       info.innerHTML = data.message; 
     }
     else{ }
-  });
+  })
 
   socket.on('updateMessage', function(data){ 
     if(data.name === 'SERVER'){
@@ -1131,30 +1157,6 @@ var user_name;
       chatWindow.appendChild(chatMessageEl); 
       chatWindow.scrollTop=chatWindow.scrollHeight;
     } 
-  }); 
-
-  socket.on('getStream_script', (userId_caller, userId_callee, roomId) => {
-    if(user_id == userId_callee && roomId == ROOM_ID)
-      socket.emit('sendStream_server', userId_caller, user_id, ROOM_ID, isCam)
-  })
-
-  socket.on('sendStream_script', (userId_caller, userId_callee, roomId, isCam) => {
-    if(user_id == userId_caller && roomId == ROOM_ID) {
-      const video = document.getElementById(userId_callee + '!video')
-      const videoBackground = document.getElementById(userId_callee + '!videoBackground')
-      if(!isCam) {
-        videoBackground.style.width = '160px'
-        videoBackground.style.height = '118px'
-        video.width = 0
-        video.height = 0
-      }
-      else {
-        videoBackground.style.width = '0px'
-        videoBackground.style.height = '0px'
-        video.width = 160
-        video.height = 118
-      }
-    }
   })
 
   socket.on('nameChange_script', (userId, isHost, userName) => {
@@ -1283,6 +1285,25 @@ var user_name;
     if(user_id === userId) {
       const video = document.getElementById(muteUserId + '!video')
       video.muted = isMute
+    }
+  })
+
+  socket.on('setCam', (isCam, camUserId, userId) => {
+    if(user_id === userId) {
+      const video = document.getElementById(camUserId + '!video')
+      const videoBackground = document.getElementById(camUserId + '!videoBackground')
+      if(!isCam) {
+        videoBackground.style.width = '160px'
+        videoBackground.style.height = '118px'
+        video.width = 0
+        video.height = 0
+      }
+      else {
+        videoBackground.style.width = '0px'
+        videoBackground.style.height = '0px'
+        video.width = 160
+        video.height = 118
+      }
     }
   })
 

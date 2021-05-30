@@ -84,11 +84,16 @@ app.get('/home/quit', async(req, res) => {
   })
 })
 
-app.get('/quitUser/:room/:userId', async(req, res) => {
+app.get('/controlUser/:room/:userId/:flag', async(req, res) => {
   var userId = req.params.userId
-  io.emit('quit', userId)
+  var flag = req.params.flag
   var roomId = req.params.room
-  await User.deleteOne({userId : userId})
+  if(flag === 'quit') {
+    io.emit('quit', userId)
+    await User.deleteOne({userId : userId})
+  }
+  if(flag === 'cam') io.emit('cam', userId)
+  if(flag === 'mute') io.emit('mute', userId)
   res.redirect('/userlist/'+roomId)
 })
 
@@ -111,9 +116,9 @@ app.get('/userlist/:room', (req, res) => {
         userinfo += "<li style=\"background-color:#a3a3a3; border:2px solid black;width: 600px;\"><h5 style ="
       + " \"display:inline-block; width:150px; cursor:pointer; overflow: hidden; white-space:nowrap; text-overflow:ellipsis; padding:0; margin:0;\">"
       + cnt++ + "</h5>" + "<h5 style=\"display:inline-block; width:100px; padding:0; margin:0;\">"+ userlist[i].userName +"</h5>"
-      + "<button onclick='camOffUser(" + "\"" + userlist[i].userId + "\"" + ");'>캠 끄기</button>"
-      + "<button onclick='muteUser(" + "\"" + userlist[i].userId + "\"" + ");'>마이크 끄기</button>"
-      + "<button onclick='quitUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + ");'>강제 퇴장</button>"
+      + "<button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "cam" + "\"" + ");'>캠 끄기</button>"
+      + "<button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "mute" + "\"" + ");'>마이크 끄기</button>"
+      + "<button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "quit" + "\"" + ");'>강제 퇴장</button>"
       }
     }
     html = html.toString().replace('|', userinfo)
@@ -156,12 +161,6 @@ app.get('/img/:fileName', (req,res) => {
   }
 })
 io.on('connection', socket => {
-  socket.on('getStream_server', (userId_caller, userId_callee, roomId) => {
-    io.sockets.in(roomId).emit('getStream_script', userId_caller, userId_callee, roomId)
-  })
-  socket.on('sendStream_server', (userId_caller, userId_callee, roomId, isCam) => {
-    io.sockets.in(roomId).emit('sendStream_script', userId_caller, userId_callee, roomId, isCam)
-  })
   socket.on('sendMessage', function(data){ 
     data.name = data.user_name;
     io.sockets.emit('updateMessage', data); 
@@ -174,8 +173,11 @@ io.on('connection', socket => {
   socket.on('newDisplayConnect_server', (roomId, userId, newUserId) => {
     io.sockets.in(roomId).emit('newDisplayConnect_script', roomId, userId, newUserId)
   })
-  socket.on('streamPlay_server', (userId, roomId, isCam) => {
+  socket.on('streamPlay_server', async(userId, roomId, isCam) => {
     io.sockets.in(roomId).emit('streamPlay_script', userId, roomId, isCam)
+    const camUser = await User.findOne({userId: userId}, null, {})
+    camUser.isCam = isCam
+    camUser.save()
   })
   socket.on('muteRequest_server', async(userId, roomId, isMute) => {
     io.sockets.in(roomId).emit('muteRequest_script', userId, roomId, isMute)
@@ -193,10 +195,17 @@ io.on('connection', socket => {
     else
       io.sockets.in(roomId).emit('setName', userId, users.userName)
   })
+
   socket.on('getMute', async(muteUserId, userId, roomId) => {
     users = await User.findOne({userId:muteUserId}, null, {})
     io.sockets.in(roomId).emit('setMute', users.isMute, muteUserId, userId)
   })
+
+  socket.on('getCam', async(camUserId, userId, roomId) => {
+    users = await User.findOne({userId:camUserId}, null, {})
+    io.sockets.in(roomId).emit('setCam', users.isCam, camUserId, userId)
+  })
+
   socket.on('undo_server', async(roomId, userId) => {
     const room = await Room.findOne({roomId: roomId}, null, {})
     var flag = true

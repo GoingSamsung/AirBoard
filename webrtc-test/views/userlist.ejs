@@ -13,10 +13,10 @@
       %
       <p style="display:none;">|</p>
     <script>
-      function quitUser(userId, roomId){
+      function controlUser(userId, roomId, flag){
             const form=document.createElement('form')
             form.method='get'
-            form.action="/quitUser/" + roomId + '/' + userId
+            form.action="/controlUser/" + roomId + '/' + userId + '/' + flag
             const hiddenField=document.createElement('input')
             document.body.appendChild(form)
             form.submit()
