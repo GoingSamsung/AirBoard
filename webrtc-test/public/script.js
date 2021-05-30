@@ -236,7 +236,7 @@ var user_name;
     }
     else {
       swal({
-        text:'화면 궁유가 이미 켜져 있습니다.',
+        text:'화면 공유가 이미 켜져 있습니다.',
         icon:'error'
       })
     }
