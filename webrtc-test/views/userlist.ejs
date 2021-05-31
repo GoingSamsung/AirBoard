@@ -5,13 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <meta name="google" content="notranslate">
-      <title>유저 목록</title>
+    <title>유저 목록</title>
     <style>
+
+      button{
+        border:none;
+        background-color: white;
+      }
+
+      table, th, td{
+        text-align: center;
+      }
+
+      table {
+        border-collapse: collapse;
+        text-align: left;
+        line-height: 1.5;
+
+      }
+      table th {
+        padding: 10px;
+        font-weight: bold;
+        vertical-align: top;
+        color: #369;
+        border-bottom: 3px solid #036;
+      }
+      table th {
+        width: 150px;
+        padding: 10px;
+        font-weight: bold;
+        vertical-align: top;
+        border-bottom: 1px solid #ccc;
+        background: #f3f6f7;
+      }
+
+      table td {
+        width: 350px;
+        padding: 10px;
+        vertical-align: top;
+        border-bottom: 1px solid #ccc;
+      }
     </style>
   </head>
   <body>
       %
-      <p style="display:none;">|</p>
     <script>
       function controlUser(userId, roomId, flag){
             const form=document.createElement('form')

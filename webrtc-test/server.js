@@ -106,22 +106,36 @@ app.get('/userlist/:room', (req, res) => {
     var roomId = req.params.room
     var userlist = await User.find({roomId:roomId, isHost: false}, null, {})
     var cnt = 1
-    var topText = "<li style=\"background-color:white; border:2px solid black; width: 600px;\"><h5"
+    /*var topText = "<li style=\"background-color:white; border:2px solid black; width: 600px;\"><h5"
     +" style = \"display:inline-block; width:150px; padding:0; margin:0;\">순번</h5>"
-    + "<h5 style=\"display:inline-block; width:100px; padding:0; margin:0;\">이름</h5>"
+    + "<h5 style=\"display:inline-block; width:100px; padding:0; margin:0;\">이름</h5>"*/
+    var topText = "<table><tr><th>순번</th><th>이름</th><th colspan=\"4\">사용자 컨트롤</th></tr>"
     var userinfo = ""
-    let html=tmpl.toString().replace('%', topText)
+    //let html=tmpl.toString().replace('%', topText)
     if(userlist) {
-      for(var i=0; i<userlist.length; i++) {   
-        userinfo += "<li style=\"background-color:#a3a3a3; border:2px solid black;width: 600px;\"><h5 style ="
-      + " \"display:inline-block; width:150px; cursor:pointer; overflow: hidden; white-space:nowrap; text-overflow:ellipsis; padding:0; margin:0;\">"
-      + cnt++ + "</h5>" + "<h5 style=\"display:inline-block; width:100px; padding:0; margin:0;\">"+ userlist[i].userName +"</h5>"
-      + "<button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "cam" + "\"" + ");'>캠 끄기</button>"
-      + "<button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "mute" + "\"" + ");'>마이크 끄기</button>"
-      + "<button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "quit" + "\"" + ");'>강제 퇴장</button>"
+      if(userlist.length==0){
+        userinfo += "<tr><td colspan=\"5\">사용자가 없습니다</td></tr>"
+      }
+      else{
+        for(var i=0; i<userlist.length; i++) {   
+          /*userinfo += "<li style=\"background-color:#a3a3a3; border:2px solid black;width: 600px;\"><h5 style ="
+        + " \"display:inline-block; width:150px; cursor:pointer; overflow: hidden; white-space:nowrap; text-overflow:ellipsis; padding:0; margin:0;\">"
+        + cnt++ + "</h5>" + "<h5 style=\"display:inline-block; width:100px; padding:0; margin:0;\">"+ userlist[i].userName +"</h5>"
+        + "<button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "cam" + "\"" + ");'>캠 끄기</button>"
+        + "<button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "mute" + "\"" + ");'>마이크 끄기</button>"
+        + "<button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "quit" + "\"" + ");'>강제 퇴장</button>"*/
+          userinfo += "<tr><td>"
+          + cnt++ + "</td>" + "<td>"+ userlist[i].userName +"</td>"
+          + "<td><button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "cam" + "\"" + ");'>캠 끄기</button></td>"
+          + "<td><button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "mute" + "\"" + ");'>마이크 끄기</button></td>"
+          + "<td><button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "quit" + "\"" + ");'>강제 퇴장</button></td></tr>"
+        }
       }
     }
-    html = html.toString().replace('|', userinfo)
+    userinfo+="</table>"
+    topText=topText+userinfo;
+    console.log(topText);
+    let html = tmpl.toString().replace('%', topText)
     res.writeHead(200,{'Content-Type':'text/html'})
     res.end(html)
   })
