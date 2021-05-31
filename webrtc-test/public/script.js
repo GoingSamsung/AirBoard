@@ -565,14 +565,10 @@ var user_name;
 
   socket.on('quit', (userId) => {
     if(userId === user_id) {
+      window.location.href = '/home/quit'
       swal({
-        text:"방장에 의해 강제 퇴장 되었습니다.",
-        icon: "warning",
-        closeOnEsc:false,
-        closeOnClickOutside: false
-      })
-      .then((value)=>{
-        window.location.href = '/home/quit'
+        text:"강퇴당하셨습니다.",
+        icon: "warning"
       })
     }
   })
@@ -1023,10 +1019,10 @@ var user_name;
       })
 
       userlistButton.addEventListener('click', () => {
-        var popupX = (window.screen.width / 2) - (620 / 2)
+        var popupX = (window.screen.width / 2) - (520 / 2)
         var popupY= (window.screen.height / 2) - (500 / 2)
 
-        window.open("/userlist/"+ ROOM_ID,  "popup", "width=620, \
+        window.open("/userlist/"+ ROOM_ID,  "popup", "width=520, \
         status=no, menubars=0, height=500, scrollbars=0, top="+popupY+",\ left=" + popupX+ "\
         resizable=0, toolbar=0, directories=0, location=0, menubar=no")
       })
@@ -1294,6 +1290,7 @@ var user_name;
 
   socket.on('setCam', (isCam, camUserId, userId) => {
     if(user_id === userId) {
+      console.log(isCam)
       const video = document.getElementById(camUserId + '!video')
       const videoBackground = document.getElementById(camUserId + '!videoBackground')
       if(!isCam) {
