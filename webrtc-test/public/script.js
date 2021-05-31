@@ -565,10 +565,14 @@ var user_name;
 
   socket.on('quit', (userId) => {
     if(userId === user_id) {
-      window.location.href = '/home/quit'
       swal({
-        text:"강퇴당하셨습니다.",
-        icon: "warning"
+        text:"방장에 의해 강제 퇴장 되었습니다.",
+        icon: "warning",
+        closeOnEsc:false,
+        closeOnClickOutside: false
+      })
+      .then((value)=>{
+        window.location.href = '/home/quit'
       })
     }
   })

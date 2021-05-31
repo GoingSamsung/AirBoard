@@ -77,11 +77,12 @@ app.post('/joinroom', (req, res) => {
 })
 
 app.get('/home/quit', async(req, res) => {
-  fs.readFile('views/noPage.ejs', async(err, tmpl) => {
+  res.redirect("/");
+  /*fs.readFile('views/noPage.ejs', async(err, tmpl) => {
     let html=tmpl.toString().replace('%', '강제 퇴장 당하셨습니다.')
     res.writeHead(200,{'Content-Type':'text/html'})
     res.end(html)
-  })
+  })*/
 })
 
 app.get('/controlUser/:room/:userId/:flag', async(req, res) => {
