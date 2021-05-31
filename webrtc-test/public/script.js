@@ -1290,7 +1290,6 @@ var user_name;
 
   socket.on('setCam', (isCam, camUserId, userId) => {
     if(user_id === userId) {
-      console.log(isCam)
       const video = document.getElementById(camUserId + '!video')
       const videoBackground = document.getElementById(camUserId + '!videoBackground')
       if(!isCam) {

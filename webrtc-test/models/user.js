@@ -21,6 +21,10 @@ const userSchema = new Schema({
     isMute: {
         type: Boolean,
         default: false,
+    },
+    isCam: {
+        type: Boolean,
+        default: true,
     }
 });
 
