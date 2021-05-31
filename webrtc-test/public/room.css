@@ -261,6 +261,9 @@ image{
     margin-right:0px;
 }
 
+.selected-button-color{
+    background-color:'white';
+}
 .btn{
     float:right;
     height:35px;

@@ -105,8 +105,8 @@ var user_name;
   var menu
 
   hiddenVideo.style.visibility = 'hidden'
-  hiddenVideo.width = 1024
-  hiddenVideo.height = 768
+  hiddenVideo.width = 160
+  hiddenVideo.height = 118
   hiddenVideo.muted = true
   hiddenCamVideo.style.visibility = 'hidden'
   extractCamArea.style.width = 0
@@ -334,6 +334,51 @@ var user_name;
 
   var cntt = 0
 
+  function changeCSS(theClass, element, value) {
+    //Last Updated on July 4, 2011
+    //documentation for this script at
+    //http://www.shawnolson.net/a/503/altering-css-class-attributes-with-javascript.html
+    var cssRules;
+  
+    for (var S = 0; S < document.styleSheets.length; S++) {
+  
+       try {
+  
+          document.styleSheets[S].insertRule(theClass + ' { ' + element + ': ' + value + '; }', document.styleSheets[S][cssRules].length);
+  
+       } catch (err) {
+  
+          try {
+             document.styleSheets[S].addRule(theClass, element + ': ' + value + ';');
+  
+          } catch (err) {
+  
+             try {
+                if (document.styleSheets[S]['rules']) {
+                   cssRules = 'rules';
+                } else if (document.styleSheets[S]['cssRules']) {
+                   cssRules = 'cssRules';
+                } else {
+                   //no rules found... browser unknown
+                }
+  
+                for (var R = 0; R < document.styleSheets[S][cssRules].length; R++) {
+                   if (document.styleSheets[S][cssRules][R].selectorText == theClass) {
+                      if (document.styleSheets[S][cssRules][R].style[element]) {
+                         document.styleSheets[S][cssRules][R].style[element] = value;
+                         break;
+                      }
+                   }
+                }
+             } catch (err) {
+             }
+          }
+  
+       }
+       
+    }
+ }
+
   extractColorVideo.addEventListener('click', (event) => { 
     const test = document.getElementById('output');
     //var ctx = test.getContext('2d');
@@ -343,18 +388,19 @@ var user_name;
     };
     var x = event.offsetX;
     var y = event.offsetY;
-    swal({
-      text:`현재 좌표는: ${x} / ${x}`,
-      icon:'info'
-    });
+
     tmpR = imageData.getRGBA(x,y,0);
     tmpG = imageData.getRGBA(x,y,1);
     tmpB = imageData.getRGBA(x,y,2);
-    
-    // console.log now displays actual color palette instead of RGB values
-    var consoleColorPaletteCSS = "background: #" + (tmpR.toString(16).length == 2 ? tmpR.toString(16) : ('0' + tmpR.toString(16))) + (tmpG.toString(16).length == 2 ? tmpG.toString(16) : ('0' + tmpG.toString(16))) + (tmpB.toString(16).length == 2 ? tmpB.toString(16) : ('0' + tmpB.toString(16))) + ';';
-    console.log("Color:" + "%c  ", consoleColorPaletteCSS);
-    // console.log now displays actual color palette instead of RGB values
+    var consoleColorPaletteCSS = "#" + (tmpR.toString(16).length == 2 ? tmpR.toString(16) : ('0' + tmpR.toString(16))) + (tmpG.toString(16).length == 2 ? tmpG.toString(16) : ('0' + tmpG.toString(16))) + (tmpB.toString(16).length == 2 ? tmpB.toString(16) : ('0' + tmpB.toString(16))) + ';';
+
+    changeCSS('.selected-button-color', "background", consoleColorPaletteCSS)
+    swal('선택된 색상은 버튼의 색깔과 같습니다.',{
+      button:{
+        text:'확인',
+        className: "selected-button-color",
+      }
+    });
     
     R.push(tmpR);
     G.push(tmpG);
