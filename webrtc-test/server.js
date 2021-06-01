@@ -68,7 +68,7 @@ app.post('/joinroom', (req, res) => {
     res.redirect(`/${tmp[3]}`);
   }
   else{
-    res.render('noPage')
+    res.render("noPage",{message:"존재하지 않는 회의실 주소입니다"})
   }
 })
 
