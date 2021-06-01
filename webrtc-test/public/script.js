@@ -92,8 +92,8 @@ var user_name;
   var hostCanvas = true
   var isEachCanvas = false
   var hostEachCanvas = false
+  var isReverse = false
 
-  var prevImage
   var localStream
   var localDisplay
   var displayCall
@@ -426,18 +426,21 @@ var user_name;
     //const test = document.getElementById('output');
     if(isCamWrite) {
       if(!isCamWrite2) {
-        extractContext.save()
-        extractContext.scale(-1, 1)
-        extractContext.translate(-extractColorVideo.width,0)
+        if(!isReverse) {
+          extractContext.save()
+          extractContext.scale(-1, 1)
+          extractContext.translate(-extractColorVideo.width,0)
+        }
         extractContext.drawImage(hiddenVideo, 0, 0, extractColorVideo.width, extractColorVideo.height)
-        extractContext.restore()
+        if(!isReverse) extractContext.restore()
       }
-
-      hiddenCamContext.save()
-      hiddenCamContext.scale(-1, 1)
-      hiddenCamContext.translate(-hiddenCamVideo.width,0)
+      if(!isReverse) {
+        hiddenCamContext.save()
+        hiddenCamContext.scale(-1, 1)
+        hiddenCamContext.translate(-hiddenCamVideo.width,0)
+      }
       hiddenCamContext.drawImage(hiddenVideo, 0, 0, hiddenCamVideo.width, hiddenCamVideo.height)
-      hiddenCamContext.restore()
+      if(!isReverse) hiddenCamContext.restore()
       /*
       let src = new cv.Mat(height, width, cv.CV_8UC4);
       let cap = new cv.VideoCapture(myVideo);
@@ -656,21 +659,29 @@ var user_name;
       allLoaded()
       
       menu = new Menu("#myMenu");
-      var item1 = new Item("list", "fas fa-bars", "#8cc9f0");
-      var item2 = new Item("exit", "fas fa-sign-out-alt", "#FF5C5C", "방에서 퇴장");
-      var item3 = new Item("setting", "fas fa-cog", "#64F592", "설정");
-      var item4 = new Item("rename", "fas fa-exchange-alt", "#EE82EE", "이름 변경")
+      var item1 = new Item("list", "fas fa-bars", "#8cc9f0")
+      var item2 = new Item("exit", "fas fa-sign-out-alt", "#FF5C5C", "방에서 퇴장")
+      var item3 = new Item("rename", "fas fa-id-card", "#EE82EE", "이름 변경")
+      var item4 = new Item("reverse", "fas fa-exchange-alt", "#64F592", "캠 필기 좌우반전")
+      var item5 = new Item("screenshot", "fas fa-image", "orange", "스크린샷")
 
-      menu.add(item1);
-      menu.add(item2);
-      menu.add(item3);
-      menu.add(item4);
+      menu.add(item1)
+      menu.add(item2)
+      menu.add(item3)
+      menu.add(item4)
+      menu.add(item5)
 
       var exitButton=document.getElementById("exit")
       var renameButton=document.getElementById("rename")
-      
+      var reverseButton=document.getElementById("reverse")
+      var screenshotButton=document.getElementById("screenshot")
+
       exitButton.addEventListener('click', () => {
           window.location.href = '/'
+      })
+
+      reverseButton.addEventListener('click', () => {
+        isReverse = !isReverse
       })
 
       renameButton.addEventListener('click', () => {
@@ -699,6 +710,24 @@ var user_name;
             socket.emit('nameChange_server', ROOM_ID, user_id, isHost, inputName)
           }
         })()
+      })
+      
+      screenshotButton.addEventListener('click', () => {
+        capture.width = canvas.width
+            capture.height = canvas.height
+            if(isDisplaying) {
+              var displayVideo = document.getElementById('userDisplay')
+              captureContext.drawImage(displayVideo, 0, 0, width, height)
+            }
+            var img = new Image()
+            img.src = canvas.toDataURL()
+            img.addEventListener('load', ()=> {
+              captureContext.drawImage(img, 0, 0, width, height)
+              var link = document.getElementById('download')
+              link.href = capture.toDataURL()
+              link.download = 'AirBoard_screenshot.png'
+              link.click()
+            })
       })
 
       camButton.addEventListener('click', camfunc)
