@@ -57,11 +57,7 @@ app.get('/:room', async(req, res) => {
   const room = await Room.findOne({roomId: req.params.room}, null, {})
   if(room !== null) res.render('room', { roomId: req.params.room })
   else {
-    fs.readFile('views/noPage.ejs', async(err, tmpl) => {
-      let html=tmpl.toString().replace('%', '회의실이 없습니다.')
-      res.writeHead(200,{'Content-Type':'text/html'})
-      res.end(html)
-    })
+    res.render("noPage",{message:"존재하지 않는 회의실 주소입니다"});
   }
 })
 
@@ -77,11 +73,7 @@ app.post('/joinroom', (req, res) => {
 })
 
 app.get('/home/quit', async(req, res) => {
-  fs.readFile('views/noPage.ejs', async(err, tmpl) => {
-    let html=tmpl.toString().replace('%', '강제 퇴장 당하셨습니다.')
-    res.writeHead(200,{'Content-Type':'text/html'})
-    res.end(html)
-  })
+  res.render("noPage",{message:"호스트에 의해 강제 퇴장 당했습니다"});
 })
 
 app.get('/controlUser/:room/:userId/:flag', async(req, res) => {
