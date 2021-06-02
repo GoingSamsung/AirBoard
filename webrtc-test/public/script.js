@@ -635,6 +635,7 @@ var user_name;
     var videoUserName = document.createElement('videoUserName') //비디오에 이름 표시 코드
     var bold = document.createElement('b')
     var videoUserNameText = document.createTextNode(user_name)
+    userBox.id = 'myuserBox'
     bold.id = 'mybold'
     videoUserName.appendChild(bold)
     bold.appendChild(videoUserNameText)
@@ -1016,6 +1017,33 @@ var user_name;
     if(roomId == ROOM_ID && userId != user_id) {
       const video = document.getElementById(userId + '!video')
       video.muted = is_mute
+
+      if(is_mute==true){
+        const userbox=document.getElementById(userId+"!userBox");
+        const muteicon=document.createElement("img");
+        muteicon.id=userId+"!muteicon";
+        muteicon.className="muteicon";
+        muteicon.src="img/mute.png"
+        userbox.appendChild(muteicon);
+      }
+      else{
+        const muteicon=document.getElementById(userId+"!muteicon");
+        muteicon.remove();
+      }
+    }
+    else{
+      if(is_mute==true){
+        const userbox=document.getElementById("myuserBox");
+        const muteicon=document.createElement("img");
+        muteicon.id=userId+"!muteicon";
+        muteicon.className="muteicon";
+        muteicon.src="img/mute.png"
+        userbox.appendChild(muteicon);
+      }
+      else{
+        const muteicon=document.getElementById(userId+"!muteicon");
+        muteicon.remove();
+      }
     }
   })
 
@@ -1041,15 +1069,17 @@ var user_name;
   socket.on('setHost', (userId, participant)=>{
     if(userId === user_id) {
       isHost = true
-      if(participant === 0)
+      if(participant === 0){
         window.open("/address/"+ ROOM_ID,  "popup", "width=300, \
         status=no, menubars=0, height=300, scrollbars=0, top=100px, left=100px\
         resizable=0, toolbar=0, directories=0, location=0, menubar=no")
-      else 
+      }
+      else {
         swal({
           text:'호스트가 되었습니다.',
           icon:'info'
         })
+      }
       var item1 = new Item("everyuser", "fas fa-user", "#5CD1FF", "모든 사용자 캔버스 사용")
       var item2 = new Item("onlyhost", "fas fa-user-times", "#FFF15C", "호스트만 캔버스 사용")
       var item3 = new Item("eachcanvas", "fas fa-chalkboard-teacher", "#FFFFE0", "각자 캔버스 사용")
