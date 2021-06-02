@@ -1143,8 +1143,11 @@ var user_name;
 
   socket.on('hostChange', (userId, userName)=>{
     if(userId !== user_id) {
-      const bold = document.getElementById(userId+'!bold')
-      bold.innerHTML = userName + '(호스트)'
+      const userbox=document.getElementById(userId+"!userBox");
+      const hosticon=document.createElement("img");
+      hosticon.className="hosticon";
+      hosticon.src="img/crown.png"
+      userbox.appendChild(hosticon);
     }
   })
 
@@ -1379,8 +1382,15 @@ var user_name;
     }
   })
 
-  socket.on('setName', (userId, userName) => {
+  socket.on('setName', (userId, userName, ishost) => {
     if(user_id !== userId) {
+      if(ishost==true){
+        const userbox=document.getElementById(userId+"!userBox");
+        const hosticon=document.createElement("img");
+        hosticon.className="hosticon";
+        hosticon.src="img/crown.png"
+        userbox.appendChild(hosticon);
+      }
       const bold = document.getElementById(userId + '!bold')
       bold.innerHTML = userName
     }

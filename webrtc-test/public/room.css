@@ -300,3 +300,25 @@ image{
     transition: 1.8s cubic-bezier(0.2, 1, 0.3, 1);
     pointer-events: none;
 }
+
+.muteicon{
+    position:absolute;
+    display:inline-block;
+    z-index:100;
+    x:160;
+    y:118;
+    transform: translate(-130%, 30%);
+    width:20px;
+    height:20px;
+}
+
+.hosticon{
+    position:absolute;
+    display:inline-block;
+    z-index:100;
+    x:160;
+    y:200;
+    width:20px;
+    height:20px;
+    transform: translate(-130%, -100%);
+}
