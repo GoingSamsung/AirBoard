@@ -177,10 +177,8 @@ io.on('connection', socket => {
   })
   socket.on('getName', async (userId, roomId) =>{ //유저 이름 달아줌
     users = await User.findOne({userId:userId}, null, {})
-    if(users.isHost)
-      io.sockets.in(roomId).emit('setName', userId, users.userName, true) //호스트 문구 처리는 나중에 더 이쁘게
-    else
-      io.sockets.in(roomId).emit('setName', userId, users.userName, false)
+    if(users.isHost) io.sockets.in(roomId).emit('setName', userId, users.userName, true) //호스트 문구 처리는 나중에 더 이쁘게
+    else io.sockets.in(roomId).emit('setName', userId, users.userName, false)
   })
 
   socket.on('getMute', async(muteUserId, userId, roomId) => {
