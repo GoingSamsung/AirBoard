@@ -8,6 +8,8 @@ const fs = require('fs')
 const mongoose = require('mongoose');
 const User = require('./models/user');
 const Room = require('./models/room');
+const { response } = require('express')
+const user = require('./models/user')
 
 //로컬 테스트시 여기서 복붙
 //mongoose 연결
@@ -44,37 +46,69 @@ app.get('/:room', async(req, res) => {
   const room = await Room.findOne({roomId: req.params.room}, null, {})
   if(room !== null) res.render('room', { roomId: req.params.room })
   else {
-    res.render('noPage')
+    res.render("noPage",{message:"존재하지 않는 회의실 주소입니다"});
   }
 })
 
 app.post('/joinroom', (req, res) => {
-  console.log(req.body.address)
-  //res.render('room', { roomId: req.body.address })
   var tmp = req.body.address.split("/");
   console.log(tmp);
   if(tmp[2]=='airboard.ga'){
     res.redirect(`/${tmp[3]}`);
   }
   else{
-    res.render('noPage')
+    res.render("noPage",{message:"존재하지 않는 회의실 주소입니다"})
   }
+})
+
+app.get('/home/quit', async(req, res) => {
+  res.render("noPage",{message:"호스트에 의해 강제 퇴장 당했습니다"});
+})
+
+app.get('/controlUser/:room/:userId/:flag', async(req, res) => {
+  var userId = req.params.userId
+  var flag = req.params.flag
+  var roomId = req.params.room
+  if(flag === 'quit') {
+    io.emit('quit', userId)
+    await User.deleteOne({userId : userId})
+  }
+  if(flag === 'cam') io.emit('cam', userId)
+  if(flag === 'mute') io.emit('mute', userId)
+  res.redirect('/userlist/'+roomId)
 })
 
 app.get('/address/:room', (req, res) => {
   res.render('address', {roomId: req.params.room})
 })
 
-app.post('/newGes/', (req, res) => {
-  res.render('newGes')
+app.get('/userlist/:room', (req, res) => {
+  fs.readFile('views/userlist.ejs', async(err, tmpl) => {
+    var roomId = req.params.room
+    var userlist = await User.find({roomId:roomId, isHost: false}, null, {})
+    var cnt = 1
+    var topText = "<table><tr><th>순번</th><th>이름</th><th colspan=\"4\">사용자 컨트롤</th></tr>"
+    var userinfo = ""
+    if(userlist) {
+      if(userlist.length === 0) userinfo += "<tr><td colspan=\"5\">사용자가 없습니다</td></tr>"
+      else {
+        for(var i=0; i<userlist.length; i++) {   
+          userinfo += "<tr><td>"
+          + cnt++ + "</td>" + "<td>"+ userlist[i].userName +"</td>"
+          + "<td><button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "cam" + "\"" + ");'>캠 끄기</button></td>"
+          + "<td><button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "mute" + "\"" + ");'>마이크 끄기</button></td>"
+          + "<td><button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "quit" + "\"" + ");'>강제 퇴장</button></td></tr>"
+        }
+      }
+    }
+    userinfo += "</table>"
+    topText = topText+userinfo;
+    let html = tmpl.toString().replace('%', topText)
+    res.writeHead(200,{'Content-Type':'text/html'})
+    res.end(html)
+  })
 })
 
-/*
-app.get('/views/settingPage', (req, res) => {
-  console.log("Hh")
-  res.render('home')
-})
-*/
 app.get('/img/:fileName', (req,res) => {
   const { fileName } = req.params
   const { range } = req.headers
@@ -103,14 +137,8 @@ app.get('/img/:fileName', (req,res) => {
   }
 })
 io.on('connection', socket => {
-  socket.on('getStream_server', (userId_caller, userId_callee, roomId) => {
-    io.sockets.in(roomId).emit('getStream_script', userId_caller, userId_callee, roomId)
-  })
-  socket.on('sendStream_server', (userId_caller, userId_callee, roomId, isCam) => {
-    io.sockets.in(roomId).emit('sendStream_script', userId_caller, userId_callee, roomId, isCam)
-  })
   socket.on('sendMessage', function(data){ 
-    data.name = socket.userName;
+    data.name = data.user_name;
     io.sockets.emit('updateMessage', data); 
   });
   socket.on('displayConnect_server', (roomId, userId) => {
@@ -121,8 +149,11 @@ io.on('connection', socket => {
   socket.on('newDisplayConnect_server', (roomId, userId, newUserId) => {
     io.sockets.in(roomId).emit('newDisplayConnect_script', roomId, userId, newUserId)
   })
-  socket.on('streamPlay_server', (userId, roomId, isCam) => {
+  socket.on('streamPlay_server', async(userId, roomId, isCam) => {
     io.sockets.in(roomId).emit('streamPlay_script', userId, roomId, isCam)
+    const camUser = await User.findOne({userId: userId}, null, {})
+    camUser.isCam = isCam
+    camUser.save()
   })
   socket.on('muteRequest_server', async(userId, roomId, isMute) => {
     io.sockets.in(roomId).emit('muteRequest_script', userId, roomId, isMute)
@@ -130,22 +161,31 @@ io.on('connection', socket => {
     muteUser.isMute = isMute
     muteUser.save()
   })
+  //규 수정
+  socket.on('thumbsRequest_server',async(userId, roomId)=>{
+    io.sockets.in(roomId).emit('thumbsRequest_script', userId, roomId)
+  })
   socket.on('displayReset_server', (roomId, userId) => {
     io.sockets.in(roomId).emit('displayReset_script', roomId, userId)
   })
   socket.on('getName', async (userId, roomId) =>{ //유저 이름 달아줌
     users = await User.findOne({userId:userId}, null, {})
-    if(users.isHost)
-      io.sockets.in(roomId).emit('setName', userId, users.userName+'(호스트)') //호스트 문구 처리는 나중에 더 이쁘게
-    else
-      io.sockets.in(roomId).emit('setName', userId, users.userName)
+    if(users.isHost) io.sockets.in(roomId).emit('setName', userId, users.userName, true) //호스트 문구 처리는 나중에 더 이쁘게
+    else io.sockets.in(roomId).emit('setName', userId, users.userName, false)
   })
+
   socket.on('getMute', async(muteUserId, userId, roomId) => {
     users = await User.findOne({userId:muteUserId}, null, {})
     io.sockets.in(roomId).emit('setMute', users.isMute, muteUserId, userId)
   })
-  socket.on('undo_server', (roomId, userId) => {
-    //io.sockets.in(roomId).emit('undo_script', roomId)
+
+  socket.on('getCam', async(camUserId, userId, roomId) => {
+    users = await User.findOne({userId:camUserId}, null, {})
+    io.sockets.in(roomId).emit('setCam', users.isCam, camUserId, userId)
+  })
+
+  socket.on('undo_server', async(roomId, userId) => {
+    const room = await Room.findOne({roomId: roomId}, null, {})
     var flag = true
       if(line_track[roomId] !== undefined) {
         if(line_track[roomId][userId] !== undefined) {
@@ -167,17 +207,20 @@ io.on('connection', socket => {
           }
           else flag = false
           if(flag) {
-            io.sockets.in(roomId).emit('reLoading')
-            for(var i in line_track[roomId])
-              for(var j in line_track[roomId][i])
-                io.sockets.in(roomId).emit('stroke', {line: line_track[roomId][i][j].line, roomId:line_track[roomId][i][j].roomId, size: line_track[roomId][i][j].size, penWidth: line_track[roomId][i][j].penWidth, penColor: line_track[roomId][i][j].penColor})
+            io.sockets.in(roomId).emit('reLoading', userId)
+            if(!room.isEachCanvas)
+              for(var i in line_track[roomId])
+                for(var j in line_track[roomId][i])
+                  io.sockets.in(roomId).emit('stroke', {line: line_track[roomId][i][j].line, roomId:line_track[roomId][i][j].roomId, userId: userId, size: line_track[roomId][i][j].size, penWidth: line_track[roomId][i][j].penWidth, penColor: line_track[roomId][i][j].penColor})
+            else
+              for(var i in line_track[roomId][userId])
+                socket.emit('stroke', {line: line_track[roomId][userId][i].line, roomId:line_track[roomId][userId][i].roomId, userId:line_track[roomId][userId][i].userId, size: line_track[roomId][userId][i].size, penWidth: line_track[roomId][userId][i].penWidth, penColor: line_track[roomId][userId][i].penColor}); 
           }
         }
     }
   })
-  socket.on('redo_server', (roomId, userId) => {
-    //io.sockets.in(roomId).emit('undo_script', roomId)
-    var flag = true
+  socket.on('redo_server', async(roomId, userId) => {
+    const room = await Room.findOne({roomId: roomId}, null, {})
     if(backup_track[roomId] !== undefined && line_track[roomId] !== undefined) {
       if(backup_track[roomId][userId] !== undefined && line_track[roomId][userId] !== undefined) {
         var line_length = line_track[roomId][userId].length
@@ -185,14 +228,17 @@ io.on('connection', socket => {
         var backup_length = backup_track[roomId][userId][length-1]
         if(length > 0) {
         for(var i=0; i<backup_length; i++) {
-          //console.log(line_track_backup[roomId][userId][line_length+i])
           line_track[roomId][userId].push(line_track_backup[roomId][userId][line_length + i])
         }
         backup_track[roomId][userId].pop()
-          io.sockets.in(roomId).emit('reLoading')
-          for(var i in line_track[roomId])
-            for(var j in line_track[roomId][i])
-              io.sockets.in(roomId).emit('stroke', {line: line_track[roomId][i][j].line, roomId:line_track[roomId][i][j].roomId, size: line_track[roomId][i][j].size, penWidth: line_track[roomId][i][j].penWidth, penColor: line_track[roomId][i][j].penColor})
+          io.sockets.in(roomId).emit('reLoading', userId)
+          if(!room.isEachCanvas)
+            for(var i in line_track[roomId])
+              for(var j in line_track[roomId][i])
+                io.sockets.in(roomId).emit('stroke', {line: line_track[roomId][i][j].line, roomId:line_track[roomId][i][j].roomId, userId: userId, size: line_track[roomId][i][j].size, penWidth: line_track[roomId][i][j].penWidth, penColor: line_track[roomId][i][j].penColor})
+          else 
+            for(var i in line_track[roomId][userId])
+              socket.emit('stroke', {line: line_track[roomId][userId][i].line, roomId:line_track[roomId][userId][i].roomId, userId:line_track[roomId][userId][i].userId, size: line_track[roomId][userId][i].size, penWidth: line_track[roomId][userId][i].penWidth, penColor: line_track[roomId][userId][i].penColor}); 
         }
       }
     }
@@ -204,6 +250,14 @@ io.on('connection', socket => {
     users.save()
     io.sockets.in(roomId).emit('nameChange_script', userId, isHost, userName)
   })
+  socket.on('canvasControl_server', async(roomId, userId, isCanvas, isEachCanvas) => {
+    io.sockets.in(roomId).emit('canvasControl_script', userId, isCanvas, isEachCanvas)
+    const room = await Room.findOne({roomId: roomId}, null, {})
+    room.isCanvas = isCanvas
+    room.isEachCanvas = isEachCanvas
+    room.save()
+  })
+
   socket.on('join-room', async(roomId, userId, userName) => {
     socket.userName=userName
     socket.userId = userId
@@ -217,10 +271,11 @@ io.on('connection', socket => {
       ishost=false
     if(ishost) {
       room.hostId = userId
-      socket.emit('setHost', userId);
+      socket.emit('setHost', userId, room.participant);
     }
     room.participant += 1
     room.save()
+    io.emit('setIsCanvas', userId, room.isCanvas, room.isEachCanvas)
     //---호스트 판별 끝---//
     const user = new User({
       userName:userName,
@@ -265,7 +320,7 @@ io.on('connection', socket => {
           room.hostId = newHost.userId
           room.save()
           newHost.save()
-          socket.to(roomId).broadcast.emit('setHost', newHost.userId);
+          socket.to(roomId).broadcast.emit('setHost', newHost.userId, 1);
           socket.to(roomId).broadcast.emit('hostChange', newHost.userId, newHost.userName)
         }
       });
@@ -275,14 +330,24 @@ io.on('connection', socket => {
     })
   })
   //---캔버스 코드---
-  socket.on('clearWhiteBoard', roomId => {
-    line_track[roomId]=[]
-    io.sockets.in(roomId).emit('reLoading')
+  socket.on('clearWhiteBoard', async(roomId, userId) => {
+    const room = await Room.findOne({roomId: roomId}, null, {})
+    if(!room.isEachCanvas) line_track[roomId] = []
+    else line_track[roomId][userId] = []
+    io.sockets.in(roomId).emit('reLoading', userId)
   })
-  socket.on('reDrawing', roomId => {
-    for(var i in line_track[roomId]) {
-      for(var j in line_track[roomId][i])
-        socket.emit('drawLine', {line: line_track[roomId][i][j].line, roomId:line_track[roomId][i][j].roomId, userId:line_track[roomId][i][j].userId, size: line_track[roomId][i][j].size, penWidth: line_track[roomId][i][j].penWidth, penColor: line_track[roomId][i][j].penColor});
+  socket.on('reDrawing', async(roomId, userId) => {
+    const room = await Room.findOne({roomId: roomId}, null, {})
+    if(!room.isEachCanvas)
+      for(var i in line_track[roomId]) {
+        for(var j in line_track[roomId][i])
+          socket.emit('drawLine', {line: line_track[roomId][i][j].line, roomId:line_track[roomId][i][j].roomId, userId:line_track[roomId][i][j].userId, size: line_track[roomId][i][j].size, penWidth: line_track[roomId][i][j].penWidth, penColor: line_track[roomId][i][j].penColor});
+      }
+    else {
+      if(userId !== null && userId !== undefined)
+        if(line_track[roomId][userId] !== null && line_track[roomId][userId] !== undefined)
+        for(var i in line_track[roomId][userId])
+          socket.emit('drawLine', {line: line_track[roomId][userId][i].line, roomId:line_track[roomId][userId][i].roomId, userId:line_track[roomId][userId][i].userId, size: line_track[roomId][userId][i].size, penWidth: line_track[roomId][userId][i].penWidth, penColor: line_track[roomId][userId][i].penColor});
     }
   })
 
@@ -306,9 +371,9 @@ io.on('connection', socket => {
       if(result_y < (result_x*deg_y)/deg_x + 0.005 && result_y > (result_x*deg_y)/deg_x - 0.005)
         line_track[roomId].splice(i,1) 
     }
-    io.sockets.in(roomId).emit('reLoading')
+    io.sockets.in(roomId).emit('reLoading', userId)
     for(var i in line_track[roomId])
-     io.sockets.in(roomId).emit('stroke', {line: line_track[roomId][userId][i].line, roomId:line_track[roomId][userId][i].roomId, size: line_track[roomId][userId][i].size, penWidth: line_track[roomId][userId][i].penWidth, penColor: line_track[roomId][userId][i].penColor}) 
+     io.sockets.in(roomId).emit('stroke', {line: line_track[roomId][userId][i].line, roomId:line_track[roomId][userId][i].roomId, userId: userId, size: line_track[roomId][userId][i].size, penWidth: line_track[roomId][userId][i].penWidth, penColor: line_track[roomId][userId][i].penColor}) 
   })
   /*
   for(var i in line_track[roomId]) {
@@ -340,7 +405,8 @@ io.on('connection', socket => {
       roomId: data.roomId,
       size: data.size,
       penWidth: data.penWidth,
-      penColor: data.penColor
+      penColor: data.penColor,
+      userId: data.userId
     }
     line_track[data.roomId][data.userId].push(dt)
     line_track_backup[data.roomId][data.userId].push(dt)

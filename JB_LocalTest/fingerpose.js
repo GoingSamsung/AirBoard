@@ -1,20 +1,3 @@
-var NoCurl = 0;
-var HalfCurl = 0;
-var FullCurl = 0;
-var VirticalUp = 0;
-var DiagonalUpRight = 0;
-var HorizontalRight = 0;
-var DiagonalDownRight = 0;
-var VirticalDown = 0;
-var DiagonalDownLeft = 0;
-var HorizontalLeft = 0;
-var DiagonalUpLeft = 0;
-
-var thu = [HalfCurl,1,VirticalDown,1];
-var ind = [NoCurl,1,VirticalUp,1];
-var mid = [NoCurl,1,VirticalUp,1];
-var rin = [NoCurl,1,VirticalUp,1];
-var pin = [NoCurl,1,VirticalUp,1];
 ! function(t, e) {
     "object" == typeof exports && "object" == typeof module ? module.exports = e() : "function" == typeof define && define.amd ? define([], e) : "object" == typeof exports ? exports.fp = e() : t.fp = e()
 }("undefined" != typeof self ? self : this, (function() {
@@ -75,10 +58,10 @@ var pin = [NoCurl,1,VirticalUp,1];
                 return t && "function" == typeof Symbol && t.constructor === Symbol && t !== Symbol.prototype ? "symbol" : typeof t
             })(t)
         }
-        n.r(r), n.d(r, "CustomGesture", (function() {
+        n.r(r), n.d(r, "VictoryGesture", (function() {
             return C
-        })), n.d(r, "GyuGesture", (function() {
-            return Gyu
+        })), n.d(r, "ThumbsUpGesture", (function() {
+            return j //규 수정
         })), n.d(r,"PalmGesture",(function(){
             return palm
         }));
@@ -733,28 +716,10 @@ var pin = [NoCurl,1,VirticalUp,1];
                     }
                 }]) && M(e.prototype, n), r && M(e, r), t
             }(),
-            T = new S("custom");
-            NoCurl = a.NoCurl;
-            HalfCurl = a.HalfCurl;
-            FullCurl = a.FullCurl;
-            VirticalUp = l.VerticalUp;
-            DiagonalUpRight = l.DiagonalUpRight;
-            HorizontalRight = l.HorizontalRight;
-            DiagonalDownRight = l.DiagonalDownRight;
-            VirticalDown = l.VirticalDown;
-            DiagonalDownLeft = l.DiagonalDownLeft;
-            HorizontalLeft = l.HorizontalLeft;
-            DiagonalUpLeft = l.DiagonalUpLeft;
-        console.log(thu);
-        console.log(ind);
-        console.log(mid);
-        console.log(rin);
-        console.log(pin);
-        console.log(yummy);
-        T.addCurl(o.Thumb, thu[0], thu[1]),T.addCurl(o.Index, ind[0], ind[1]),T.addCurl(o.Middle, mid[0], mid[1]),T.addCurl(o.Ring, rin[0], rin[1]),T.addCurl(o.pin, pin[0], pin[1])
-        T.addDirection(o.Thumb,thu[2],thu[3]),T.addDirection(o.Index,ind[2],ind[3]),T.addDirection(o.Middle,mid[2],mid[3]),T.addDirection(o.Ring,rin[2],rin[3]),T.addDirection(o.Pinky,pin[2],pin[3])
+            T = new S("victory");
+        T.addCurl(o.Thumb, a.HalfCurl, .5), T.addCurl(o.Thumb, a.NoCurl, .5), T.addDirection(o.Thumb, l.VerticalUp, 1), T.addDirection(o.Thumb, l.DiagonalUpLeft, 1), T.addCurl(o.Index, a.NoCurl, 1), T.addDirection(o.Index, l.VerticalUp, .75), T.addDirection(o.Index, l.DiagonalUpLeft, 1), T.addCurl(o.Middle, a.NoCurl, 1), T.addDirection(o.Middle, l.VerticalUp, 1), T.addDirection(o.Middle, l.DiagonalUpLeft, .75), T.addCurl(o.Ring, a.FullCurl, 1), T.addDirection(o.Ring, l.VerticalUp, .2), T.addDirection(o.Ring, l.DiagonalUpLeft, 1), T.addDirection(o.Ring, l.HorizontalLeft, .2), T.addCurl(o.Pinky, a.FullCurl, 1), T.addDirection(o.Pinky, l.VerticalUp, .2), T.addDirection(o.Pinky, l.DiagonalUpLeft, 1), T.addDirection(o.Pinky, l.HorizontalLeft, .2), T.setWeight(o.Index, 2), T.setWeight(o.Middle, 2);
         var C = T,
-            R = new S("thumbs_up");
+            R = new S("thumbs_up"); //규 수정
         R.addCurl(o.Thumb, a.NoCurl, 1), R.addDirection(o.Thumb, l.VerticalUp, 1), R.addDirection(o.Thumb, l.DiagonalUpLeft, .25), R.addDirection(o.Thumb, l.DiagonalUpRight, .25);
         for (var A = 0, L = [o.Index, o.Middle, o.Ring, o.Pinky]; A < L.length; A++) {
             var _ = L[A];
@@ -782,159 +747,3 @@ var pin = [NoCurl,1,VirticalUp,1];
         }
     }]).default
 }));
-const thuElement = document.querySelector('.ThumbCurl');
-        thuElement.addEventListener('change',(event)=>{
-            console.log("asdf");
-            if(event.target.value=='Nocurl') thu[0] = NoCurl;
-            else if(event.target.value=='Halfcurl') thu[0] = HalfCurl;
-            else thu[0] = FullCurl;
-        })
-        const thuNumElement = document.querySelector('.ThumbCurlNum');
-        thuNumElement.addEventListener('change',(event)=>{
-            if(event.target.value=='1') thu[1] = 0.25;
-            else if(event.target.value=='2') thu[1] = 0.5;
-            else if(event.target.value=='3') thu[1] = 0.75;
-            else thu[1] = 1.0
-        })
-        const thuDirElement = document.querySelector('.ThumbDir');
-        thuDirElement.addEventListener('change',(event)=>{
-            if(event.target.value=='1') thu[2] = VirticalUp;
-            else if(event.target.value=='2') thu[2] = DiagonalUpRight;
-            else if(event.target.value=='3') thu[2] = HorizontalRight;
-            else if(event.target.value=='4') thu[2] = DiagonalDownRight;
-            else if(event.target.value=='5') thu[2] = VirticalDown;
-            else if(event.target.value=='6') thu[2] = DiagonalDownLeft;
-            else if(event.target.value=='7') thu[2] = HorizontalLeft;
-            else if(event.target.value=='8') thu[2] = DiagonalUpLeft;
-        })
-        const thuDirNumElement = document.querySelector('.ThumbDirNum');
-        thuDirNumElement.addEventListener('change',(event)=>{
-            if(event.target.value=='1') thu[3] = 0.25;
-            else if(event.target.value=='2') thu[3] = 0.5;
-            else if(event.target.value=='3') thu[3] = 0.75;
-            else if(event.target.value=='4') thu[3] = 1.0;
-        })
-        const indElement = document.querySelector('.IndexCurl');
-        indElement.addEventListener('change',(event)=>{
-            if(event.target.value=='Nocurl') ind[0] = NoCurl;
-            else if(event.target.value=='Halfcurl') ind[0] = HalfCurl;
-            else ind[0] = FullCurl;
-        })
-        const indNumElement = document.querySelector('.IndexCurlNum');
-        indNumElement.addEventListener('change',(event)=>{
-            if(event.target.value=='1') ind[1] = 0.25;
-            else if(event.target.value=='2') ind[1] = 0.5;
-            else if(event.target.value=='3') ind[1] = 0.75;
-            else ind[1] = 1.0
-        })
-        const indDirElement = document.querySelector('.IndexDir');
-        indDirElement.addEventListener('change',(event)=>{
-            if(event.target.value=='1') ind[2] = VirticalUp;
-            else if(event.target.value=='2') ind[2] = DiagonalUpRight;
-            else if(event.target.value=='3') ind[2] = HorizontalRight;
-            else if(event.target.value=='4') ind[2] = DiagonalDownRight;
-            else if(event.target.value=='5') ind[2] = VirticalDown;
-            else if(event.target.value=='6') ind[2] = DiagonalDownLeft;
-            else if(event.target.value=='7') ind[2] = HorizontalLeft;
-            else if(event.target.value=='8') ind[2] = DiagonalUpLeft;
-        })
-        const indDirNumElement = document.querySelector('.IndexDirNum');
-        indDirNumElement.addEventListener('change',(event)=>{
-            if(event.target.value=='1') ind[3] = 0.25;
-            else if(event.target.value=='2') ind[3] = 0.5;
-            else if(event.target.value=='3') ind[3] = 0.75;
-            else if(event.target.value=='4') ind[3] = 1.0;
-        })
-        const midElement = document.querySelector('.MiddleCurl');
-        midElement.addEventListener('change',(event)=>{
-            if(event.target.value=='Nocurl') mid[0] = NoCurl;
-            else if(event.target.value=='Halfcurl') mid[0] = HalfCurl;
-            else mid[0] = FullCurl;
-        })
-        const midNumElement = document.querySelector('.MiddleCurlNum');
-        midNumElement.addEventListener('change',(event)=>{
-            if(event.target.value=='1') mid[1] = 0.25;
-            else if(event.target.value=='2') mid[1] = 0.5;
-            else if(event.target.value=='3') mid[1] = 0.75;
-            else mid[1] = 1.0
-        })
-        const midDirElement = document.querySelector('.MiddleDir');
-        midDirElement.addEventListener('change',(event)=>{
-            if(event.target.value=='1') mid[2] = VirticalUp;
-            else if(event.target.value=='2') mid[2] = DiagonalUpRight;
-            else if(event.target.value=='3') mid[2] = HorizontalRight;
-            else if(event.target.value=='4') mid[2] = DiagonalDownRight;
-            else if(event.target.value=='5') mid[2] = VirticalDown;
-            else if(event.target.value=='6') mid[2] = DiagonalDownLeft;
-            else if(event.target.value=='7') mid[2] = HorizontalLeft;
-            else if(event.target.value=='8') mid[2] = DiagonalUpLeft;
-        })
-        const midDirNumElement = document.querySelector('.MiddleDirNum');
-        midDirNumElement.addEventListener('change',(event)=>{
-            if(event.target.value=='1') mid[3] = 0.25;
-            else if(event.target.value=='2') mid[3] = 0.5;
-            else if(event.target.value=='3') mid[3] = 0.75;
-            else if(event.target.value=='4') mid[3] = 1.0;
-        })
-        const rinElement = document.querySelector('.RingCurl');
-        rinElement.addEventListener('change',(event)=>{
-            if(event.target.value=='Nocurl') rin[0] = NoCurl;
-            else if(event.target.value=='Halfcurl') rin[0] = HalfCurl;
-            else rin[0] = FullCurl;
-        })
-        const rinNumElement = document.querySelector('.RingCurlNum');
-        rinNumElement.addEventListener('change',(event)=>{
-            if(event.target.value=='1') rin[1] = 0.25;
-            else if(event.target.value=='2') rin[1] = 0.5;
-            else if(event.target.value=='3') rin[1] = 0.75;
-            else rin[1] = 1.0
-        })
-        const rinDirElement = document.querySelector('.RingDir');
-        rinDirElement.addEventListener('change',(event)=>{
-            if(event.target.value=='1') rin[2] = VirticalUp;
-            else if(event.target.value=='2') rin[2] = DiagonalUpRight;
-            else if(event.target.value=='3') rin[2] = HorizontalRight;
-            else if(event.target.value=='4') rin[2] = DiagonalDownRight;
-            else if(event.target.value=='5') rin[2] = VirticalDown;
-            else if(event.target.value=='6') rin[2] = DiagonalDownLeft;
-            else if(event.target.value=='7') rin[2] = HorizontalLeft;
-            else if(event.target.value=='8') rin[2] = DiagonalUpLeft;
-        })
-        const rinDirNumElement = document.querySelector('.RingDirNum');
-        rinDirNumElement.addEventListener('change',(event)=>{
-            if(event.target.value=='1') rin[3] = 0.25;
-            else if(event.target.value=='2') rin[3] = 0.5;
-            else if(event.target.value=='3') rin[3] = 0.75;
-            else if(event.target.value=='4') rin[3] = 1.0;
-        })
-        const pinElement = document.querySelector('.PinkyCurl');
-        pinElement.addEventListener('change',(event)=>{
-            if(event.target.value=='Nocurl') pin[0] = NoCurl;
-            else if(event.target.value=='Halfcurl') pin[0] = HalfCurl;
-            else pin[0] = FullCurl;
-        })
-        const pinNumElement = document.querySelector('.PinkyCurlNum');
-        pinNumElement.addEventListener('change',(event)=>{
-            if(event.target.value=='1') pin[1] = 0.25;
-            else if(event.target.value=='2') pin[1] = 0.5;
-            else if(event.target.value=='3') pin[1] = 0.75;
-            else pin[1] = 1.0
-        })
-        const pinDirElement = document.querySelector('.PinkyDir');
-        pinDirElement.addEventListener('change',(event)=>{
-            if(event.target.value=='1') pin[2] = VirticalUp;
-            else if(event.target.value=='2') pin[2] = DiagonalUpRight;
-            else if(event.target.value=='3') pin[2] = HorizontalRight;
-            else if(event.target.value=='4') pin[2] = DiagonalDownRight;
-            else if(event.target.value=='5') pin[2] = VirticalDown;
-            else if(event.target.value=='6') pin[2] = DiagonalDownLeft;
-            else if(event.target.value=='7') pin[2] = HorizontalLeft;
-            else if(event.target.value=='8') pin[2] = DiagonalUpLeft;
-        })
-        const pinDirNumElement = document.querySelector('.PinkyDirNum');
-        pinDirNumElement.addEventListener('change',(event)=>{
-            if(event.target.value=='1') pin[3] = 0.25;
-            else if(event.target.value=='2') pin[3] = 0.5;
-            else if(event.target.value=='3') pin[3] = 0.75;
-            else if(event.target.value=='4') pin[3] = 1.0;
-        })
