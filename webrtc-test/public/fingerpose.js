@@ -60,8 +60,8 @@
         }
         n.r(r), n.d(r, "VictoryGesture", (function() {
             return C
-        })), n.d(r, "GyuGesture", (function() {
-            return Gyu
+        })), n.d(r, "ThumbsUpGesture", (function() {
+            return j //규 수정
         })), n.d(r,"PalmGesture",(function(){
             return palm
         }));
@@ -719,7 +719,7 @@
             T = new S("victory");
         T.addCurl(o.Thumb, a.HalfCurl, .5), T.addCurl(o.Thumb, a.NoCurl, .5), T.addDirection(o.Thumb, l.VerticalUp, 1), T.addDirection(o.Thumb, l.DiagonalUpLeft, 1), T.addCurl(o.Index, a.NoCurl, 1), T.addDirection(o.Index, l.VerticalUp, .75), T.addDirection(o.Index, l.DiagonalUpLeft, 1), T.addCurl(o.Middle, a.NoCurl, 1), T.addDirection(o.Middle, l.VerticalUp, 1), T.addDirection(o.Middle, l.DiagonalUpLeft, .75), T.addCurl(o.Ring, a.FullCurl, 1), T.addDirection(o.Ring, l.VerticalUp, .2), T.addDirection(o.Ring, l.DiagonalUpLeft, 1), T.addDirection(o.Ring, l.HorizontalLeft, .2), T.addCurl(o.Pinky, a.FullCurl, 1), T.addDirection(o.Pinky, l.VerticalUp, .2), T.addDirection(o.Pinky, l.DiagonalUpLeft, 1), T.addDirection(o.Pinky, l.HorizontalLeft, .2), T.setWeight(o.Index, 2), T.setWeight(o.Middle, 2);
         var C = T,
-            R = new S("thumbs_up");
+            R = new S("thumbs_up"); //규 수정
         R.addCurl(o.Thumb, a.NoCurl, 1), R.addDirection(o.Thumb, l.VerticalUp, 1), R.addDirection(o.Thumb, l.DiagonalUpLeft, .25), R.addDirection(o.Thumb, l.DiagonalUpRight, .25);
         for (var A = 0, L = [o.Index, o.Middle, o.Ring, o.Pinky]; A < L.length; A++) {
             var _ = L[A];

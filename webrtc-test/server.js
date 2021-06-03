@@ -172,6 +172,9 @@ io.on('connection', socket => {
     muteUser.isMute = isMute
     muteUser.save()
   })
+  socket.on('thumbsRequest_server',async(userId, roomId)=>{
+    io.sockets.in(roomId).emit('thumbsRequest_script', userId, roomId)
+  })
   socket.on('displayReset_server', (roomId, userId) => {
     io.sockets.in(roomId).emit('displayReset_script', roomId, userId)
   })

@@ -106,6 +106,7 @@ var menu  //float 버튼용 메뉴
   var chkfirst = 0
   var palmcnt = 0
   var victorycnt = 0
+  var thumbsupcnt = 0 //규 수정
 
   hiddenVideo.style.visibility = 'hidden'
   hiddenVideo.width = 160
@@ -244,6 +245,21 @@ var menu  //float 버튼용 메뉴
       displayVideo.remove()
       isDisplaying = false
       }
+  })
+  
+  //규 수정
+  socket.on('thumbsRequest_script', (userId, roomId) => {
+    if(roomId === ROOM_ID && userId !== user_id) {
+      const tagname='#'+userId+'thumbsicon'
+      $( tagname ).fadeIn( 500, function() {
+        $( this ).fadeOut( 5000 );
+      });
+    }
+    else{
+      $( "#mythumbsicon" ).fadeIn( 500, function() {
+        $( this ).fadeOut( 5000 );
+      });
+    }
   })
 
   socket.on('muteRequest_script', (userId, roomId, is_mute) => {
@@ -757,7 +773,7 @@ var menu  //float 버튼용 메뉴
   async function gestureLoad() {
     const knownGestures = [
       fp.Gestures.VictoryGesture,
-      fp.Gestures.GyuGesture,
+      fp.Gestures.ThumbsUpGesture, //규 수정
       fp.Gestures.PalmGesture
     ]
     const GE = new fp.GestureEstimator(knownGestures)
@@ -803,10 +819,19 @@ var menu  //float 버튼용 메뉴
               link.click()
             })
           }
+
+          //규 수정
+          if(result.name=="thumbs_up") thumbsupcnt+=2 
+          if(thumbsupcnt>=10){
+            thumbsupcnt = 0
+            console.log("thumbs up")
+            socket.emit('thumbsRequest_server', user_id, ROOM_ID)
+          }
         }
       }
       if(palmcnt >= 1) palmcnt--
       if(victorycnt >= 1) victorycnt--
+      if(thumbsupcnt >= 1) thumbsupcnt-- //규 수정
       // ...and so on
       if(!isGestureOff && gesturechk) setTimeout(() => { gesturePred() }, 1000 / config.video.fps)
       else gestureFlag = true
@@ -1120,6 +1145,13 @@ var menu  //float 버튼용 메뉴
     userBox.appendChild(videoUserName)
     userBox.appendChild(myVideoBackground)
     userBox.appendChild(myVideo)
+
+    const thumbsicon=document.createElement("img");
+    thumbsicon.id="mythumbsicon";
+    thumbsicon.className="thumbsicon";
+    thumbsicon.src="img/thumbs.png"
+    userBox.appendChild(thumbsicon);
+
     myVideo.srcObject = localStream
     myVideo.addEventListener('loadedmetadata', () => {
       myVideo.play()
@@ -1268,6 +1300,12 @@ var menu  //float 버튼용 메뉴
           userBox.appendChild(videoUserName)
           userBox.appendChild(videoBackground)
           userBox.appendChild(video)
+
+          const thumbsicon=document.createElement("img");
+          thumbsicon.id=call.peer+"thumbsicon";
+          thumbsicon.className="thumbsicon";
+          thumbsicon.src="img/thumbs.png"
+          userBox.appendChild(thumbsicon);
         }
         peers[call.peer] = call
       })
@@ -1301,6 +1339,7 @@ var menu  //float 버튼용 메뉴
     if(isDisplayHost) firstConnectSocketCall(userId) //화면공유중일때 새로 들어온 유저가 화면공유 보도록
 
     if(peers[userId] == undefined) {
+      var connectcount=0;
       const call = myPeer.call(userId, localStream)
       const video = document.createElement('video')
       video.width = 160
@@ -1318,12 +1357,20 @@ var menu  //float 버튼용 메뉴
         video.id = userId + '!video'
         videoBackground.id = userId + '!videoBackground'
         videoUserName.appendChild(bold)
-
         bold.appendChild(videoUserNameText)
         userBox.appendChild(videoUserName)
         userBox.appendChild(videoBackground)
         userBox.appendChild(video)
         addVideoStream(video, userVideoStream, userBox)
+        connectcount++;
+        
+        if(connectcount==2){
+          const thumbsicon=document.createElement("img");
+          thumbsicon.id=userId+"thumbsicon";
+          thumbsicon.className="thumbsicon";
+          thumbsicon.src="img/thumbs.png"
+          userBox.appendChild(thumbsicon);
+        }
       })
 
       peers[userId] = call

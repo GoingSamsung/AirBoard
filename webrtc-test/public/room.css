@@ -52,6 +52,7 @@ videoUserName {
 }
 
 videoBackground {
+    position:absolute;
     background-color: black;
     display: block;
 }
@@ -303,7 +304,6 @@ image{
 
 .muteicon{
     position:absolute;
-    display:inline-block;
     z-index:100;
     x:160;
     y:118;
@@ -314,11 +314,21 @@ image{
 
 .hosticon{
     position:absolute;
-    display:inline-block;
     z-index:100;
     x:160;
     y:200;
     width:20px;
     height:20px;
     transform: translate(-130%, -100%);
+}
+
+.thumbsicon{
+    position:absolute;
+    display:none;
+    z-index:100;
+    x:160;
+    y:200;
+    width:40px;
+    height:40px;
+    transform: translate(-100%, 10%);
 }
