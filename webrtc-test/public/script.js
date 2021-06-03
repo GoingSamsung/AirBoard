@@ -194,8 +194,9 @@ var menu  //float 버튼용 메뉴
       isCam = false
       myVideoBackground.style.width = '160px'
       myVideoBackground.style.height = '118px'
-      myVideo.width = 0
-      myVideo.height = 0
+      myVideo.style.visibility="hidden"
+      //myVideo.width = 0
+      //myVideo.height = 0
       camButton.innerText = '캠 켜기'
       camImage.src="img/[크기변환]noweb-cam.png"
       localStream.flag = 0
@@ -488,14 +489,16 @@ var menu  //float 버튼용 메뉴
       if(!isCam) {
         videoBackground.style.width = '160px'
         videoBackground.style.height = '118px'
-        video.width = 0
-        video.height = 0
+        video.style.visibility="hidden"
+        //video.width = 0
+        //video.height = 0
       }
       else {
         videoBackground.style.width = '0px'
         videoBackground.style.height = '0px'
-        video.width = 160
-        video.height = 118
+        video.style.visibility="visible"
+        //video.width = 160
+        //video.height = 118
       }
     }
   })
@@ -845,14 +848,16 @@ var menu  //float 버튼용 메뉴
       if(isCam) {
         myVideoBackground.style.width = '160px'
         myVideoBackground.style.height = '118px'
-        myVideo.width = 0
-        myVideo.height = 0
+        //myVideo.width = 0
+        //myVideo.height = 0
+        myVideo.style.visibility="hidden"
         camButton.innerText = '캠 켜기'
         camImage.src="img/[크기변환]noweb-cam.png"
       }
       else {
         myVideoBackground.style.width = '0px'
         myVideoBackground.style.height = '0px'
+        myVideo.style.visibility="visible"
         myVideo.width = 160
         myVideo.height = 118
         camButton.innerText = '캠 끄기'
@@ -1240,8 +1245,8 @@ var menu  //float 버튼용 메뉴
       const bold = document.createElement('b')
       const videoUserNameText = document.createTextNode('loading..')
       const video = document.createElement('video')
-      video.width = 0
-      video.height = 0
+      video.width = 160
+      video.height = 118
       const userBox = document.createElement('userBox')
       const videoBackground = document.createElement('videoBackground')
       videoBackground.style.width = '160px'
