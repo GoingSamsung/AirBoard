@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+  <title>AirBoard Login</title>
+  <style>
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      padding-top: 40px;
+      padding-bottom: 40px;
+      background-color: #ffffff;
+    }
+
+    .form-login {
+      width: 100%;
+      max-width: 330px;
+      padding: 15px;
+      margin: auto;
+    }
+
+    .form-login .checkbox {
+      font-weight: 400;
+    }
+
+    .form-login .form-floating:focus-within {
+      z-index: 2;
+    }
+
+    .form-login input[type="email"] {
+      margin-bottom: 10px;
+      /* border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0; */
+    }
+
+    .form-login input[type="password"] {
+      margin-bottom: 10px;
+      /* border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0; */
+    }
+
+    .bd-placeholder-img {
+      font-size: 1.125rem;
+      text-anchor: middle;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+    }
+
+    @media (min-width: 768px) {
+      .bd-placeholder-img-lg {
+        font-size: 3.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body class="text-center">
+
+  <main class="form-login">
+    <div style="text-align: center; color:red; margin-top: 2%">
+      <!--만약 message의 길이가 0보다 길면 message를 띄워라-->
+      <% if(0 < message.length) { %>
+        <%= message %>
+          <% } %>
+    </div>
+    <form action="/login" method="POST">
+      <img class="mb-4" src="https://raw.githubusercontent.com/GoingSamsung/AirBoard/master/media/goingsamsung_logo.png"
+        alt="GoingSamsung Logo" width="100" height="100" onclick='javascript:location.href="/"' style="cursor:pointer"/>
+      <h1 class="h3 mb-3 fw-normal">Sign in</h1>
+
+      <div class="form-floating">
+        <input type="email" class="form-control" id="floatingInputEmail" placeholder="name@example.com" name="email">
+        <label for="floatingInput">Email address</label>
+      </div>
+      <div class="form-floating">
+        <input type="password" class="form-control" id="floatingInputPassword" placeholder="Password" name="password">
+        <label for="floatingPassword">Password</label>
+      </div>
+
+
+      <div class="checkbox mb-3">
+        <label>
+          <input type="checkbox" value="remember-me"> Remember me
+        </label>
+      </div>
+      <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
+
+      <hr>
+      
+      <input type="button" class="w-100 btn btn-lg btn-secondary" onclick=" location.href='/signup'" value = "Sign up"/>
+      <p class="mt-5 mb-3 text-muted">© GoingSamsung</p>
+    </form>
+  </main>
+</body>
+
+</html>

@@ -2,39 +2,40 @@
   화면공유 했을 때 안넘어가는 경우가있음.(건모-> 형택: X, 형택->건모: O)
   되돌리기 했을 때 맨 처음 필기 늘어나는 현상 있음
 */
-var user_name
 var user_id
 var menu  //float 버튼용 메뉴
 
 (async () => { 
-  user_name = await swal({
-    closeOnEsc:false,
-    closeOnClickOutside: false,
-    text:"대화명을 입력해주세요",
-    content:'input',
-    icon: "info"
-  })
+  if(user_name === '') {
+    user_name = await swal({
+      closeOnEsc:false,
+      closeOnClickOutside: false,
+      text:"대화명을 입력해주세요",
+      content:'input',
+      icon: "info"
+    })
 
-  if(user_name === null) window.location.href = "/"
+    if(user_name === null) window.location.href = "/"
 
-  while(user_name === null || user_name === undefined || user_name === '' || user_name.length > 6)  {
-    if(user_name.length > 6) {
-      user_name = await swal({
-        closeOnEsc:false,
-        closeOnClickOutside: false,
-        text:"대화명을 6자 이하로 설정해주세요",
-        content: "input",
-        icon: "warning"
-      })
-    }
-    else {
-      user_name = await swal({
-        closeOnEsc:false,
-        closeOnClickOutside: false,
-        text:"대화명을 다시 입력해주세요",
-        content: "input",
-        icon: "warning"
-      })
+    while(user_name === null || user_name === undefined || user_name === '' || user_name.length > 6)  {
+      if(user_name.length > 6) {
+        user_name = await swal({
+          closeOnEsc:false,
+          closeOnClickOutside: false,
+          text:"대화명을 6자 이하로 설정해주세요",
+          content: "input",
+          icon: "warning"
+        })
+      }
+      else {
+        user_name = await swal({
+          closeOnEsc:false,
+          closeOnClickOutside: false,
+          text:"대화명을 다시 입력해주세요",
+          content: "input",
+          icon: "warning"
+        })
+      }
     }
   }
 
@@ -246,8 +247,7 @@ var menu  //float 버튼용 메뉴
       isDisplaying = false
       }
   })
-  
-  //규 수정
+
   socket.on('thumbsRequest_script', (userId, roomId) => {
     if(roomId === ROOM_ID && userId !== user_id) {
       const tagname='#'+userId+'thumbsicon'
@@ -521,7 +521,7 @@ var menu  //float 버튼용 메뉴
       }
     }
   })
-
+  
   //----캔버스----
   var selected = 0
   var cam_selected = 0
@@ -819,9 +819,10 @@ var menu  //float 버튼용 메뉴
               link.click()
             })
           }
-
+          
           //규 수정
-          if(result.name=="thumbs_up") thumbsupcnt+=2 
+          if(result.name=="thumbs_up") thumbsupcnt+=2
+
           if(thumbsupcnt>=10){
             thumbsupcnt = 0
             console.log("thumbs up")
@@ -1146,11 +1147,11 @@ var menu  //float 버튼용 메뉴
     userBox.appendChild(myVideoBackground)
     userBox.appendChild(myVideo)
 
-    const thumbsicon=document.createElement("img");
-    thumbsicon.id="mythumbsicon";
-    thumbsicon.className="thumbsicon";
+    const thumbsicon=document.createElement("img")
+    thumbsicon.id="mythumbsicon"
+    thumbsicon.className="thumbsicon"
     thumbsicon.src="img/thumbs.png"
-    userBox.appendChild(thumbsicon);
+    userBox.appendChild(thumbsicon)
 
     myVideo.srcObject = localStream
     myVideo.addEventListener('loadedmetadata', () => {
@@ -1301,11 +1302,11 @@ var menu  //float 버튼용 메뉴
           userBox.appendChild(videoBackground)
           userBox.appendChild(video)
 
-          const thumbsicon=document.createElement("img");
-          thumbsicon.id=call.peer+"thumbsicon";
-          thumbsicon.className="thumbsicon";
+          const thumbsicon=document.createElement("img")
+          thumbsicon.id=call.peer+"thumbsicon"
+          thumbsicon.className="thumbsicon"
           thumbsicon.src="img/thumbs.png"
-          userBox.appendChild(thumbsicon);
+          userBox.appendChild(thumbsicon)
         }
         peers[call.peer] = call
       })
@@ -1339,7 +1340,7 @@ var menu  //float 버튼용 메뉴
     if(isDisplayHost) firstConnectSocketCall(userId) //화면공유중일때 새로 들어온 유저가 화면공유 보도록
 
     if(peers[userId] == undefined) {
-      var connectcount=0;
+      var connectcount=0
       const call = myPeer.call(userId, localStream)
       const video = document.createElement('video')
       video.width = 160
@@ -1357,19 +1358,21 @@ var menu  //float 버튼용 메뉴
         video.id = userId + '!video'
         videoBackground.id = userId + '!videoBackground'
         videoUserName.appendChild(bold)
+
         bold.appendChild(videoUserNameText)
         userBox.appendChild(videoUserName)
         userBox.appendChild(videoBackground)
         userBox.appendChild(video)
         addVideoStream(video, userVideoStream, userBox)
-        connectcount++;
-        
+
+        connectcount++
+
         if(connectcount==2){
-          const thumbsicon=document.createElement("img");
-          thumbsicon.id=userId+"thumbsicon";
-          thumbsicon.className="thumbsicon";
+          const thumbsicon=document.createElement("img")
+          thumbsicon.id=userId+"thumbsicon"
+          thumbsicon.className="thumbsicon"
           thumbsicon.src="img/thumbs.png"
-          userBox.appendChild(thumbsicon);
+          userBox.appendChild(thumbsicon)
         }
       })
 

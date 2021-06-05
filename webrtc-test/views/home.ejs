@@ -6,12 +6,27 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="google" content="notranslate">
 		<script src="https://use.fontawesome.com/releases/v5.2.0/js/all.js"></script>
+		<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 		<link rel="stylesheet" href="assets/css/main.css" />
 		<link rel="stylesheet" href="assets/css/slide.css" />
 		<link rel="stylesheet" href="assets/css/input.css" />
+		<style>
+			#join_message {
+				margin-top: 10px;
+				margin-right: 20px;
+				float : right;
+				font-size: 20px;
+				color: rgb(27, 81, 126);
+			}
+			b {
+				font-weight: bolder;
+			}
+		</style>
 	</head>
 	<body>
-
+		<div id="join_message">
+			<b><%= name%></b><% if(!need_signup) {%>님 안녕하세요.<% } %>
+		</div>
 		<!-- Wrapper -->
 			<div id="wrapper">
 					<header id="header" class="alt">
@@ -40,22 +55,32 @@
 									</form>
 								</div>
 								<div class="container">
+									<% if(need_signup){ %>
+									<div class="bx">
+										<img src="images/회의생성.jpg" onclick='needSignUp()' style="cursor:pointer">
+										<span>회의 생성</span>
+									</div>
+									<% } else { %>
 									<div class="bx">
 										<img src="images/회의생성.jpg" onclick='javascript:location.href="/newroom"' style="cursor:pointer">
 										<span>회의 생성</span>
 									</div>
+									<% } %>
 									<div class="bx">
-										<img id="participate" src="images/회의참가.jpg">
-										<span>로그인</span>
+										<img src="images/로그인.jpg" onclick='javascript:location.href="<%=log_func%>"' style="cursor:pointer">
+										<span><%= log_message%></span>
 									</div>
+									<% if(need_signup){ %>
 									<div class="bx">
-										<img src="images/회원가입.jpg">
+										<img src="images/회원가입.jpg" onclick='javascript:location.href="/signup"' style="cursor:pointer">
 										<span>회원 가입</span>
 									</div>
+									<% } else { %>
 									<div class="bx">
-										<img src="images/계정확인.jpg">
+										<img src="images/계정확인.jpg" onclick='javascript:location.href="/"' style="cursor:pointer"">
 										<span>계정 정보</span>
 									</div>
+									<% } %>
 									</div>
 							</section>
 
@@ -109,6 +134,14 @@
 			<script src="assets/js/util.js"></script>
 			<!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
 			<script src="assets/js/main.js"></script>
-
+			<script>
+				function needSignUp()
+				{
+					swal({
+						text:'로그인이 필요한 기능입니다.',
+						icon:'error'
+					})
+				}
+			</script>
 	</body>
 </html>
