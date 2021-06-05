@@ -11,3 +11,83 @@ AirBoard는 실시간 카메라 공유, 화면 공유, 음성 채팅, 문자 채
 ## 결과물에 대한 기대효과 및 활용방안
 AirBoard는 웹캠을 새로운 입력 수단으로 사용할 수 있다는 가능성을 제시할 것이다. 웹캠을 이용해 사용자들은 화상 회의를 하면서 필기를 하거나 그림, 도형, 수식, 등을 자유롭게 그릴 수 있다. 그리고 언제든지 손 모양으로 제스처 기능을 실행할 수 있다.
 최종적으론 웹캠을 이용해 필기를 하고 제스처 동작을 인식하는 코드를 오픈 소스 라이브러리로 개방할 계획이다. 다양한 개발자들이 AirBoard의 원천 기술이 되는 라이브러리를 개선하고 제스처를 추가할 수 있다. 미래에는 대화면에서 사용 가능한 Big Screen UI 용 제스처 인식 라이브러리로 발전하는 것이 목표하는 방향이다.
+
+## 결과물
+### [AirBoard](https://airboard.ga/)
+
+## Prerequisites
+You have to install [Node.js](https://nodejs.org/en/), and [MongDB](https://www.mongodb.com/) in your machine.
+
+## Usage
+
+- Clone the Repository.
+
+```bash
+git clone https://github.com/GoingSamsung/AirBoard.git
+cd webrtc-test
+```
+
+- Install with npm.
+
+```bash
+npm i
+npm i --save-dev nodemon
+```
+- change this part in server.js to test in local
+
+rewrite
+```javascript
+const express = require('express')
+const app = express()
+const fs = require('fs');
+const https = require('https');
+const server = https.createServer(
+	{
+		key: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/cert.pem'),
+    ca: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/chain.pem'),
+    requestCert: false,
+    rejectUnauthorized: false,
+	},
+	app
+);
+const io = require('socket.io')(server)
+const { v4: uuidV4 } = require('uuid')
+
+const bodyParser = require('body-parser');   
+app.use(bodyParser.urlencoded({ extended: true }));  
+
+const mongoose = require('mongoose');
+const User = require('./models/user');
+const Room = require('./models/room');
+```
+into
+
+```javascript
+const express = require('express')
+const app = express()
+const server = require('http').Server(app)
+const io = require('socket.io')(server)
+const { v4: uuidV4 } = require('uuid')
+const fs = require('fs')
+
+const mongoose = require('mongoose');
+const User = require('./models/user');
+const Room = require('./models/room');
+```
+
+- Run.
+```bash
+npm run devStart
+```
+- Open https://localhost:443
+
+
+## Home
+<img width="500" height="250" src="media/home.PNG"/>
+
+## Room
+<img width="640" height="310" src="media/room.PNG"/>
+
+## License
+[Apache License 2.0](https://github.com/GoingSamsung/AirBoard/blob/master/LICENSE)
