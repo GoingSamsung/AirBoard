@@ -90,6 +90,8 @@ var menu  //float 버튼용 메뉴
   var isNoCamUser = false
   var isMuteUser = false
 
+  var isFirstDraw = true
+
   var isCall = {} //콜이 소실되는 경우 판단용
   var isDisplayCall = {}
 
@@ -438,6 +440,20 @@ var menu  //float 버튼용 메뉴
     }
   })
 
+  socket.on('reDrawLine', (userId, data)=>{ //지우개 보류
+    var line = data.line
+    var size = data.size
+
+    if(userId === user_id) {
+      context.strokeStyle = data.penColor
+      context.beginPath()
+      context.lineWidth = data.penWidth
+      context.moveTo(line[0].x * (width/size[0]), line[0].y * (height/size[1]))
+      context.lineTo(line[1].x * (width/size[0]), line[1].y * (height/size[1]))
+      context.stroke()
+    }
+  })
+
   socket.on('updateMessage', function(data){ //입장 메시지
     if(data.name === 'SERVER'){
       var info = document.getElementById('info')
@@ -600,7 +616,6 @@ var menu  //float 버튼용 메뉴
         }
       }
     })
-    socket.emit('reDrawing', ROOM_ID, user_id)
     mainLoop()
   }
   //====캔버스====
@@ -1039,6 +1054,10 @@ var menu  //float 버튼용 메뉴
   }
 
   function mainLoop() {
+    if(isFirstDraw && user_id !== undefined) {
+      isFirstDraw = false
+      socket.emit('reDrawing', ROOM_ID, user_id)
+    }
     if(isDisplaying) {
       var displayVideo = document.getElementById('userDisplay')
       if(displayVideo !== null) {        
