@@ -287,7 +287,7 @@ io.on('connection', socket => {
           socket.emit('drawLine', {line: line_track[roomId][userId][i].line, roomId:line_track[roomId][userId][i].roomId, userId:line_track[roomId][userId][i].userId, size: line_track[roomId][userId][i].size, penWidth: line_track[roomId][userId][i].penWidth, penColor: line_track[roomId][userId][i].penColor});
     }
   })
-
+  /*
   socket.on('erase_server', (roomId, userId, click_x, click_y, width, height) => {
     var line_x = 0
     var line_y = 0
@@ -312,6 +312,7 @@ io.on('connection', socket => {
     for(var i in line_track[roomId])
      io.sockets.in(roomId).emit('stroke', {line: line_track[roomId][userId][i].line, roomId:line_track[roomId][userId][i].roomId, userId: userId, size: line_track[roomId][userId][i].size, penWidth: line_track[roomId][userId][i].penWidth, penColor: line_track[roomId][userId][i].penColor}) 
   })
+  */
   /*
   for(var i in line_track[roomId]) {
     socket.emit('drawLine', {line: line_track[roomId][i].line, roomId:line_track[roomId][i].roomId});

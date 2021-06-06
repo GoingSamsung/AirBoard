@@ -696,7 +696,10 @@ var menu  //float 버튼용 메뉴
           if(camRelativeMouseY < 0.905 && cam_mouse.pos_prev.y/hiddenCamVideo.height < 0.905)
             socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, userId:user_id, size:[hiddenCamVideo.width, hiddenCamVideo.height], penWidth: penWidth, penColor: penColor})
         }
-        else if(cam_mouse.click && penStyle === 'eraser') socket.emit('erase_server', ROOM_ID, user_id, cam_mouse.pos.x, cam_mouse.pos.y, width, height)
+        else if(cam_mouse.pos_prev && cam_mouse.click && penStyle === 'eraser' && isCanvas) {
+          if(camRelativeMouseY < 0.905 && cam_mouse.pos_prev.y/hiddenCamVideo.height < 0.905)
+            socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, userId:user_id, size:[hiddenCamVideo.width, hiddenCamVideo.height], penWidth: 30, penColor: 'white'})
+        }
         cam_mouse.pos_prev = {x: cam_mouse.pos.x, y: cam_mouse.pos.y}
       }
       src.delete()
@@ -1085,7 +1088,7 @@ var menu  //float 버튼용 메뉴
     if(mouse.click && mouse.move && mouse.pos_prev && isCanvas) {
       if(relativeMouseY < 0.905 && mouse.pos_prev.y/canvas.height < 0.905){
         if(penStyle === 'pen') socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID, userId: user_id, size:[width, height], penWidth: penWidth, penColor: penColor})
-        //else socket.emit('erase_server', ROOM_ID, mouse.pos.x, mouse.pos.y) 지우개 기능 보류
+        else socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID, userId: user_id, size:[width, height], penWidth: 30, penColor: 'white'})
       }
       mouse.move = false
     }
@@ -1629,7 +1632,7 @@ var menu  //float 버튼용 메뉴
   function clickCanvas(select)
   {
     if(select === 1) penStyle = 'pen'
-    //else if(select === 2) penStyle = 'eraser' 보류
+    else if(select === 2) penStyle = 'eraser'
     else if(select === 3) socket.emit('clearWhiteBoard', ROOM_ID, user_id)
     else if(select === 4) penColor = 'black'
     else if(select === 5) penColor = 'red'
