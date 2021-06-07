@@ -1,0 +1,92 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>AIRBOARD</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="google" content="notranslate">
+		<script src="https://use.fontawesome.com/releases/v5.2.0/js/all.js"></script>
+		<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+        <link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="stylesheet" href="assets/css/slide.css" />
+		<link rel="stylesheet" href="assets/css/input.css" />
+		<style>
+			#join_message {
+				margin-top: 10px;
+				margin-right: 20px;
+				float : right;
+				font-size: 20px;
+				color: rgb(27, 81, 126);
+			}
+			b {
+				font-weight: bolder;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="join_message">
+			<b><%= name%></b><% {%>님 안녕하세요.<% } %>
+		</div>
+		<!-- Wrapper -->
+			<div id="wrapper">
+					<header id="header" class="alt">
+						<span class="logo"><img id="mylogo" src="images/로고.png" alt="" /></span>
+						<h1>AIRBOARD</h1>
+					</header>
+
+					<nav id="nav">
+						<ul>
+							<li>계정 정보</a></li>
+						</ul>
+					</nav>
+
+					<div id="main">
+							<section id="functions" class="main special">
+
+                                <p>이름&nbsp;&nbsp;&nbsp;&nbsp;<%= name%></p>
+                                <br>
+                                <p>이메일&nbsp;&nbsp;&nbsp;&nbsp;<%= email%></p>
+                                <br>
+
+							</section>
+
+							
+
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<section>
+							<h2>개발자 정보</h2>
+							<dl class="alt">
+								<dt>Address</dt>
+								<dd>경기도 수원시, 대한민국</dd>
+								<dt>Phone</dt>
+								<dd>(000) 000-0000 x 0000</dd>
+								<dt>Email</dt>
+								<dd>helloworld@gmail.com</dd>
+							</dl>
+						</section>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/skel.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
+			<script src="assets/js/main.js"></script>
+			<script>
+				function needSignUp()
+				{
+					swal({
+						text:'로그인이 필요한 기능입니다.',
+						icon:'error'
+					})
+				}
+			</script>
+	</body>
+</html>
