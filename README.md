@@ -39,7 +39,7 @@ rewrite
 ```javascript
 const express = require('express')
 const app = express()
-const fs = require('fs');
+const fs = require('fs')
 const https = require('https');
 const server = https.createServer(
 	{
@@ -53,13 +53,22 @@ const server = https.createServer(
 );
 const io = require('socket.io')(server)
 const { v4: uuidV4 } = require('uuid')
+//
+const mongoose = require('mongoose')
+const User = require('./models/user')
+const Room = require('./models/room')
+const Account = require('./models/account')
+const { response } = require('express')
+const user = require('./models/user')
+const { request } = require('http')
+const bodyParser = require('body-parser')
 
-const bodyParser = require('body-parser');   
-app.use(bodyParser.urlencoded({ extended: true }));  
-
-const mongoose = require('mongoose');
-const User = require('./models/user');
-const Room = require('./models/room');
+const indexRoute = require("./routes/index")
+const passport = require('passport')
+const LocalStrategy = require('passport-local').Strategy
+const Session = require('express-session')
+const flash = require('connect-flash')
+var MongoDBStore = require('connect-mongodb-session')(Session)
 ```
 into
 
@@ -71,9 +80,21 @@ const io = require('socket.io')(server)
 const { v4: uuidV4 } = require('uuid')
 const fs = require('fs')
 
-const mongoose = require('mongoose');
-const User = require('./models/user');
-const Room = require('./models/room');
+const mongoose = require('mongoose')
+const User = require('./models/user')
+const Room = require('./models/room')
+const Account = require('./models/account')
+const { response } = require('express')
+const user = require('./models/user')
+const { request } = require('http')
+const bodyParser = require('body-parser')
+
+const indexRoute = require("./routes/index")
+const passport = require('passport')
+const LocalStrategy = require('passport-local').Strategy
+const Session = require('express-session')
+const flash = require('connect-flash')
+var MongoDBStore = require('connect-mongodb-session')(Session)
 ```
 
 - Run.
