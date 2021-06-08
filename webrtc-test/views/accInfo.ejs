@@ -15,7 +15,7 @@
 				margin-top: 10px;
 				margin-right: 20px;
 				float : right;
-				font-size: 10px;
+				font-size: 20px;
 				color: rgb(27, 81, 126);
 			}
 			b {
@@ -43,14 +43,20 @@
 					<div id="main">
 							<section id="functions" class="main special">
 
-                                <p>이름&nbsp;&nbsp;&nbsp;&nbsp;<%= name%></p>
+                                <p id='nameInfo'></p>
+                                <p id="nameForm">
+                                    이름&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <input type="text" id="nextName" value=<%= name%>>
+                                    <input type="hidden" id="email" value=<%= email%>>
+                                    <input type="submit" value="수정" onclick="changeName(0)">
+                                </p>
                                 <br>
                                 <p>이메일&nbsp;&nbsp;&nbsp;&nbsp;<%= email%></p>
                                 <br>
 
 							</section>
 
-							
+
 
 					</div>
 
@@ -80,6 +86,9 @@
 			<!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
 			<script src="assets/js/main.js"></script>
 			<script>
+                const nameInfo = document.getElementById('nameInfo')
+                nameInfo.innerHTML = '이름&nbsp;&nbsp;&nbsp;&nbsp;<%= name%>&nbsp;&nbsp;<button onclick="changeName(1)">수정'
+                $("#nameForm").hide()
 				function needSignUp()
 				{
 					swal({
@@ -87,6 +96,37 @@
 						icon:'error'
 					})
 				}
+                function changeName(flag)
+                {
+                    if(flag) {
+                        $("#nameInfo").hide()
+                        $("#nameForm").show()
+                    }
+                    else {
+                        nameInfo.innerHTML = '이름&nbsp;&nbsp;&nbsp;&nbsp;'+ document.getElementById('nextName').value +'&nbsp;&nbsp;<button onclick="changeName(1)">수정'
+                        $("#nameInfo").show()
+                        $("#nameForm").hide()
+                        sendPost()
+                    }
+                }
+                function sendPost()
+                {
+                    var form = document.createElement('form')
+                    form.setAttribute('method', 'post')
+                    form.setAttribute('action', '/changeName')
+                    var hiddenField = document.createElement('input')
+                    hiddenField.setAttribute('type', 'hidden')
+                    hiddenField.setAttribute('name', 'nextName')
+                    hiddenField.setAttribute('value', document.getElementById('nextName').value)
+                    form.appendChild(hiddenField)
+                    var hiddenField2 = document.createElement('input')
+                    hiddenField2.setAttribute('type', 'hidden')
+                    hiddenField2.setAttribute('name', 'email')
+                    hiddenField2.setAttribute('value', document.getElementById('email').value)
+                    form.appendChild(hiddenField2)
+                    document.body.appendChild(form)
+                    form.submit()
+                }
 			</script>
 	</body>
-</html>
+</html> 

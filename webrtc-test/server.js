@@ -144,14 +144,16 @@ io.on('connection', socket => {
           }
           else flag = false
           if(flag) {
-            io.sockets.in(roomId).emit('reLoading', userId)
+            io.sockets.in(roomId).emit('reLoading2', userId)
             if(!room.isEachCanvas)
               for(var i in line_track[roomId])
-                for(var j in line_track[roomId][i])
+                for(var j in line_track[roomId][i]) {
                   io.sockets.in(roomId).emit('stroke', {line: line_track[roomId][i][j].line, roomId:line_track[roomId][i][j].roomId, userId: userId, size: line_track[roomId][i][j].size, penWidth: line_track[roomId][i][j].penWidth, penColor: line_track[roomId][i][j].penColor})
+                }
             else
               for(var i in line_track[roomId][userId])
-                socket.emit('stroke', {line: line_track[roomId][userId][i].line, roomId:line_track[roomId][userId][i].roomId, userId:line_track[roomId][userId][i].userId, size: line_track[roomId][userId][i].size, penWidth: line_track[roomId][userId][i].penWidth, penColor: line_track[roomId][userId][i].penColor}); 
+                socket.emit('stroke', {line: line_track[roomId][userId][i].line, roomId:line_track[roomId][userId][i].roomId, userId:line_track[roomId][userId][i].userId, size: line_track[roomId][userId][i].size, penWidth: line_track[roomId][userId][i].penWidth, penColor: line_track[roomId][userId][i].penColor});
+            //socket.emit('test', userId)
           }
         }
     }

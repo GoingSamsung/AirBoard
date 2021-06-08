@@ -404,13 +404,24 @@ var menu  //float 버튼용 메뉴
   socket.on('reLoading', (userId) =>{
     if(isEachCanvas) {
       if(userId === user_id) {
-        console.log('clear')
         canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
         context.drawImage(canvasImage, 0,0, canvas.width, canvas.height)
       }
     }
     else {
-      console.log('clear')
+      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+      context.drawImage(canvasImage, 0,0, canvas.width, canvas.height)
+    }
+  })
+
+  socket.on('reLoading2', (userId) =>{
+    if(isEachCanvas) {
+      if(userId === user_id) {
+        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+        context.drawImage(canvasImage, 0,0, canvas.width, canvas.height)
+      }
+    }
+    else {
       canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
       context.drawImage(canvasImage, 0,0, canvas.width, canvas.height)
     }

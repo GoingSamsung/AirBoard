@@ -56,8 +56,16 @@ router.get('/', forwardAuthenticated, (req, res) => {
 })
 
 router.get('/signup', (req, res) => {
-    res.render("signup");
-});
+    res.render("signup")
+})
+
+router.post('/changeName', async(req, res) => {
+    const user = await Account.findOne({email: req.body.email}, null, {})
+    user.name = req.body.nextName
+    user.save()
+    req.user.name = user.name
+    res.redirect('/')
+})
 
 router.get("/login", (req, res) => res.render("login", { message: req.flash("login_message") }));
 
