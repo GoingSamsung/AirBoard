@@ -7,6 +7,7 @@
 		<meta name="google" content="notranslate">
 		<script src="https://use.fontawesome.com/releases/v5.2.0/js/all.js"></script>
 		<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+        <script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
         <link rel="stylesheet" href="assets/css/main.css" />
 		<link rel="stylesheet" href="assets/css/slide.css" />
 		<link rel="stylesheet" href="assets/css/input.css" />
@@ -69,7 +70,6 @@
 				vertical-align: top;
 				border-bottom: 1px solid #ccc;
 			}
-
 			.btn{
 				font-size:15px;
 				font-weight:1000;
@@ -190,7 +190,7 @@
                 {
                     var form = document.createElement('form')
                     form.setAttribute('method', 'post')
-                    form.setAttribute('action', '/changeName')
+                    form.setAttribute('action', '/home/changeName')
                     var hiddenField = document.createElement('input')
                     hiddenField.setAttribute('type', 'hidden')
                     hiddenField.setAttribute('name', 'nextName')

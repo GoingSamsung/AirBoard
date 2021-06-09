@@ -65,16 +65,87 @@ app.use(Session({
 app.use(passport.initialize())
 app.use(passport.session())
 
-app.use(flash());
+app.use(flash())
 
-app.use("/", indexRoute)
+app.use("/home", indexRoute)
 
 var line_track = [] //캔버스용 라인따기
 var line_track_backup = [] //캔버스용 라인따기
 var backup_track = []
 var isDisplayHost = []
 
+app.get('/', (req, res) => {
+  res.redirect('/home')
+})
+
+
+app.get('/accInfo', (req, res) => {
+  if(req.user === undefined) res.redirect('/') 
+  else res.render("accInfo",{name: req.user.name, email: req.user.email})
+})
+
+app.get('/:room', async(req, res) => {
+  const room = await Room.findOne({roomId: req.params.room}, null, {})
+  if(room !== null) {
+      if(req.user === undefined) res.render('room', { roomId: req.params.room, name: ''})
+      else res.render('room', { roomId: req.params.room, name: req.user.name})
+  }
+  else res.render("noPage",{message:"존재하지 않는 회의실 주소입니다"})
+})
+
+app.get('/address/:room', (req, res) => {
+  res.render('address', { roomId: req.params.room })
+})
+
+app.get('/userlist/:room', (req, res) => {
+  fs.readFile('views/userlist.ejs', async(err, tmpl) => {
+    var roomId = req.params.room
+    var userlist = await User.find({roomId:roomId, isHost: false}, null, {})
+    var cnt = 1
+    var topText = "<table><tr><th>순번</th><th>이름</th><th colspan=\"4\">사용자 컨트롤</th></tr>"
+    var userinfo = ""
+    if(userlist) {
+      if(userlist.length === 0) userinfo += "<tr><td colspan=\"5\">사용자가 없습니다</td></tr>"
+      else {
+        for(var i=0; i<userlist.length; i++) {   
+          userinfo += "<tr><td>"
+          + cnt++ + "</td>" + "<td>"+ userlist[i].userName +"</td>"
+          + "<td><button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "cam" + "\"" + ");'>캠 끄기</button></td>"
+          + "<td><button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "mute" + "\"" + ");'>마이크 끄기</button></td>"
+          + "<td><button onclick='controlUser(" + "\"" + userlist[i].userId + "\"" + "," + "\""  + roomId + "\"" + "," + "\""  + "quit" + "\"" + ");'>강제 퇴장</button></td></tr>"
+        }
+      }
+    }
+    userinfo += "</table>"
+    topText = topText+userinfo;
+    let html = tmpl.toString().replace('%', topText)
+    res.writeHead(200,{'Content-Type':'text/html'})
+    res.end(html)
+  })
+})
+
+app.get('/controlUser/:room/:userId/:flag', async (req, res) => {
+  console.log('hh')
+  var userId = req.params.userId
+  var flag = req.params.flag
+  var roomId = req.params.room
+  if (flag === 'quit') {
+      io.emit('quit', userId)
+      await User.deleteOne({ userId: userId })
+  }
+  if (flag === 'cam') io.emit('cam', userId)
+  if (flag === 'mute') io.emit('mute', userId)
+  res.redirect('/userlist/' + roomId)
+})
+
+app.get('/airboard/quit', async (req, res) => {
+  res.render("noPage",{message:"호스트에 의해 강제 퇴장 당했습니다"});
+})
+
 io.on('connection', socket => {
+  socket.on('test', ()=> {
+    console.log('hellotest')
+  })
   socket.on('sendMessage', function(data){ 
     data.name = data.user_name;
     io.sockets.emit('updateMessage', data); 

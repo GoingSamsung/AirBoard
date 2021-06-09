@@ -35,7 +35,7 @@
 									<h2>AIRBOARD 서비스</h2>
 								</header>
 								<div class="subscribe-box">
-									<form class="subscribe" action="/joinroom" method="POST">
+									<form class="subscribe" action="/home/joinroom" method="POST">
 										<input type="text" name="address" placeholder="회의 주소를 입력하세요" autocomplete="off" required="required" />
 										<button type="submit"> 
 											<span>회의 참가</span>
@@ -50,17 +50,17 @@
 									</div>
 									<% } else { %>
 									<div class="bx">
-										<img src="images/회의생성.jpg" onclick='javascript:location.href="/newroom"' style="cursor:pointer">
+										<img src="images/회의생성.jpg" onclick='javascript:location.href="/home/newroom"' style="cursor:pointer">
 										<span>회의 생성</span>
 									</div>
 									<% } %>
 									<div class="bx">
-										<img src="images/로그인.jpg" onclick='javascript:location.href="<%=log_func%>"' style="cursor:pointer">
+										<img src="images/로그인.jpg" onclick='javascript:location.href="/home/<%=log_func%>"' style="cursor:pointer">
 										<span><%= log_message%></span>
 									</div>
 									<% if(need_signup){ %>
 									<div class="bx">
-										<img src="images/회원가입.jpg" onclick='javascript:location.href="/signup"' style="cursor:pointer">
+										<img src="images/회원가입.jpg" onclick='javascript:location.href="/home/signup"' style="cursor:pointer">
 										<span>회원 가입</span>
 									</div>
 									<% } else { %>

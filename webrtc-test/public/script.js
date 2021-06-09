@@ -219,7 +219,7 @@ var menu  //float 버튼용 메뉴
 
   socket.on('quit', (userId) => {
     if(userId === user_id) {
-      window.location.href = '/home/quit'
+      window.location.href = '/airboard/quit'
       swal({
         text:"강퇴당하셨습니다.",
         icon: "warning"
