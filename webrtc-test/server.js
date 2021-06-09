@@ -126,22 +126,21 @@ io.on('connection', socket => {
     var flag = true
       if(line_track[roomId] !== undefined) {
         if(line_track[roomId][userId] !== undefined) {
+          var undoDO = function(cnt, roomId, userId)
+          {
+            for(var i = 0; i < cnt; i++) line_track[roomId][userId].pop()
+            backup_track[roomId][userId].push(cnt)
+          }          
           var length = line_track[roomId][userId].length
-          if(length >= 3) {
-            line_track[roomId][userId].pop()
-            line_track[roomId][userId].pop()
-            line_track[roomId][userId].pop()
-            backup_track[roomId][userId].push(3)
-          }
-          else if(length === 2) {
-            line_track[roomId][userId].pop()
-            line_track[roomId][userId].pop()
-            backup_track[roomId][userId].push(2)
-          }
-          else if(length === 1) {
-            line_track[roomId][userId].pop()
-            backup_track[roomId][userId].push(1)
-          }
+          if(length >= 9) undoDO(9, roomId, userId)
+          else if(length === 8) undoDO(8, roomId, userId)
+          else if(length === 7) undoDO(7, roomId, userId)
+          else if(length === 6) undoDO(6, roomId, userId)
+          else if(length === 5) undoDO(5, roomId, userId)
+          else if(length === 4) undoDO(4, roomId, userId)
+          else if(length === 3) undoDO(3, roomId, userId)
+          else if(length === 2) undoDO(2, roomId, userId)
+          else if(length === 1) undoDO(1, roomId, userId)
           else flag = false
           if(flag) {
             io.sockets.in(roomId).emit('reLoading2', userId)
