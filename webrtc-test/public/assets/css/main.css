@@ -15,6 +15,12 @@
 		font-size: 100%;
 		font: inherit;
 		vertical-align: baseline;
+		vertical-align: baseline;
+		-ms-user-select: none; 
+		-moz-user-select: -moz-none;
+		-khtml-user-select: none;
+		-webkit-user-select: none;
+		user-select: none;
 	}
 
 	article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
