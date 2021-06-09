@@ -143,32 +143,4 @@ router.post('/joinroom', (req, res) => {
     }
 })
 
-router.get('/img/:fileName', (req, res) => {
-    const { fileName } = req.params
-    const { range } = req.headers
-    const fileStat = fs.statSync('img/nocam.mp4')
-    const { size } = fileStat
-    const fullPath = 'img/nocam.mp4'
-    if (range) {
-        const parts = range.replace(/bytes=/, '').split('-')
-        const start = parseInt(parts[0])
-        const end = parts[1] ? parseInt(parts[1]) : size - 1
-        const chunk = end - start + 1
-        const stream = fs.createReadStream(fullPath, { start, end })
-        res.writeHead(206, {
-            'Content-Range': `bytes ${start}-${end}/${size}`,
-            'Accept-Ranges': 'bytes',
-            'Content-Length': chunk,
-            'Content-Type': 'video/mp4'
-        })
-        stream.pipe(res)
-    } else {
-        res.writeHead(200, {
-            'Content-Length': size,
-            'Content-Type': 'video/mp4'
-        })
-        fs.createReadStream(fullPath).pipe(res)
-    }
-})
-
 module.exports = router;

@@ -416,15 +416,9 @@ var menu  //float 버튼용 메뉴
 
   socket.on('reLoading2', (userId) =>{
     if(isEachCanvas) {
-      if(userId === user_id) {
-        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
-        context.drawImage(canvasImage, 0,0, canvas.width, canvas.height)
-      }
+      if(userId === user_id) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height*0.905)
     }
-    else {
-      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
-      context.drawImage(canvasImage, 0,0, canvas.width, canvas.height)
-    }
+    else canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height*0.905)
   })
 
   socket.on('stroke', (data)=>{ //지우개 보류

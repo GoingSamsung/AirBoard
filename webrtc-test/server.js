@@ -33,6 +33,12 @@ var MongoDBStore = require('connect-mongodb-session')(Session)
 
 //로컬 테스트시 여기서 복붙
 //mongoose 연결
+
+var favicon = require('serve-favicon')
+var path = require('path')
+
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
+
 mongoose.connect('mongodb://localhost:27017/room_user_db')
 const db = mongoose.connection
 db.on('error', console.error)
@@ -74,10 +80,37 @@ var line_track_backup = [] //캔버스용 라인따기
 var backup_track = []
 var isDisplayHost = []
 
+app.get('/img/:fileName', (req, res) => {
+  const { fileName } = req.params
+  const { range } = req.headers
+  const fileStat = fs.statSync('img/nocam.mp4')
+  const { size } = fileStat
+  const fullPath = 'img/nocam.mp4'
+  if (range) {
+      const parts = range.replace(/bytes=/, '').split('-')
+      const start = parseInt(parts[0])
+      const end = parts[1] ? parseInt(parts[1]) : size - 1
+      const chunk = end - start + 1
+      const stream = fs.createReadStream(fullPath, { start, end })
+      res.writeHead(206, {
+          'Content-Range': `bytes ${start}-${end}/${size}`,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': chunk,
+          'Content-Type': 'video/mp4'
+      })
+      stream.pipe(res)
+  } else {
+      res.writeHead(200, {
+          'Content-Length': size,
+          'Content-Type': 'video/mp4'
+      })
+      fs.createReadStream(fullPath).pipe(res)
+  }
+})
+
 app.get('/', (req, res) => {
   res.redirect('/home')
 })
-
 
 app.get('/accInfo', (req, res) => {
   if(req.user === undefined) res.redirect('/') 
@@ -240,7 +273,7 @@ io.on('connection', socket => {
           line_track[roomId][userId].push(line_track_backup[roomId][userId][line_length + i])
         }
         backup_track[roomId][userId].pop()
-          io.sockets.in(roomId).emit('reLoading', userId)
+          io.sockets.in(roomId).emit('reLoading2', userId)
           if(!room.isEachCanvas)
             for(var i in line_track[roomId])
               for(var j in line_track[roomId][i])
