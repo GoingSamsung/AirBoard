@@ -959,7 +959,8 @@
 		margin-right: 20px;
 		float : right;
 		font-size: 20px;
-		color: rgb(27, 81, 126);
+		color: white;
+		text-shadow: 0px 0px 2px black;
 	}
 	b {
 		font-weight: bolder;

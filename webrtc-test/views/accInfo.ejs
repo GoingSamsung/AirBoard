@@ -16,10 +16,96 @@
 				margin-right: 20px;
 				float : right;
 				font-size: 20px;
-				color: rgb(27, 81, 126);
+				color: white;
+				text-shadow: 0px 0px 2px black;
 			}
 			b {
 				font-weight: bolder;
+			}
+			
+			#home {
+				all: unset;
+				background: transparent;
+				border: 2px solid black;
+				padding: 0.5em 2em;
+				border-radius: 50px;
+				cursor: pointer;
+				display: inline-block;
+				font-weight: 700;
+				position: relative;
+				transition: all 300ms ease;
+			}
+			#home span {
+				display: inline-block;
+				transition: all 300ms ease;
+			}
+			table, th, td{
+				text-align: center;
+			}
+			table {
+				position:relative;
+				border-collapse: collapse;
+				line-height: 1.5;
+				margin-bottom:30px;
+			}
+			table th {
+				padding: 10px;
+				font-weight: bold;
+				vertical-align: top;
+				color: #369;
+				border-bottom: 3px solid #036;
+			}
+			table th {
+				width: 130px;
+				padding: 10px;
+				font-weight: bold;
+				vertical-align: top;
+				border-bottom: 1px solid #ccc;
+				background: #f3f6f7;
+			}
+			table td {
+				width:500px;
+				padding: 10px;
+				vertical-align: top;
+				border-bottom: 1px solid #ccc;
+			}
+
+			.btn{
+				font-size:15px;
+				font-weight:1000;
+				float:right;
+				height:35px;
+				border:none;
+				background-color: white;
+				display: block;
+				position: relative;
+				overflow: hidden;
+				transition: all .2s ease-in-out .2s;
+				margin: 0 auto;
+				text-align: center;
+			}
+			.btn:hover {
+				color: #8cc9f0;
+			}
+			.btn:hover:before {
+				transform: none;
+				opacity: 1;
+				transition-duration: 0.4s;
+			}
+			.btn:before {
+				content: "";
+				position: absolute;
+				width: 90%;
+				height: 2px;
+				margin-left:4px;
+				margin-bottom:3px;
+				left: 0;
+				bottom: 0px;
+				background: #8cc9f0;
+				transform: translateY(6px);
+				opacity: 0;
+				transition: 1.8s cubic-bezier(0.2, 1, 0.3, 1);
+				pointer-events: none;
 			}
 		</style>
 	</head>
@@ -30,51 +116,42 @@
 		<!-- Wrapper -->
 			<div id="wrapper">
 					<header id="header" class="alt">
-						<span class="logo"><img id="mylogo" src="images/로고.png" alt="" /></span>
-						<h1>AIRBOARD</h1>
+						<h1>계정 정보</h1>
 					</header>
 
-					<nav id="nav">
-						<ul>
-							<li>계정 정보</a></li>
-						</ul>
-					</nav>
-
 					<div id="main">
-							<section id="functions" class="main special">
-
-                                <p id='nameInfo'></p>
-                                <p id="nameForm">
-                                    이름&nbsp;&nbsp;&nbsp;&nbsp;
-                                    <input type="text" id="nextName" value=<%= name%>>
-                                    <input type="hidden" id="email" value=<%= email%>>
-                                    <input type="submit" value="수정" onclick="changeName(0)">
-                                </p>
-                                <br>
-                                <p>이메일&nbsp;&nbsp;&nbsp;&nbsp;<%= email%></p>
-                                <br>
+							<section class="main special">
+								<center>
+									<table>
+										<tr style="border-top: 1px solid #ccc;">
+											<th>
+												이름
+											</th>
+											<td id="nameInfo">
+											</td>
+											<td id="nameForm">
+												<input type="text" id="nextName" value=<%= name%>>
+												<input type="hidden" id="email" value=<%= email%>>
+												<input class="btn" type="submit" value="수정" onclick="changeName(0)">
+											</td>
+										</tr>
+										<tr>
+											<th>
+												이메일
+											</th>
+											<td>
+												<%= email%>
+											</td>
+										</tr>
+									</table>
+								</center>
+								<button id='home' onclick="location.href='/' "> 
+									<span>홈으로 가기</span>
+								</button>
 
 							</section>
 
-
-
 					</div>
-
-				<!-- Footer -->
-					<footer id="footer">
-						<section>
-							<h2>개발자 정보</h2>
-							<dl class="alt">
-								<dt>Address</dt>
-								<dd>경기도 수원시, 대한민국</dd>
-								<dt>Phone</dt>
-								<dd>(000) 000-0000 x 0000</dd>
-								<dt>Email</dt>
-								<dd>helloworld@gmail.com</dd>
-							</dl>
-						</section>
-					</footer>
-
 			</div>
 
 		<!-- Scripts -->
@@ -87,7 +164,7 @@
 			<script src="assets/js/main.js"></script>
 			<script>
                 const nameInfo = document.getElementById('nameInfo')
-                nameInfo.innerHTML = '이름&nbsp;&nbsp;&nbsp;&nbsp;<%= name%>&nbsp;&nbsp;<button onclick="changeName(1)">수정'
+                nameInfo.innerHTML = '<%= name%>&nbsp;&nbsp;<button class="btn" onclick="changeName(1)">수정'
                 $("#nameForm").hide()
 				function needSignUp()
 				{
@@ -103,7 +180,7 @@
                         $("#nameForm").show()
                     }
                     else {
-                        nameInfo.innerHTML = '이름&nbsp;&nbsp;&nbsp;&nbsp;'+ document.getElementById('nextName').value +'&nbsp;&nbsp;<button onclick="changeName(1)">수정'
+                        nameInfo.innerHTML = '이름&nbsp;&nbsp;&nbsp;&nbsp;'+ document.getElementById('nextName').value +'&nbsp;&nbsp;<button class="btn" onclick="changeName(1)">수정'
                         $("#nameInfo").show()
                         $("#nameForm").hide()
                         sendPost()
