@@ -123,7 +123,7 @@ var menu  //float 버튼용 메뉴
   extractCamArea.appendChild(hiddenCamVideo)
 
   extractColorVideo.width = 0
-  extractColorVideo.height = 
+  extractColorVideo.height = 0
   
   myDisplay.id = 'display'
 
@@ -734,7 +734,7 @@ var menu  //float 버튼용 메뉴
   }
 
   extractColorVideo.addEventListener('click', (event) => { 
-    var imageData = extractContext.getImageData(0, 0, 1024, 768)
+    var imageData = extractContext.getImageData(0, 0, extractColorVideo.width, extractColorVideo.height)
 
     imageData.getRGBA = function(i,j,k){
       return this.data[this.width*4*j+4*i+k]
