@@ -2,39 +2,40 @@
   화면공유 했을 때 안넘어가는 경우가있음.(건모-> 형택: X, 형택->건모: O)
   되돌리기 했을 때 맨 처음 필기 늘어나는 현상 있음
 */
-var user_name
 var user_id
 var menu  //float 버튼용 메뉴
 
 (async () => { 
-  user_name = await swal({
-    closeOnEsc:false,
-    closeOnClickOutside: false,
-    text:"대화명을 입력해주세요",
-    content:'input',
-    icon: "info"
-  })
+  if(user_name === '') {
+    user_name = await swal({
+      closeOnEsc:false,
+      closeOnClickOutside: false,
+      text:"대화명을 입력해주세요",
+      content:'input',
+      icon: "info"
+    })
 
-  if(user_name === null) window.location.href = "/"
+    if(user_name === null) window.location.href = "/"
 
-  while(user_name === null || user_name === undefined || user_name === '' || user_name.length > 6)  {
-    if(user_name.length > 6) {
-      user_name = await swal({
-        closeOnEsc:false,
-        closeOnClickOutside: false,
-        text:"대화명을 6자 이하로 설정해주세요",
-        content: "input",
-        icon: "warning"
-      })
-    }
-    else {
-      user_name = await swal({
-        closeOnEsc:false,
-        closeOnClickOutside: false,
-        text:"대화명을 다시 입력해주세요",
-        content: "input",
-        icon: "warning"
-      })
+    while(user_name === null || user_name === undefined || user_name === '' || user_name.length > 6)  {
+      if(user_name.length > 6) {
+        user_name = await swal({
+          closeOnEsc:false,
+          closeOnClickOutside: false,
+          text:"대화명을 6자 이하로 설정해주세요",
+          content: "input",
+          icon: "warning"
+        })
+      }
+      else {
+        user_name = await swal({
+          closeOnEsc:false,
+          closeOnClickOutside: false,
+          text:"대화명을 다시 입력해주세요",
+          content: "input",
+          icon: "warning"
+        })
+      }
     }
   }
 
@@ -89,6 +90,8 @@ var menu  //float 버튼용 메뉴
   var isNoCamUser = false
   var isMuteUser = false
 
+  var isFirstDraw = true
+
   var isCall = {} //콜이 소실되는 경우 판단용
   var isDisplayCall = {}
 
@@ -128,8 +131,8 @@ var menu  //float 버튼용 메뉴
   myVideo.width = 160
   myVideo.height = 118
 
-  hiddenCamVideo.width = 1024
-  hiddenCamVideo.height = 768
+  hiddenCamVideo.width = 1920
+  hiddenCamVideo.height = 1080
 
   navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.oGetUserMedia || navigator.msGetUserMedia
 
@@ -216,7 +219,7 @@ var menu  //float 버튼용 메뉴
 
   socket.on('quit', (userId) => {
     if(userId === user_id) {
-      window.location.href = '/home/quit'
+      window.location.href = '/airboard/quit'
       swal({
         text:"강퇴당하셨습니다.",
         icon: "warning"
@@ -247,10 +250,17 @@ var menu  //float 버튼용 메뉴
       }
   })
 
-  //규 수정
   socket.on('thumbsRequest_script', (userId, roomId) => {
     if(roomId === ROOM_ID && userId !== user_id) {
-      console.log(roomId)
+      const tagname='#'+userId+'thumbsicon'
+      $( tagname ).fadeIn( 500, function() {
+        $( this ).fadeOut( 5000 );
+      });
+    }
+    else{
+      $( "#mythumbsicon" ).fadeIn( 500, function() {
+        $( this ).fadeOut( 5000 );
+      });
     }
   })
 
@@ -394,16 +404,21 @@ var menu  //float 버튼용 메뉴
   socket.on('reLoading', (userId) =>{
     if(isEachCanvas) {
       if(userId === user_id) {
-        console.log('clear')
         canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
         context.drawImage(canvasImage, 0,0, canvas.width, canvas.height)
       }
     }
     else {
-      console.log('clear')
       canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
       context.drawImage(canvasImage, 0,0, canvas.width, canvas.height)
     }
+  })
+
+  socket.on('reLoading2', (userId) =>{
+    if(isEachCanvas) {
+      if(userId === user_id) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height*0.905)
+    }
+    else canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height*0.905)
   })
 
   socket.on('stroke', (data)=>{ //지우개 보류
@@ -421,6 +436,20 @@ var menu  //float 버튼용 메뉴
       }
     }
     else {
+      context.strokeStyle = data.penColor
+      context.beginPath()
+      context.lineWidth = data.penWidth
+      context.moveTo(line[0].x * (width/size[0]), line[0].y * (height/size[1]))
+      context.lineTo(line[1].x * (width/size[0]), line[1].y * (height/size[1]))
+      context.stroke()
+    }
+  })
+
+  socket.on('reDrawLine', (userId, data)=>{ //지우개 보류
+    var line = data.line
+    var size = data.size
+
+    if(userId === user_id) {
       context.strokeStyle = data.penColor
       context.beginPath()
       context.lineWidth = data.penWidth
@@ -513,7 +542,7 @@ var menu  //float 버튼용 메뉴
       }
     }
   })
-
+  
   //----캔버스----
   var selected = 0
   var cam_selected = 0
@@ -592,7 +621,6 @@ var menu  //float 버튼용 메뉴
         }
       }
     })
-    socket.emit('reDrawing', ROOM_ID, user_id)
     mainLoop()
   }
   //====캔버스====
@@ -688,7 +716,10 @@ var menu  //float 버튼용 메뉴
           if(camRelativeMouseY < 0.905 && cam_mouse.pos_prev.y/hiddenCamVideo.height < 0.905)
             socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, userId:user_id, size:[hiddenCamVideo.width, hiddenCamVideo.height], penWidth: penWidth, penColor: penColor})
         }
-        else if(cam_mouse.click && penStyle === 'eraser') socket.emit('erase_server', ROOM_ID, user_id, cam_mouse.pos.x, cam_mouse.pos.y, width, height)
+        else if(cam_mouse.pos_prev && cam_mouse.click && penStyle === 'eraser' && isCanvas) {
+          if(camRelativeMouseY < 0.905 && cam_mouse.pos_prev.y/hiddenCamVideo.height < 0.905)
+            socket.emit('drawLine', {line: [cam_mouse.pos, cam_mouse.pos_prev], roomId:ROOM_ID, userId:user_id, size:[hiddenCamVideo.width, hiddenCamVideo.height], penWidth: 30, penColor: 'white'})
+        }
         cam_mouse.pos_prev = {x: cam_mouse.pos.x, y: cam_mouse.pos.y}
       }
       src.delete()
@@ -703,7 +734,7 @@ var menu  //float 버튼용 메뉴
   }
 
   extractColorVideo.addEventListener('click', (event) => { 
-    var imageData = extractContext.getImageData(0, 0, 1024, 768)
+    var imageData = extractContext.getImageData(0, 0, 1920, 1080)
 
     imageData.getRGBA = function(i,j,k){
       return this.data[this.width*4*j+4*i+k]
@@ -755,7 +786,7 @@ var menu  //float 버튼용 메뉴
 
   //----제스처----
   const config = {
-    video: { width: 1024, height: 768, fps: 30 }
+    video: { width: 1920, height: 1080, fps: 30 }
   }
 
   var gesturePred
@@ -792,6 +823,7 @@ var menu  //float 버튼용 메뉴
             socket.emit('clearWhiteBoard', ROOM_ID, user_id)
           }
           if(result.name == "victory") victorycnt+=2    
+
           if(victorycnt>=20){
             victorycnt = 0
             capture.width = canvas.width
@@ -810,11 +842,13 @@ var menu  //float 버튼용 메뉴
               link.click()
             })
           }
-
+          
           //규 수정
-          if(result.name=="thumbs_up") thumbsupcnt+=2 
+          if(result.name=="thumbs_up") thumbsupcnt+=2
+
           if(thumbsupcnt>=10){
             thumbsupcnt = 0
+            console.log("thumbs up")
             socket.emit('thumbsRequest_server', user_id, ROOM_ID)
           }
         }
@@ -1025,6 +1059,10 @@ var menu  //float 버튼용 메뉴
   }
 
   function mainLoop() {
+    if(isFirstDraw && user_id !== undefined) {
+      isFirstDraw = false
+      socket.emit('reDrawing', ROOM_ID, user_id)
+    }
     if(isDisplaying) {
       var displayVideo = document.getElementById('userDisplay')
       if(displayVideo !== null) {        
@@ -1074,7 +1112,7 @@ var menu  //float 버튼용 메뉴
     if(mouse.click && mouse.move && mouse.pos_prev && isCanvas) {
       if(relativeMouseY < 0.905 && mouse.pos_prev.y/canvas.height < 0.905){
         if(penStyle === 'pen') socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID, userId: user_id, size:[width, height], penWidth: penWidth, penColor: penColor})
-        //else socket.emit('erase_server', ROOM_ID, mouse.pos.x, mouse.pos.y) 지우개 기능 보류
+        else socket.emit('drawLine', {line: [mouse.pos, mouse.pos_prev], roomId:ROOM_ID, userId: user_id, size:[width, height], penWidth: 30, penColor: 'white'})
       }
       mouse.move = false
     }
@@ -1135,6 +1173,13 @@ var menu  //float 버튼용 메뉴
     userBox.appendChild(videoUserName)
     userBox.appendChild(myVideoBackground)
     userBox.appendChild(myVideo)
+
+    const thumbsicon=document.createElement("img")
+    thumbsicon.id="mythumbsicon"
+    thumbsicon.className="thumbsicon"
+    thumbsicon.src="img/thumbs.png"
+    userBox.appendChild(thumbsicon)
+
     myVideo.srcObject = localStream
     myVideo.addEventListener('loadedmetadata', () => {
       myVideo.play()
@@ -1283,6 +1328,12 @@ var menu  //float 버튼용 메뉴
           userBox.appendChild(videoUserName)
           userBox.appendChild(videoBackground)
           userBox.appendChild(video)
+
+          const thumbsicon=document.createElement("img")
+          thumbsicon.id=call.peer+"thumbsicon"
+          thumbsicon.className="thumbsicon"
+          thumbsicon.src="img/thumbs.png"
+          userBox.appendChild(thumbsicon)
         }
         peers[call.peer] = call
       })
@@ -1316,6 +1367,7 @@ var menu  //float 버튼용 메뉴
     if(isDisplayHost) firstConnectSocketCall(userId) //화면공유중일때 새로 들어온 유저가 화면공유 보도록
 
     if(peers[userId] == undefined) {
+      var connectcount=0
       const call = myPeer.call(userId, localStream)
       const video = document.createElement('video')
       video.width = 160
@@ -1339,6 +1391,16 @@ var menu  //float 버튼용 메뉴
         userBox.appendChild(videoBackground)
         userBox.appendChild(video)
         addVideoStream(video, userVideoStream, userBox)
+
+        connectcount++
+
+        if(connectcount==2){
+          const thumbsicon=document.createElement("img")
+          thumbsicon.id=userId+"thumbsicon"
+          thumbsicon.className="thumbsicon"
+          thumbsicon.src="img/thumbs.png"
+          userBox.appendChild(thumbsicon)
+        }
       })
 
       peers[userId] = call
@@ -1594,7 +1656,7 @@ var menu  //float 버튼용 메뉴
   function clickCanvas(select)
   {
     if(select === 1) penStyle = 'pen'
-    //else if(select === 2) penStyle = 'eraser' 보류
+    else if(select === 2) penStyle = 'eraser'
     else if(select === 3) socket.emit('clearWhiteBoard', ROOM_ID, user_id)
     else if(select === 4) penColor = 'black'
     else if(select === 5) penColor = 'red'
