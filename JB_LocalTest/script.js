@@ -131,8 +131,8 @@ var menu  //float 버튼용 메뉴
   myVideo.width = 160
   myVideo.height = 118
 
-  hiddenCamVideo.width = 1920
-  hiddenCamVideo.height = 1080
+  hiddenCamVideo.width = 1024
+  hiddenCamVideo.height = 768
 
   navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.oGetUserMedia || navigator.msGetUserMedia
 
@@ -734,7 +734,7 @@ var menu  //float 버튼용 메뉴
   }
 
   extractColorVideo.addEventListener('click', (event) => { 
-    var imageData = extractContext.getImageData(0, 0, 1920, 1080)
+    var imageData = extractContext.getImageData(0, 0, extractColorVideo.width, extractColorVideo.height)
 
     imageData.getRGBA = function(i,j,k){
       return this.data[this.width*4*j+4*i+k]
@@ -786,7 +786,7 @@ var menu  //float 버튼용 메뉴
 
   //----제스처----
   const config = {
-    video: { width: 1920, height: 1080, fps: 30 }
+    video: { width: 1024, height: 768, fps: 30 }
   }
 
   var gesturePred
