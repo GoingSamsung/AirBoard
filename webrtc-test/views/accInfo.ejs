@@ -7,7 +7,6 @@
 		<meta name="google" content="notranslate">
 		<script src="https://use.fontawesome.com/releases/v5.2.0/js/all.js"></script>
 		<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-        <script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
         <link rel="stylesheet" href="assets/css/main.css" />
 		<link rel="stylesheet" href="assets/css/slide.css" />
 		<link rel="stylesheet" href="assets/css/input.css" />
@@ -70,6 +69,7 @@
 				vertical-align: top;
 				border-bottom: 1px solid #ccc;
 			}
+
 			.btn{
 				font-size:15px;
 				font-weight:1000;
@@ -132,7 +132,8 @@
 											<td id="nameForm">
 												<input type="text" id="nextName" value=<%= name%>>
 												<input type="hidden" id="email" value=<%= email%>>
-												<input class="btn" type="submit" value="수정" onclick="changeName(0)">
+												<button class="btn" style="float:right;" onclick="cancel()">취소</button>
+												<button class="btn" type="submit" onclick="changeName(0)">수정</button>
 											</td>
 										</tr>
 										<tr>
@@ -186,11 +187,15 @@
                         sendPost()
                     }
                 }
+				function cancel(){
+					$("#nameInfo").show()
+                    $("#nameForm").hide()
+				}
                 function sendPost()
                 {
                     var form = document.createElement('form')
                     form.setAttribute('method', 'post')
-                    form.setAttribute('action', '/home/changeName')
+                    form.setAttribute('action', '/changeName')
                     var hiddenField = document.createElement('input')
                     hiddenField.setAttribute('type', 'hidden')
                     hiddenField.setAttribute('name', 'nextName')
@@ -203,7 +208,7 @@
                     form.appendChild(hiddenField2)
                     document.body.appendChild(form)
                     form.submit()
-                }
+				}
 			</script>
 	</body>
 </html> 
