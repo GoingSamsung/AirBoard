@@ -1,3 +1,11 @@
+var tmp = require('./test.js');
+thu = tmp.a;
+ind = tmp.a;
+mid = tmp.a;
+rin = tmp.a;
+pin = tmp.a;
+
+console.log("asdf");
 ! function(t, e) {
     "object" == typeof exports && "object" == typeof module ? module.exports = e() : "function" == typeof define && define.amd ? define([], e) : "object" == typeof exports ? exports.fp = e() : t.fp = e()
 }("undefined" != typeof self ? self : this, (function() {
@@ -58,10 +66,10 @@
                 return t && "function" == typeof Symbol && t.constructor === Symbol && t !== Symbol.prototype ? "symbol" : typeof t
             })(t)
         }
-        n.r(r), n.d(r, "VictoryGesture", (function() {
+        n.r(r), n.d(r, "CustomGesture", (function() {
             return C
-        })), n.d(r, "ThumbsUpGesture", (function() {
-            return j //규 수정
+        })), n.d(r, "GyuGesture", (function() {
+            return Gyu
         })), n.d(r,"PalmGesture",(function(){
             return palm
         }));
@@ -716,10 +724,32 @@
                     }
                 }]) && M(e.prototype, n), r && M(e, r), t
             }(),
-            T = new S("victory");
-        T.addCurl(o.Thumb, a.HalfCurl, .5), T.addCurl(o.Thumb, a.NoCurl, .5), T.addDirection(o.Thumb, l.VerticalUp, 1), T.addDirection(o.Thumb, l.DiagonalUpLeft, 1), T.addCurl(o.Index, a.NoCurl, 1), T.addDirection(o.Index, l.VerticalUp, .75), T.addDirection(o.Index, l.DiagonalUpLeft, 1), T.addCurl(o.Middle, a.NoCurl, 1), T.addDirection(o.Middle, l.VerticalUp, 1), T.addDirection(o.Middle, l.DiagonalUpLeft, .75), T.addCurl(o.Ring, a.FullCurl, 1), T.addDirection(o.Ring, l.VerticalUp, .2), T.addDirection(o.Ring, l.DiagonalUpLeft, 1), T.addDirection(o.Ring, l.HorizontalLeft, .2), T.addCurl(o.Pinky, a.FullCurl, 1), T.addDirection(o.Pinky, l.VerticalUp, .2), T.addDirection(o.Pinky, l.DiagonalUpLeft, 1), T.addDirection(o.Pinky, l.HorizontalLeft, .2), T.setWeight(o.Index, 2), T.setWeight(o.Middle, 2);
+            T = new S("custom");
+            // if(tmp[0]==2)
+            // {
+            //     tmp[0] = a.NoCurl;
+            //     console.log(tmp[0]);
+            // } 
+            // NoCurl = a.NoCurl;
+            // HalfCurl = a.HalfCurl;
+            // FullCurl = a.FullCurl;
+            // VirticalUp = l.VerticalUp;
+            // DiagonalUpRight = l.DiagonalUpRight;
+            // HorizontalRight = l.HorizontalRight;
+            // DiagonalDownRight = l.DiagonalDownRight;
+            // VirticalDown = l.VirticalDown;
+            // DiagonalDownLeft = l.DiagonalDownLeft;
+            // HorizontalLeft = l.HorizontalLeft;
+            // DiagonalUpLeft = l.DiagonalUpLeft;
+        console.log(thu);
+        console.log(ind);
+        console.log(mid);
+        console.log(rin);
+        console.log(pin);
+        T.addCurl(o.Thumb, thu[0], thu[1]),T.addCurl(o.Index, ind[0], ind[1]),T.addCurl(o.Middle, mid[0], mid[1]),T.addCurl(o.Ring, rin[0], rin[1]),T.addCurl(o.pin, pin[0], pin[1])
+        T.addDirection(o.Thumb,thu[2],thu[3]),T.addDirection(o.Index,ind[2],ind[3]),T.addDirection(o.Middle,mid[2],mid[3]),T.addDirection(o.Ring,rin[2],rin[3]),T.addDirection(o.Pinky,pin[2],pin[3])
         var C = T,
-            R = new S("thumbs_up"); //규 수정
+            R = new S("thumbs_up");
         R.addCurl(o.Thumb, a.NoCurl, 1), R.addDirection(o.Thumb, l.VerticalUp, 1), R.addDirection(o.Thumb, l.DiagonalUpLeft, .25), R.addDirection(o.Thumb, l.DiagonalUpRight, .25);
         for (var A = 0, L = [o.Index, o.Middle, o.Ring, o.Pinky]; A < L.length; A++) {
             var _ = L[A];
