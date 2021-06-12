@@ -16,7 +16,7 @@ AirBoard는 웹캠을 새로운 입력 수단으로 사용할 수 있다는 가�
 ### [AirBoard](https://airboard.ga/)
 
 ## Prerequisites
-You have to install [Node.js](https://nodejs.org/en/), and [MongDB](https://www.mongodb.com/) in your machine.
+You have to install [Node.js](https://nodejs.org/en/), and [MongoDB](https://www.mongodb.com/) in your machine.
 
 ## Usage
 
