@@ -112,7 +112,7 @@ app.get('/', (req, res) => {
   res.redirect('/home')
 })
 
-app.post('/newGes', (req, res) => {
+app.get('/newGes', (req, res) => {
   res.render('newGes')
 })
 
