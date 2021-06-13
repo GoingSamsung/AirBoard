@@ -85,7 +85,7 @@ router.get("/login", (req, res) => res.render("login", { message: req.flash("log
 
 router.get("/identify", (req, res) => res.render("identify"));
 
-router.get("/resetPassword", (req, res) => {
+router.get("/requestPasswordReset", (req, res) => {
     Account.find({ email: req.query.email })
         .exec()
         .then((accounts) => {
