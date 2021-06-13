@@ -41,8 +41,7 @@ const express = require('express')
 const app = express()
 const fs = require('fs')
 const https = require('https');
-const server = https.createServer(
-    {
+const server = https.createServer({
         key: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/privkey.pem'),
         cert: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/cert.pem'),
         ca: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/chain.pem'),
