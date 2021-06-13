@@ -18,10 +18,6 @@ const User = require('../models/user')
 var nodemailer = require('nodemailer');
 var smtpTransporter = require('nodemailer-smtp-transport');
 
-var key_one = crypto.randomBytes(256).toString('hex').substr(100, 5);
-var key_two = crypto.randomBytes(256).toString('base64').substr(50, 5);
-var key_for_verify_ = key_one + key_two;
-
 var smtpTransport = nodemailer.createTransport(smtpTransporter({
     service: 'Gmail',
     host: 'smtp.gmail.com',
@@ -89,6 +85,32 @@ router.get("/login", (req, res) => res.render("login", { message: req.flash("log
 
 router.get("/identify", (req, res) => res.render("identify"));
 
+router.get("/resetPassword", (req, res) => {
+    Account.find({ email: req.query.email })
+        .exec()
+        .then((accounts) => {
+            if (accounts.length === 1) {
+                const url = `https://${req.get('host')}/confirmEmail?key=${accounts[0].verificationKey}`;
+                const mailOption = {
+                    from: 'ajou.goingsamsung@gmail.com',
+                    to: accounts[0].email,
+                    subject: '[AirBoard] 비밀번호 재설정 요청',
+                    html: `비밀번호 재설정을 위해 URL을 클릭해주세요.\nURL: ${url}`,
+                };
+
+                smtpTransport.sendMail(mailOption, function (err, res) {
+                    if (err) { console.log(err); }
+                    else { console.log(`Email successfully sent to ${req.query.email}.`); }
+                    smtpTransport.close();
+                });
+
+                res.send('<script type="text/javascript">alert("이메일을 확인하세요."); window.location="/home//login"; </script>');
+            } else {
+                res.send('<script type="text/javascript">alert("가입되지 않은 이메일입니다."); window.location="/home/signup"; </script>')
+            }
+        })
+});
+
 router.get('/logout', function (req, res) {
     req.logout()
     res.redirect('/') //로그아웃 후 '/'로 이동
@@ -105,12 +127,16 @@ router.post("/signup", (req, res, next) => {
             if (accounts.length >= 1) {
                 res.send('<script type="text/javascript">alert("이미 존재하는 이메일입니다."); window.location="/signup"; </script>')
             } else {
+                const hexEncodedString = crypto.randomBytes(256).toString('hex').substr(100, 5);
+                const base64EncodedString = crypto.randomBytes(256).toString('base64').substr(50, 5);
+                const verificationKey = hexEncodedString + base64EncodedString;
+
                 const account = new Account({
                     _id: new mongoose.Types.ObjectId(),
                     name: req.body.name,
                     email: req.body.email,
                     password: crypto.createHash("sha512").update(req.body.password).digest("base64"),
-                    key_for_verify: key_for_verify
+                    verificationKey: verificationKey
                 })
                 account
                     .save()
