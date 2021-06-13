@@ -171,9 +171,6 @@ var menu  //float 버튼용 메뉴
         localStream.addTrack(track)
       userJoin()
     }).catch(error => { //캠 마이크 x
-      //alert('마이크나 캠 중 하나를 켜주세요.')
-      //window.location.href = '/'
-      
       isNoCamUser = true
       isMuteUser = true
       localStream = nocamVideo.captureStream()
@@ -305,15 +302,11 @@ var menu  //float 버튼용 메뉴
       videoBackground.style.width = '160px'
       videoBackground.style.height = '118px'
       video.style.visibility='hidden'
-      //video.width = 0
-      //video.height = 0
     }
     else {
       videoBackground.style.width = '0px'
       videoBackground.style.height = '0px'
       video.style.visibility="visible"
-      //video.width = 160
-      //video.height = 118
     }
     }
   })
