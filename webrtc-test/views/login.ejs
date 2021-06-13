@@ -73,7 +73,7 @@
     <form action="/home/login" method="POST">
       <img class="mb-4" src="https://raw.githubusercontent.com/GoingSamsung/AirBoard/master/media/goingsamsung_logo.png"
         alt="GoingSamsung Logo" width="100" height="100" onclick='javascript:location.href="/"' style="cursor:pointer"/>
-      <h1 class="h3 mb-3 fw-normal">Sign in</h1>
+      <h1 class="h3 mb-3 fw-normal">Sign In</h1>
 
       <div class="form-floating">
         <input type="email" class="form-control" id="floatingInputEmail" placeholder="name@example.com" name="email">
@@ -86,15 +86,16 @@
 
 
       <div class="checkbox mb-3">
-        <label>
+        <!-- <label>
           <input type="checkbox" value="remember-me"> Remember me
-        </label>
+        </label> -->
       </div>
-      <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
+      <button class="w-100 btn btn-lg btn-primary mb-3" type="submit">Sign In</button>
+      <input type="button" class="w-100 btn btn-lg btn-secondary" onclick="location.href='/home/identify'" value = "Forgot Password?"/>
 
       <hr>
       
-      <input type="button" class="w-100 btn btn-lg btn-secondary" onclick=" location.href='/home/signup'" value = "Sign up"/>
+      <input type="button" class="w-100 btn btn-lg btn-primary" onclick=" location.href='/home/signup'" value = "Create New Account"/>
       <p class="mt-5 mb-3 text-muted">© GoingSamsung</p>
     </form>
   </main>

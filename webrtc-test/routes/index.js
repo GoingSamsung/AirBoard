@@ -71,6 +71,8 @@ router.post('/changeName', async(req, res) => {
 
 router.get("/login", (req, res) => res.render("login", { message: req.flash("login_message") }));
 
+router.get("/identify", (req, res) => res.render("identify"));
+
 router.get('/logout', function (req, res) {
     req.logout()
     res.redirect('/') //로그아웃 후 '/'로 이동
@@ -91,13 +93,15 @@ router.post("/signup", (req, res, next) => {
                     _id: new mongoose.Types.ObjectId(),
                     name: req.body.name,
                     email: req.body.email,
-                    password: crypto.createHash("sha512").update(req.body.password).digest("base64")
+                    password: crypto.createHash("sha512").update(req.body.password).digest("base64"),
+                    key_for_verify: key_for_verify
                 })
                 account
                     .save()
                     .then(result => {
                         console.log(result)
                         res.redirect("/")
+
                     })
                     .catch(err => {
                         console.log(err)
@@ -110,7 +114,7 @@ router.post("/signup", (req, res, next) => {
 router.post('/login', passport.authenticate('local', {
     successRedirect: '/',
     failureRedirect: '/login',
-    failureFlash: true
+    failureFlash: true,
 }))
 
 router.get('/newroom', (req, res) => {
@@ -121,8 +125,8 @@ router.get('/newroom', (req, res) => {
     room.save((err, room) => {
         if (err) return console.error(err)
     })
-    res.redirect(`/${newRoomId}`)
-})
+    res.redirect(`/${newRoomId}`);
+});
 
 router.get('/:room', async(req, res) => {
     const room = await Room.findOne({roomId: req.params.room}, null, {})
@@ -130,17 +134,17 @@ router.get('/:room', async(req, res) => {
         if(req.user === undefined) res.render('room', { roomId: req.params.room, name: ''})
         else res.render('room', { roomId: req.params.room, name: req.user.name})
     }
-    else res.render("noPage",{message:"존재하지 않는 회의실 주소입니다"})
-})
+    else res.render('noPage', {message:"존재하지 않는 회의실 주소입니다"});
+});
 
 router.post('/joinroom', (req, res) => {
-    var tmp = req.body.address.split("/")
-    if(tmp[2]=='airboard.ga'){
-      res.redirect(`/${tmp[3]}`)
+    var tmp = req.body.address.split("/");
+    if (tmp[2]=='airboard.ga'){
+      res.redirect(`/${tmp[3]}`);
     }
-    else{
-      res.render("noPage",{message:"존재하지 않는 회의실 주소입니다"})
+    else {
+      res.render("noPage",{message:"존재하지 않는 회의실 주소입니다"});
     }
-})
+});
 
 module.exports = router
