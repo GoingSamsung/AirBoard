@@ -15,6 +15,22 @@ const LocalStrategy = require('passport-local').Strategy
 
 const User = require('../models/user')
 
+var nodemailer = require('nodemailer');
+var smtpTransporter = require('nodemailer-smtp-transport');
+
+var key_one = crypto.randomBytes(256).toString('hex').substr(100, 5);
+var key_two = crypto.randomBytes(256).toString('base64').substr(50, 5);
+var key_for_verify_ = key_one + key_two;
+
+var smtpTransport = nodemailer.createTransport(smtpTransporter({
+    service: 'Gmail',
+    host: 'smtp.gmail.com',
+    auth: {
+        user: 'ajou.goingsamsung@gmail.com',
+        pass: '5y3v$Qy#dB22n&!F'
+    }
+}))
+
 function forwardAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
         return next()
