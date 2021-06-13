@@ -69,10 +69,16 @@
 										<span>계정 정보</span>
 									</div>
 									<% } %>
+									<% if(!need_signup){ %>
+										<div class="bx">
+											<img src="images/gesture.jpg" onclick='javascript:location.href="/newGes"' style="cursor:pointer">
+											<span>제스처 추가</span>
+										</div>
+									<% } %>
 									</div>
-									<form action="/newGes" method="POST">
+									<!-- <form action="/newGes" method="POST">
 										<input type="submit" value="제스처 만들기">
-									  </form>
+									</form> -->
 							</section>
 
 						<!-- First Section -->

@@ -6,175 +6,242 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>New Gesture</title>
     <style>
+        body{
+            width:100%;
+        }
+
+        #container{
+            width:100%;
+            position:absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        select {
+            margin-top:10px;
+            margin-bottom:10px;
+            width: 200px;
+            padding: .8em .5em;
+            font-family: inherit;
+            background: url(https://farm1.staticflickr.com/379/19928272501_4ef877c265_t.jpg) no-repeat 95% 50%;  
+            -webkit-appearance: none;
+            -moz-appearance: none;
+                    appearance: none;
+            border: 1px solid #999;
+            border-radius: 0px;
+        }
+        
+        select::-ms-expand { /* for IE 11 */
+            display: none;
+        }
+
+        h1{
+            font-size:40px;
+            margin-bottom:0px;
+        }
+
+        h3{
+            margin-bottom:0px;
+        }
+        .btn:hover {
+            color: #8cc9f0;
+        }
+        .btn:hover:before {
+            transform: none;
+            opacity: 1;
+            transition-duration: 0.4s;
+        }
+        .btn:before {
+            content: "";
+            position: absolute;
+            width: 90%;
+            height: 2px;
+            margin-left:4px;
+            margin-bottom:3px;
+            left: 0;
+            bottom: 0px;
+            background: #8cc9f0;
+            transform: translateY(6px);
+            opacity: 0;
+            transition: 1.8s cubic-bezier(0.2, 1, 0.3, 1);
+            pointer-events: none;
+        }
     </style>
   </head>
   <body>
-    <form method="POST" action="home/addGes">
-    <label>Thumb:
-        <select class="ThumbCurl" name="ThumbCurl">
-            <option value=0>선택하세요</option>
-            <option value=0>NoCurl</option>
-            <option value=1>HalfCurl</option>
-            <option value=2>FullCurl</option>
-        </select>
-        <select class="ThumbCurlNum" name="ThumbCurlNum">
-            <option value=0>선택하세요</option>
-            <option value=0.25>0.25</option>
-            <option value=0.5>0.5</option>
-            <option value=0.75>0.75</option>
-            <option value=1>1</option>
-        </select>
-        <select class="ThumbDir" name="ThumbDir">
-            <option value=>선택하세요</option>
-            <option value=0>00:00</option>
-            <option value=4>01:30</option>
-            <option value=3>03:00</option>
-            <option value=6>04:30</option>
-            <option value=1>06:00</option>
-            <option value=7>07:30</option>
-            <option value=2>09:00</option>
-            <option value=5>10:30</option>
-        </select>
-        <select class="ThumbDirNum" name="ThumbDirNum">
-            <option value=0>선택하세요</option>
-            <option value=0.25>0.25</option>
-            <option value=0.5>0.5</option>
-            <option value=0.75>0.75</option>
-            <option value=1>1</option>
-        </select>
-    </label><br>
-    <label>Index:
-        <select class="IndexCurl" name="IndexCurl">
-            <option value=0>선택하세요</option>
-            <option value=0>NoCurl</option>
-            <option value=1>HalfCurl</option>
-            <option value=2>FullCurl</option>
-        </select>
-        <select class="IndexCurlNum" name="IndexCurlNum">
-            <option value=0>선택하세요</option>
-            <option value=0.25>0.25</option>
-            <option value=0.5>0.5</option>
-            <option value=0.75>0.75</option>
-            <option value=1>1</option>
-        </select>
-        <select class="IndexDir" name="IndexDir">
-            <option value=>선택하세요</option>
-            <option value=0>00:00</option>
-            <option value=4>01:30</option>
-            <option value=3>03:00</option>
-            <option value=6>04:30</option>
-            <option value=1>06:00</option>
-            <option value=7>07:30</option>
-            <option value=2>09:00</option>
-            <option value=5>10:30</option>
-        </select>
-        <select class="IndexDirNum" name="IndexDirNum">
-            <option value=0>선택하세요</option>
-            <option value=0.25>0.25</option>
-            <option value=0.5>0.5</option>
-            <option value=0.75>0.75</option>
-            <option value=1>1</option>
-        </select>
-    </label><br>
-    <label>Middle:
-        <select class="MiddleCurl" name="MiddleCurl">
-            <option value=0>선택하세요</option>
-            <option value=0>NoCurl</option>
-            <option value=1>HalfCurl</option>
-            <option value=2>FullCurl</option>
-        </select>
-        <select class="MiddleCurlNum" name="MiddleCurlNum">
-            <option value=0>선택하세요</option>
-            <option value=0.25>0.25</option>
-            <option value=0.5>0.5</option>
-            <option value=0.75>0.75</option>
-            <option value=1>1</option>
-        </select>
-        <select class="MiddleDir" name="MiddleDir">
-            <option value=>선택하세요</option>
-            <option value=0>00:00</option>
-            <option value=4>01:30</option>
-            <option value=3>03:00</option>
-            <option value=6>04:30</option>
-            <option value=1>06:00</option>
-            <option value=7>07:30</option>
-            <option value=2>09:00</option>
-            <option value=5>10:30</option>
-        </select>
-        <select class="MiddleDirNum" name="MiddleDirNum">
-            <option value=0>선택하세요</option>
-            <option value=0.25>0.25</option>
-            <option value=0.5>0.5</option>
-            <option value=0.75>0.75</option>
-            <option value=1>1</option>
-        </select>
-    </label><br>
-    <label>Ring:
-        <select class="RingCurl" name="RingCurl">
-            <option value=0>선택하세요</option>
-            <option value=0>NoCurl</option>
-            <option value=1>HalfCurl</option>
-            <option value=2>FullCurl</option>
-        </select>
-        <select class="RingCurlNum" name="RingCurlNum">
-            <option value=0>선택하세요</option>
-            <option value=0.25>0.25</option>
-            <option value=0.5>0.5</option>
-            <option value=0.75>0.75</option>
-            <option value=1>1</option>
-        </select>
-        <select class="RingDir" name="RingDir">
-            <option value=>선택하세요</option>
-            <option value=0>00:00</option>
-            <option value=4>01:30</option>
-            <option value=3>03:00</option>
-            <option value=6>04:30</option>
-            <option value=1>06:00</option>
-            <option value=7>07:30</option>
-            <option value=2>09:00</option>
-            <option value=5>10:30</option>
-        </select>
-        <select class="RingDirNum" name="RingDirNum">
-            <option value=0>선택하세요</option>
-            <option value=0.25>0.25</option>
-            <option value=0.5>0.5</option>
-            <option value=0.75>0.75</option>
-            <option value=1>1</option>
-        </select>
-    </label><br>
-    <label>Pinky:
-        <select class="PinkyCurl" name="PinkyCurl">
-            <option value=0>선택하세요</option>
-            <option value=0>NoCurl</option>
-            <option value=1>HalfCurl</option>
-            <option value=2>FullCurl</option>
-        </select>
-        <select class="PinkyCurlNum" name="PinkyCurlNum">
-            <option value=0>선택하세요</option>
-            <option value=0.25>0.25</option>
-            <option value=0.5>0.5</option>
-            <option value=0.75>0.75</option>
-            <option value=1>1</option>
-        </select>
-        <select class="PinkyDir" name="PinkyDir">
-            <option value=>선택하세요</option>
-            <option value=0>00:00</option>
-            <option value=4>01:30</option>
-            <option value=3>03:00</option>
-            <option value=6>04:30</option>
-            <option value=1>06:00</option>
-            <option value=7>07:30</option>
-            <option value=2>09:00</option>
-            <option value=5>10:30</option>
-        </select>
-        <select class="PinkyDirNum" name="PinkyDirNum">
-            <option value=0>선택하세요</option>
-            <option value=0.25>0.25</option>
-            <option value=0.5>0.5</option>
-            <option value=0.75>0.75</option>
-            <option value=1>1</option>
-        </select>
-        <button type="submit"></button>        
-    </label></form>
+    <center>
+        <div id="container">
+            <form method="POST" action="home/addGes">
+                <h1>제스처 추가</h1>
+                <label><center><h3>엄지손가락 설정</h3></center>
+                    <select class="ThumbCurl" name="ThumbCurl">
+                        <option value="" selected hidden disabled>손가락 모양</option>
+                        <option value="0">NoCurl</option>
+                        <option value="1">HalfCurl</option>
+                        <option value="2">FullCurl</option>    
+                    </select>
+                    <select class="ThumbCurlNum" name="ThumbCurlNum">
+                        <option value="" selected hidden disabled>손가락 모양 인식 강도</option>
+                        <option value="0.25">0.25</option>
+                        <option value="0.5">0.5</option>
+                        <option value="0.75">0.75</option>
+                        <option value="1">1</option>    
+                    </select>
+                    <select class="ThumbDir" name="ThumbDir">
+                        <option value="" selected hidden disabled>손가락 방향</option>
+                        <option value="0">00:00</option>
+                        <option value="4">01:30</option>
+                        <option value="3">03:00</option>
+                        <option value="6">04:30</option>
+                        <option value="1">06:00</option>
+                        <option value="7">07:30</option>
+                        <option value="2">09:00</option>
+                        <option value="5">10:30</option>    
+                    </select>
+                    <select class="ThumbDirNum" name="ThumbDirNum">
+                        <option value="" selected hidden disabled>손가락 방향 인식 강도</option>
+                        <option value="0.25">0.25</option>
+                        <option value="0.5">0.5</option>
+                        <option value="0.75">0.75</option>
+                        <option value="1">1</option>    
+                    </select>
+                </label><br>
+                <label><center><h3>검지손가락 설정</h3></center>
+                    <select class="IndexCurl" name="IndexCurl">
+                        <option value="" selected hidden disabled>손가락 모양</option> 
+                        <option value="0">NoCurl</option>
+                        <option value="1">HalfCurl</option>
+                        <option value="2">FullCurl</option>    
+                    </select>
+                    <select class="IndexCurlNum" name="IndexCurlNum">
+                        <option value="" selected hidden disabled>손가락 모양 인식 강도</option>
+                        <option value="0.25">0.25</option>
+                        <option value="0.5">0.5</option>
+                        <option value="0.75">0.75</option>
+                        <option value="1">1</option>
+                    </select>
+                    <select class="IndexDir" name="IndexDir">
+                        <option value="" selected hidden disabled>손가락 방향</option>
+                        <option value="0">00:00</option>
+                        <option value="4">01:30</option>
+                        <option value="3">03:00</option>
+                        <option value="6">04:30</option>
+                        <option value="1">06:00</option>
+                        <option value="7">07:30</option>
+                        <option value="2">09:00</option>
+                        <option value="5">10:30</option>      
+                    </select>
+                    <select class="IndexDirNum" name="IndexDirNum">
+                        <option value="" selected hidden disabled>손가락 방향 인식 강도</option>
+                        <option value="0.25">0.25</option>
+                        <option value="0.5">0.5</option>
+                        <option value="0.75">0.75</option>
+                        <option value="1">1</option>    
+                    </select>
+                </label><br>
+                <label><center><h3>중지손가락 설정</h3></center>
+                    <select class="MiddleCurl" name="MiddleCurl">
+                        <option value="" selected hidden disabled>손가락 모양</option>
+                        <option value="0">NoCurl</option>
+                        <option value="1">HalfCurl</option>
+                        <option value="2">FullCurl</option>    
+                    </select>
+                    <select class="MiddleCurlNum" name="MiddleCurlNum">
+                        <option value="" selected hidden disabled>손가락 모양 인식 강도</option>
+                        <option value="0.25">0.25</option>
+                        <option value="0.5">0.5</option>
+                        <option value="0.75">0.75</option>
+                        <option value="1">1</option>    
+                    </select>
+                    <select class="MiddleDir" name="MiddleDir">
+                        <option value="" selected hidden disabled>손가락 방향</option>
+                        <option value="0">00:00</option>
+                        <option value="4">01:30</option>
+                        <option value="3">03:00</option>
+                        <option value="6">04:30</option>
+                        <option value="1">06:00</option>
+                        <option value="7">07:30</option>
+                        <option value="2">09:00</option>
+                        <option value="5">10:30</option>    
+                    </select>
+                    <select class="MiddleDirNum" name="MiddleDirNum">
+                        <option value="" selected hidden disabled>손가락 방향 인식 강도</option>
+                        <option value="0.25">0.25</option>
+                        <option value="0.5">0.5</option>
+                        <option value="0.75">0.75</option>
+                        <option value="1">1</option>    
+                    </select>
+                </label><br>
+                <label><center><h3>약지손가락 설정</h3></center>
+                    <select class="RingCurl" name="RingCurl">
+                        <option value="" selected hidden disabled>손가락 모양</option>
+                        <option value="0">NoCurl</option>
+                        <option value="1">HalfCurl</option>
+                        <option value="2">FullCurl</option>    
+                    </select>
+                    <select class="RingCurlNum" name="RingCurlNum">
+                        <option value="" selected hidden disabled>손가락 모양 인식 강도</option>
+                        <option value="0.25">0.25</option>
+                        <option value="0.5">0.5</option>
+                        <option value="0.75">0.75</option>
+                        <option value="1">1</option>    
+                    </select>
+                    <select class="RingDir" name="RingDir">
+                        <option value="" selected hidden disabled>손가락 방향</option>
+                        <option value="0">00:00</option>
+                        <option value="4">01:30</option>
+                        <option value="3">03:00</option>
+                        <option value="6">04:30</option>
+                        <option value="1">06:00</option>
+                        <option value="7">07:30</option>
+                        <option value="2">09:00</option>
+                        <option value="5">10:30</option>    
+                    </select>
+                    <select class="RingDirNum" name="RingDirNum">
+                        <option value="" selected hidden disabled>손가락 방향 인식 강도</option>
+                        <option value="0.25">0.25</option>
+                        <option value="0.5">0.5</option>
+                        <option value="0.75">0.75</option>
+                        <option value="1">1</option>    
+                    </select>
+                </label><br>
+                <label><center><h3>새끼손가락 설정</h3></center>
+                    <select class="PinkyCurl" name="PinkyCurl">
+                        <option value="" selected hidden disabled>손가락 모양</option>
+                        <option value="0">NoCurl</option>
+                        <option value="1">HalfCurl</option>
+                        <option value="2">FullCurl</option>    
+                    </select>
+                    <select class="PinkyCurlNum" name="PinkyCurlNum">
+                        <option value="" selected hidden disabled>손가락 모양 인식 강도</option>
+                        <option value="0.25">0.25</option>
+                        <option value="0.5">0.5</option>
+                        <option value="0.75">0.75</option>
+                        <option value="1">1</option>    
+                    </select>
+                    <select class="PinkyDir" name="PinkyDir">
+                        <option value="" selected hidden disabled>손가락 방향</option>
+                        <option value="0">00:00</option>
+                        <option value="4">01:30</option>
+                        <option value="3">03:00</option>
+                        <option value="6">04:30</option>
+                        <option value="1">06:00</option>
+                        <option value="7">07:30</option>
+                        <option value="2">09:00</option>
+                        <option value="5">10:30</option>    
+                    </select>
+                    <select class="PinkyDirNum" name="PinkyDirNum">
+                        <option value="" selected hidden disabled>손가락 방향 인식 강도</option>
+                        <option value="0.25">0.25</option>
+                        <option value="0.5">0.5</option>
+                        <option value="0.75">0.75</option>
+                        <option value="1">1</option>    
+                    </select>
+                </label><br>
+                <button class='btn' type="submit"></button>
+            </form>
+        </div>
+    </center>
   </body>
 </html>
