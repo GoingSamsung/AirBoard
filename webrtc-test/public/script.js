@@ -820,6 +820,8 @@ var menu  //float 버튼용 메뉴
           let result = est.gestures.reduce((p, c) => { 
             return (p.confidence > c.confidence) ? p : c
           })
+          
+          console.log(result.name)
 
           if(result.name == "palm") palmcnt+=2
           if(palmcnt>=10){
