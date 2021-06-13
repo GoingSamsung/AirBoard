@@ -17,13 +17,7 @@ const accountSchema = new Schema({
         required: true,
     },
 
-    email_verified: {
-        type: Boolean,
-        required: true,
-        default: false
-    },
-
-    key_for_verify: {
+    verificationKey: {
         type: String,
         required: true,
     }
