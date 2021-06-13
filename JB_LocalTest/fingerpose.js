@@ -1,9 +1,9 @@
-var tmp = require('./test.js');
-thu = tmp.a;
-ind = tmp.a;
-mid = tmp.a;
-rin = tmp.a;
-pin = tmp.a;
+// var tmp = require('./test.js');
+// thu = tmp.a;
+// ind = tmp.a;
+// mid = tmp.a;
+// rin = tmp.a;
+// pin = tmp.a;
 
 console.log("asdf");
 ! function(t, e) {
@@ -746,8 +746,9 @@ console.log("asdf");
         console.log(mid);
         console.log(rin);
         console.log(pin);
-        T.addCurl(o.Thumb, thu[0], thu[1]),T.addCurl(o.Index, ind[0], ind[1]),T.addCurl(o.Middle, mid[0], mid[1]),T.addCurl(o.Ring, rin[0], rin[1]),T.addCurl(o.pin, pin[0], pin[1])
+        T.addCurl(o.Thumb, thu[0], thu[1]),T.addCurl(o.Index, ind[0], ind[1]),T.addCurl(o.Middle, mid[0], mid[1]),T.addCurl(o.Ring, rin[0], rin[1]),T.addCurl(o.Pinky, pin[0], pin[1])
         T.addDirection(o.Thumb,thu[2],thu[3]),T.addDirection(o.Index,ind[2],ind[3]),T.addDirection(o.Middle,mid[2],mid[3]),T.addDirection(o.Ring,rin[2],rin[3]),T.addDirection(o.Pinky,pin[2],pin[3])
+        console.log(T);
         var C = T,
             R = new S("thumbs_up");
         R.addCurl(o.Thumb, a.NoCurl, 1), R.addDirection(o.Thumb, l.VerticalUp, 1), R.addDirection(o.Thumb, l.DiagonalUpLeft, .25), R.addDirection(o.Thumb, l.DiagonalUpRight, .25);
@@ -759,6 +760,7 @@ console.log("asdf");
         
         //Gyu 추가
         var Gyu = new S("gyu");
+        console.log(Gyu);
         Gyu.addCurl(o.Thumb,a.NoCurl,1),Gyu.addCurl(o.Index,a.FullCurl,1),Gyu.addCurl(o.Middle,a.FullCurl,1),Gyu.addCurl(o.Ring,a.FullCurl,1),Gyu.addCurl(o.Pinky,a.NoCurl,1);
         Gyu.addDirection(o.Thumb,l.DiagonalUpLeft,.5),Gyu.addDirection(o.Index,l.VerticalUp,1),Gyu.addDirection(o.Middle,l.VerticalUp,1),Gyu.addDirection(o.Ring,l.VerticalUp,1),Gyu.addDirection(o.Pinky,l.DiagonalUpRight,.5);
 
