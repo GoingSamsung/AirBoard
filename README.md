@@ -42,18 +42,18 @@ const app = express()
 const fs = require('fs')
 const https = require('https');
 const server = https.createServer(
-	{
-		key: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/privkey.pem'),
-    cert: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/cert.pem'),
-    ca: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/chain.pem'),
-    requestCert: false,
-    rejectUnauthorized: false,
-	},
-	app
+    {
+        key: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/privkey.pem'),
+        cert: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/cert.pem'),
+        ca: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/chain.pem'),
+        requestCert: false,
+        rejectUnauthorized: false,
+    },
+    app
 );
+
 const io = require('socket.io')(server)
 const { v4: uuidV4 } = require('uuid')
-//
 const mongoose = require('mongoose')
 const User = require('./models/user')
 const Room = require('./models/room')
@@ -62,7 +62,6 @@ const { response } = require('express')
 const user = require('./models/user')
 const { request } = require('http')
 const bodyParser = require('body-parser')
-
 const indexRoute = require("./routes/index")
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
