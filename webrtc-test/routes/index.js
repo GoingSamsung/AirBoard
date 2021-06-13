@@ -61,6 +61,25 @@ router.get('/signup', (req, res) => {
     res.render("signup")
 })
 
+router.post('/addGes', async(req,res)=>{
+    const user = await Account.findOne({email: req.user.email})
+    var ret = []
+    var thu = []
+    var ind = []
+    var mid = []
+    var rin = []
+    var pin = []
+    thu.push(req.body.ThumbCurl), thu.push(req.body.ThumbCurlNum), thu.push(req.body.ThumbDir), thu.push(req.body.ThumbDirNum)
+    ind.push(req.body.IndexCurl), ind.push(req.body.IndexCurlNum), ind.push(req.body.IndexDir), ind.push(req.body.IndexDirNum)
+    mid.push(req.body.MiddleCurl), mid.push(req.body.MiddleCurlNum), mid.push(req.body.MiddleDir), mid.push(req.body.MiddleDirNum)
+    rin.push(req.body.RingCurl), rin.push(req.body.RingCurlNum), rin.push(req.body.RingDir), rin.push(req.body.RingDirNum)
+    pin.push(req.body.PinkyCurl), pin.push(req.body.PinkyCurlNum), pin.push(req.body.PinkyDir), pin.push(req.body.PinkyDirNum)
+    ret.push(thu),ret.push(ind),ret.push(mid),ret.push(rin),ret.push(pin)
+    user.customGes = ret
+    user.save()
+    res.redirect('/')
+})
+
 router.post('/changeName', async(req, res) => {
     const user = await Account.findOne({email: req.body.email}, null, {})
     user.name = req.body.nextName

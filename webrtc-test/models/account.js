@@ -15,6 +15,11 @@ const accountSchema = new Schema({
     name: {
         type: String,
         required: true,
+    },
+
+    customGes: {
+        type: Array,
+        default: [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
     }
 });
 

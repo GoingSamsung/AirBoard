@@ -64,6 +64,8 @@
             return j //규 수정
         })), n.d(r,"PalmGesture",(function(){
             return palm
+        })), n.d(r,"CustomGesture",(function(){
+            return Cus
         }));
         var o = {
                 Thumb: 0,
@@ -728,10 +730,10 @@
         var j = R;
         
         //Gyu 추가
-        var Gyu = new S("gyu");
-        Gyu.addCurl(o.Thumb,a.NoCurl,1),Gyu.addCurl(o.Index,a.FullCurl,1),Gyu.addCurl(o.Middle,a.FullCurl,1),Gyu.addCurl(o.Ring,a.FullCurl,1),Gyu.addCurl(o.Pinky,a.NoCurl,1);
-        Gyu.addDirection(o.Thumb,l.DiagonalUpLeft,.5),Gyu.addDirection(o.Index,l.VerticalUp,1),Gyu.addDirection(o.Middle,l.VerticalUp,1),Gyu.addDirection(o.Ring,l.VerticalUp,1),Gyu.addDirection(o.Pinky,l.DiagonalUpRight,.5);
-
+        var Cus = new S("custom");
+        Cus.addCurl(o.Thumb, thu[0], thu[1]),Cus.addCurl(o.Index, ind[0], ind[1]),Cus.addCurl(o.Middle, mid[0], mid[1]),Cus.addCurl(o.Ring, rin[0], rin[1]),Cus.addCurl(o.Pinky, pin[0], pin[1])
+        Cus.addDirection(o.Thumb,thu[2],thu[3]),Cus.addDirection(o.Index,ind[2],ind[3]),Cus.addDirection(o.Middle,mid[2],mid[3]),Cus.addDirection(o.Ring,rin[2],rin[3]),Cus.addDirection(o.Pinky,pin[2],pin[3])
+        
         //Palm 추가
         var palm = new S("palm");
         palm.addCurl(o.Thumb,a.NoCurl,1), palm.addCurl(o.Index,a.NoCurl,1), palm.addCurl(o.Middle,a.NoCurl,1), palm.addCurl(o.Ring,a.NoCurl,1), palm.addCurl(o.Pinky,a.NoCurl,1);

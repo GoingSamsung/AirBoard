@@ -10,6 +10,12 @@
     <script>
       const ROOM_ID = '<%= roomId %>'
       var user_name = '<%= name %>'
+      var user_email = '<%= email %>'
+      var thu = [0,0,0,0]
+      var ind = [0,0,0,0]
+      var mid = [0,0,0,0]
+      var rin = [0,0,0,0]
+      var pin = [0,0,0,0]
     </script>
     <script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
     <script
@@ -65,6 +71,9 @@
       <div>
         <img src="img/[크기변환]hand.png" id='hand'alt="My Image">
         <button class="btn" id ='gesture_button'>제스처 켜기</button>
+      </div>
+      <div>
+        <button class="btn" id ='add_gesture_button'>제스처 불러오기</button>
       </div>
     </div>
     <div id= "airboard">

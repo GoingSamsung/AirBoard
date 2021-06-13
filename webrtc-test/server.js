@@ -1,30 +1,21 @@
 const express = require('express')
 const app = express()
-const fs = require('fs')
-const https = require('https');
-const server = https.createServer(
-	{
-		key: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/privkey.pem'),
-    cert: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/cert.pem'),
-    ca: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/chain.pem'),
-    requestCert: false,
-    rejectUnauthorized: false,
-	},
-	app
-);
+const server = require('http').Server(app)
 const io = require('socket.io')(server)
 const { v4: uuidV4 } = require('uuid')
+const fs = require('fs')
 
 const mongoose = require('mongoose')
 const User = require('./models/user')
 const Room = require('./models/room')
 const Account = require('./models/account')
 const { response } = require('express')
-const user = require('./models/user')
+
 const { request } = require('http')
 const bodyParser = require('body-parser')
 
 const indexRoute = require("./routes/index")
+
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
 const Session = require('express-session')
@@ -112,6 +103,10 @@ app.get('/', (req, res) => {
   res.redirect('/home')
 })
 
+app.post('/newGes', (req, res) => {
+  res.render('newGes')
+})
+
 app.get('/accInfo', (req, res) => {
   if(req.user === undefined) res.redirect('/') 
   else res.render("accInfo",{name: req.user.name, email: req.user.email})
@@ -121,7 +116,7 @@ app.get('/:room', async(req, res) => {
   const room = await Room.findOne({roomId: req.params.room}, null, {})
   if(room !== null) {
       if(req.user === undefined) res.render('room', { roomId: req.params.room, name: ''})
-      else res.render('room', { roomId: req.params.room, name: req.user.name})
+      else res.render('room', { roomId: req.params.room, name: req.user.name, email:req.user.email})
   }
   else res.render("noPage",{message:"존재하지 않는 회의실 주소입니다"})
 })
@@ -181,6 +176,12 @@ io.on('connection', socket => {
   socket.on('sendMessage', function(data){ 
     data.name = data.user_name
     io.sockets.emit('updateMessage', data)
+  })
+
+  socket.on('add-ges', async(email,roomId,userId)=>{
+    var user = await Account.findOne({email: email},null,{})
+    var ret = user.customGes
+    io.sockets.in(roomId).emit('add-ges_script',ret,userId)
   })
 
   socket.on('displayConnect_server', (roomId, userId) => {
@@ -436,4 +437,4 @@ io.on('connection', socket => {
   })
 })
 
-server.listen(443)
+server.listen(3000)

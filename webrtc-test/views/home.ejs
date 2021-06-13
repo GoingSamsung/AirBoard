@@ -18,7 +18,7 @@
 		<!-- Wrapper -->
 			<div id="wrapper">
 					<header id="header" class="alt">
-						<span class="logo"><img id="mylogo" src="images/logo.png" alt="" /></span>
+						<span class="logo"><img id="mylogo" src="images/로고.png" alt="" /></span>
 						<h1>AIRBOARD</h1>
 					</header>
 
@@ -45,31 +45,34 @@
 								<div class="container">
 									<% if(need_signup){ %>
 									<div class="bx">
-										<img src="images/create.jpg" onclick='needSignUp()' style="cursor:pointer">
+										<img src="images/회의생성.jpg" onclick='needSignUp()' style="cursor:pointer">
 										<span>회의 생성</span>
 									</div>
 									<% } else { %>
 									<div class="bx">
-										<img src="images/create.jpg" onclick='javascript:location.href="/home/newroom"' style="cursor:pointer">
+										<img src="images/회의생성.jpg" onclick='javascript:location.href="/home/newroom"' style="cursor:pointer">
 										<span>회의 생성</span>
 									</div>
 									<% } %>
 									<div class="bx">
-										<img src="images/login.jpg" onclick='javascript:location.href="/home/<%=log_func%>"' style="cursor:pointer">
+										<img src="images/로그인.jpg" onclick='javascript:location.href="/home/<%=log_func%>"' style="cursor:pointer">
 										<span><%= log_message%></span>
 									</div>
 									<% if(need_signup){ %>
 									<div class="bx">
-										<img src="images/signup.jpg" onclick='javascript:location.href="/home/signup"' style="cursor:pointer">
+										<img src="images/회원가입.jpg" onclick='javascript:location.href="/home/signup"' style="cursor:pointer">
 										<span>회원 가입</span>
 									</div>
 									<% } else { %>
 									<div class="bx">
-										<img src="images/account.jpg" onclick='javascript:location.href="/accInfo"' style="cursor:pointer"">
+										<img src="images/계정확인.jpg" onclick='javascript:location.href="/accInfo"' style="cursor:pointer"">
 										<span>계정 정보</span>
 									</div>
 									<% } %>
 									</div>
+									<form action="/newGes" method="POST">
+										<input type="submit" value="제스처 만들기">
+									  </form>
 							</section>
 
 						<!-- First Section -->

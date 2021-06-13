@@ -109,7 +109,7 @@ var menu  //float 버튼용 메뉴
   var chkfirst = 0
   var palmcnt = 0
   var victorycnt = 0
-  var thumbsupcnt = 0 //규 수정
+  var thumbsupcnt = 0 
 
   hiddenVideo.style.visibility = 'hidden'
   hiddenVideo.width = 160
@@ -197,7 +197,7 @@ var menu  //float 버튼용 메뉴
       myVideoBackground.style.height = '118px'
       myVideo.style.visibility="hidden"
       camButton.innerText = '캠 켜기'
-      camImage.src="img/noweb-cam.png"
+      camImage.src="img/[크기변환]noweb-cam.png"
       localStream.flag = 0
       socket.emit('streamPlay_server', user_id,ROOM_ID,isCam)
     }
@@ -206,7 +206,7 @@ var menu  //float 버튼용 메뉴
   socket.on('mute', (userId) => {
     if(userId === user_id) {
       if(!isMuteUser) {
-        audioImage.src="img/nomicrophone.png"
+        audioImage.src="img/[크기변환]nomicrophone.png"
         audioButton.innerText = '마이크 켜기'
         isMute = true
         socket.emit('muteRequest_server', user_id,ROOM_ID,isMute)
@@ -308,6 +308,16 @@ var menu  //float 버튼용 메뉴
       videoBackground.style.height = '0px'
       video.style.visibility="visible"
     }
+    }
+  })
+
+  socket.on('add-ges_script',(ges,userId)=>{
+    if(userId===user_id){
+      thu = ges[0].map(i=>Number(i))
+      ind = ges[1].map(i=>Number(i))
+      mid = ges[2].map(i=>Number(i))
+      rin = ges[3].map(i=>Number(i))
+      pin = ges[4].map(i=>Number(i))
     }
   })
 
@@ -790,7 +800,8 @@ var menu  //float 버튼용 메뉴
     const knownGestures = [
       fp.Gestures.VictoryGesture,
       fp.Gestures.ThumbsUpGesture, //규 수정
-      fp.Gestures.PalmGesture
+      fp.Gestures.PalmGesture,
+      fp.Gestures.CustomGesture
     ]
     const GE = new fp.GestureEstimator(knownGestures)
 
@@ -867,6 +878,7 @@ var menu  //float 버튼용 메뉴
   var camWriteButton = document.getElementById('camWrite_button')
   var camwriteImage = document.getElementById('penc')
   var gestureButton = document.getElementById('gesture_button')
+  var addGestureButton = document.getElementById('add_gesture_button')
   var gestureImage = document.getElementById('hand')
 
   function camfunc(){
@@ -895,7 +907,7 @@ var menu  //float 버튼용 메뉴
         myVideoBackground.style.height = '118px'
         myVideo.style.visibility="hidden"
         camButton.innerText = '캠 켜기'
-        camImage.src="img/noweb-cam.png"
+        camImage.src="img/[크기변환]noweb-cam.png"
       }
       else {
         myVideoBackground.style.width = '0px'
@@ -904,7 +916,7 @@ var menu  //float 버튼용 메뉴
         myVideo.width = 160
         myVideo.height = 118
         camButton.innerText = '캠 끄기'
-        camImage.src="img/web-cam.png"
+        camImage.src="img/[크기변환]web-cam.png"
       }
       isCam = !isCam
       localStream.flag = 0
@@ -915,11 +927,11 @@ var menu  //float 버튼용 메뉴
   function audiofunc(){
     if(!isMuteUser) {
       if(isMute) {
-        audioImage.src="img/microphone.png"
+        audioImage.src="img/[크기변환]microphone.png"
         audioButton.innerText = '마이크 끄기'
       }
       else {
-        audioImage.src="img/nomicrophone.png"
+        audioImage.src="img/[크기변환]nomicrophone.png"
         audioButton.innerText = '마이크 켜기'
       }
       isMute = !isMute
@@ -935,12 +947,12 @@ var menu  //float 버튼용 메뉴
 
   function displayfunc(){
     if(!isDisplaying) {
-      displayImage.src="img/nodocument.png"
+      displayImage.src="img/[크기변환]nodocument.png"
       displayButton.innerText = '공유 종료' //일단 4글자로 맞췄음
       displayPlay()
     }
     else if(isDisplayHost) {
-      displayImage.src="img/document.png"
+      displayImage.src="img/[크기변환]document.png"
       displayButton.innerText = '화면 공유'
       var displayVideo = document.getElementById('userDisplay')
       const stream = displayVideo.srcObject
@@ -988,7 +1000,7 @@ var menu  //float 버튼용 메뉴
         extractColorVideo.width = canvas.width
         extractColorVideo.height = canvas.height
         isCamWrite = true
-        camwriteImage.src="img/nopencil.png"
+        camwriteImage.src="img/[크기변환]nopencil.png"
         camWriteButton.innerText = '캠 필기 끄기'
       }
       else {
@@ -1004,7 +1016,7 @@ var menu  //float 버튼용 메뉴
         isCamWrite = false
         isCamWrite2 = false
         extractCnt = 0
-        camwriteImage.src="img/pencil.png"
+        camwriteImage.src="img/[크기변환]pencil.png"
         camWriteButton.innerText = '캠 필기 켜기'
       }
     }
@@ -1031,17 +1043,24 @@ var menu  //float 버튼용 메뉴
     }
     else {
       if(gesturechk) {
-        gestureImage.src="img/hand.png"
+        gestureImage.src="img/[크기변환]hand.png"
         gestureButton.innerText = '제스처 켜기'
         isGestureOff = true
       }
       else if(!gesturechk) {
-        gestureImage.src="img/nohand.png"
+        gestureImage.src="img/[크기변환]nohand.png"
         gestureButton.innerText = '제스처 끄기'
         gesturePred()
       }
       gesturechk = !gesturechk
     }
+  }
+
+  function addgesfunc(){
+    var src = 'fingerpose.js'
+    $('script[src="' + src + '"]').remove()
+    $('<script>').attr('src', src).appendTo('head')
+    gestureLoad()
   }
   //====일반 버튼 function====
 
@@ -1188,6 +1207,7 @@ var menu  //float 버튼용 메뉴
       else joinLoop()
       canvasImage.src = 'img/canvas.png'
       allLoaded()
+      socket.emit('add-ges',user_email,ROOM_ID,user_id)
       
       menu = new Menu("#myMenu")
       var item1 = new Item("list", "fas fa-bars", "#8cc9f0")
@@ -1275,6 +1295,8 @@ var menu  //float 버튼용 메뉴
       
       gestureButton.addEventListener('click', gesturefunc)
       gestureImage.addEventListener('click', gesturefunc)
+
+      addGestureButton.addEventListener('click',addgesfunc)
     })
     getNewUser()
 
@@ -1448,7 +1470,7 @@ var menu  //float 버튼용 메뉴
           isDisplayHost = false
           isDisplaying = false
           displayButton.innerText = '화면 공유'
-          displayImage.src="img/document.png"
+          displayImage.src="img/[크기변환]document.png"
           if(displayCall !== undefined) displayCall.close()
         })
         displayVideo.addEventListener('play', function() {
@@ -1482,14 +1504,14 @@ var menu  //float 버튼용 메뉴
         isDisplayHost = false
         isDisplaying = false
         displayButton.innerText = '화면 공유'
-        displayImage.src="img/document.png"
+        displayImage.src="img/[크기변환]document.png"
         socket.emit('displayReset_server', ROOM_ID, user_id)
         if(displayCall !== undefined) displayCall.close()
       })
       socket.emit('displayConnect_server', ROOM_ID, user_id)
     }).catch(error => {
       displayButton.innerText = '화면 공유'
-      displayImage.src="img/document.png"
+      displayImage.src="img/[크기변환]document.png"
       console.log(error)
     })
     displayVideo.addEventListener('play', function() {
