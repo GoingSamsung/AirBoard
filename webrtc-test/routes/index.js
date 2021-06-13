@@ -1,17 +1,17 @@
-const express = require("express");
-const router = express.Router();
+const express = require("express")
+const router = express.Router()
 const fs = require('fs')
 
-const { v4: uuidV4 } = require('uuid');
+const { v4: uuidV4 } = require('uuid')
 
-const mongoose = require("mongoose");
-const Room = require('../models/room');
-const Account = require("../models/account");
+const mongoose = require("mongoose")
+const Room = require('../models/room')
+const Account = require("../models/account")
 
-const crypto = require("crypto");
+const crypto = require("crypto")
 
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
+const passport = require('passport')
+const LocalStrategy = require('passport-local').Strategy
 
 const User = require('../models/user')
 
@@ -26,13 +26,13 @@ function forwardAuthenticated(req, res, next) {
 
 //로그인에 성공할 시 serializeUser 메서드를 통해서 사용자 정보를 세션에 저장
 passport.serializeUser(function (account, done) {
-    done(null, account);
-});
+    done(null, account)
+})
 
 //사용자 인증 후 요청이 있을 때마다 호출
 passport.deserializeUser(function (account, done) {
-    done(null, account);
-});
+    done(null, account)
+})
 
 passport.use(new LocalStrategy({
     usernameField: 'email',
@@ -42,19 +42,19 @@ passport.use(new LocalStrategy({
     function (req, email, password, done) {
         Account.findOne({ email: email, password: crypto.createHash('sha512').update(password).digest('base64') }, function (err, account) {
             if (err) {
-                throw err;
+                throw err
             } else if (!account) {
-                return done(null, false, req.flash('login_message', '이메일 또는 비밀번호를 확인하세요.')); // 로그인 실패
+                return done(null, false, req.flash('login_message', '이메일 또는 비밀번호를 확인하세요.')) // 로그인 실패
             } else {
-                return done(null, account); // 로그인 성공
+                return done(null, account) // 로그인 성공
             }
-        });
+        })
     }
-));
+))
 
 router.get('/', forwardAuthenticated, (req, res) => {
     res.render('home', {log_message: '로그아웃', log_func: '/logout', need_signup: false, 
-    name: req.user.name});
+    name: req.user.name})
 })
 
 router.get('/signup', (req, res) => {
@@ -74,7 +74,7 @@ router.get("/login", (req, res) => res.render("login", { message: req.flash("log
 router.get('/logout', function (req, res) {
     req.logout()
     res.redirect('/') //로그아웃 후 '/'로 이동
-});
+})
 
 router.post("/signup", (req, res, next) => {
     if(req.body.email === '') res.send('<script type="text/javascript">alert("이메일을 입력해주세요."); window.location="/home/signup"; </script>')
@@ -117,10 +117,10 @@ router.get('/newroom', (req, res) => {
     var newRoomId = uuidV4()
     const room = new Room({
         roomId: newRoomId,
-    });
+    })
     room.save((err, room) => {
-        if (err) return console.error(err);
-    });
+        if (err) return console.error(err)
+    })
     res.redirect(`/${newRoomId}`)
 })
 
@@ -134,13 +134,13 @@ router.get('/:room', async(req, res) => {
 })
 
 router.post('/joinroom', (req, res) => {
-    var tmp = req.body.address.split("/");
+    var tmp = req.body.address.split("/")
     if(tmp[2]=='airboard.ga'){
-      res.redirect(`/${tmp[3]}`);
+      res.redirect(`/${tmp[3]}`)
     }
     else{
       res.render("noPage",{message:"존재하지 않는 회의실 주소입니다"})
     }
 })
 
-module.exports = router;
+module.exports = router
