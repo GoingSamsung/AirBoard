@@ -103,10 +103,10 @@ npm run devStart
 
 
 ## Home - Before LogIn
-<img width="100%" src="media/before.PNG"/>
+<img width="100%" src="media/before.png"/>
 
 ## Home - After LogIn
-<img width="100%" src="media/after.PNG"/>
+<img width="100%" src="media/after.png"/>
 
 ## Room
 <img width="100%" src="media/room.PNG"/>
