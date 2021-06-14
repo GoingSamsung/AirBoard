@@ -102,8 +102,11 @@ npm run devStart
 - Open at https://localhost:443 (https is mandatory due to WebRTC standard)
 
 
-## Home
-<img width="100%" src="media/home.PNG"/>
+## Home - Before LogIn
+<img width="100%" src="media/before.PNG"/>
+
+## Home - After LogIn
+<img width="100%" src="media/after.PNG"/>
 
 ## Room
 <img width="100%" src="media/room.PNG"/>
