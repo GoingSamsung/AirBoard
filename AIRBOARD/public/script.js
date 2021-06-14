@@ -891,9 +891,11 @@ socket.on('add-ges_script',(ges,userId)=>{
   var camWriteButton = document.getElementById('camWrite_button')
   var camwriteImage = document.getElementById('penc')
   var gestureButton = document.getElementById('gesture_button')
-  var addGestureButton = document.getElementById('add_gesture_button')
-
   var gestureImage = document.getElementById('hand')
+  var addGestureButton = document.getElementById('add_gesture_button')
+  var addGestureImage = document.getElementById("load")
+
+
 
   function camfunc(){
     if(isNoCamUser) {
@@ -1312,8 +1314,8 @@ socket.on('add-ges_script',(ges,userId)=>{
       gestureButton.addEventListener('click', gesturefunc)
       gestureImage.addEventListener('click', gesturefunc)
 
-
       addGestureButton.addEventListener('click',addgesfunc)
+      addGestureImage.addEventListener('click',addgesfunc)
 
     })
     getNewUser()
