@@ -69,7 +69,16 @@
 										<span>계정 정보</span>
 									</div>
 									<% } %>
+									<% if(!need_signup){ %>
+										<div class="bx">
+											<img src="images/gesture.jpg" onclick='javascript:location.href="/newGes"' style="cursor:pointer">
+											<span>제스처 추가</span>
+										</div>
+									<% } %>
 									</div>
+									<!-- <form action="/newGes" method="POST">
+										<input type="submit" value="제스처 만들기">
+									</form> -->
 							</section>
 
 						<!-- First Section -->
@@ -103,11 +112,11 @@
 							<h2>개발자 정보</h2>
 							<dl class="alt">
 								<dt>Address</dt>
-								<dd>경기도 수원시, 대한민국</dd>
+								<dd>경기도 용인시 기흥구 흥덕2로 126 708동 1002호</dd>
 								<dt>Phone</dt>
-								<dd>(000) 000-0000</dd>
+								<dd>010-6449-5262</dd>
 								<dt>Email</dt>
-								<dd>ajou.goingsamsung@gmail.com</dd>
+								<dd>rbtjr970525@gmail.com</dd>
 							</dl>
 						</section>
 					</footer>
@@ -133,3 +142,4 @@
 			</script>
 	</body>
 </html>
+

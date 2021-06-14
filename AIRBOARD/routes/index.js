@@ -15,6 +15,7 @@ const LocalStrategy = require('passport-local').Strategy
 
 const User = require('../models/user')
 
+
 var nodemailer = require('nodemailer');
 var smtpTransporter = require('nodemailer-smtp-transport');
 
@@ -71,6 +72,26 @@ router.get('/', forwardAuthenticated, (req, res) => {
 
 router.get('/signup', (req, res) => {
     res.render("signup")
+})
+
+
+router.post('/addGes', async(req,res)=>{
+    const user = await Account.findOne({email: req.user.email})
+    var ret = []
+    var thu = []
+    var ind = []
+    var mid = []
+    var rin = []
+    var pin = []
+    thu.push(req.body.ThumbCurl), thu.push(req.body.ThumbCurlNum), thu.push(req.body.ThumbDir), thu.push(req.body.ThumbDirNum)
+    ind.push(req.body.IndexCurl), ind.push(req.body.IndexCurlNum), ind.push(req.body.IndexDir), ind.push(req.body.IndexDirNum)
+    mid.push(req.body.MiddleCurl), mid.push(req.body.MiddleCurlNum), mid.push(req.body.MiddleDir), mid.push(req.body.MiddleDirNum)
+    rin.push(req.body.RingCurl), rin.push(req.body.RingCurlNum), rin.push(req.body.RingDir), rin.push(req.body.RingDirNum)
+    pin.push(req.body.PinkyCurl), pin.push(req.body.PinkyCurlNum), pin.push(req.body.PinkyDir), pin.push(req.body.PinkyDirNum)
+    ret.push(thu),ret.push(ind),ret.push(mid),ret.push(rin),ret.push(pin)
+    user.customGes = ret
+    user.save()
+    res.redirect('/')
 })
 
 router.post('/changeName', async(req, res) => {
@@ -172,7 +193,6 @@ router.post('/signup', (req, res, next) => {
                 const hexEncodedString = crypto.randomBytes(256).toString('hex').substr(100, 5);
                 const base64EncodedString = crypto.randomBytes(256).toString('base64').substr(50, 5);
                 const verificationKey = hexEncodedString + base64EncodedString;
-
                 const account = new Account({
                     _id: new mongoose.Types.ObjectId(),
                     name: req.body.name,
@@ -185,7 +205,6 @@ router.post('/signup', (req, res, next) => {
                     .then(result => {
                         console.log(result)
                         res.redirect("/")
-
                     })
                     .catch(err => {
                         console.log(err)
@@ -198,7 +217,8 @@ router.post('/signup', (req, res, next) => {
 router.post('/login', passport.authenticate('local', {
     successRedirect: '/',
     failureRedirect: '/login',
-    failureFlash: true,
+    failureFlash: true
+
 }))
 
 router.get('/newroom', (req, res) => {
@@ -209,8 +229,8 @@ router.get('/newroom', (req, res) => {
     room.save((err, room) => {
         if (err) return console.error(err)
     })
-    res.redirect(`/${newRoomId}`);
-});
+    res.redirect(`/${newRoomId}`)
+})
 
 router.get('/:room', async(req, res) => {
     const room = await Room.findOne({roomId: req.params.room}, null, {})
@@ -218,17 +238,17 @@ router.get('/:room', async(req, res) => {
         if(req.user === undefined) res.render('room', { roomId: req.params.room, name: ''})
         else res.render('room', { roomId: req.params.room, name: req.user.name})
     }
-    else res.render('noPage', {message:"존재하지 않는 회의실 주소입니다"});
-});
+    else res.render("noPage",{message:"존재하지 않는 회의실 주소입니다"})
+})
 
 router.post('/joinroom', (req, res) => {
-    var tmp = req.body.address.split("/");
-    if (tmp[2]=='airboard.ga'){
-      res.redirect(`/${tmp[3]}`);
+    var tmp = req.body.address.split("/")
+    if(tmp[2]=='airboard.ga'){
+      res.redirect(`/${tmp[3]}`)
     }
-    else {
-      res.render("noPage",{message:"존재하지 않는 회의실 주소입니다"});
+    else{
+      res.render("noPage",{message:"존재하지 않는 회의실 주소입니다"})
     }
-});
+})
 
 module.exports = router

@@ -3,14 +3,14 @@ const app = express()
 const fs = require('fs')
 const https = require('https');
 const server = https.createServer(
-  {
-    key: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/privkey.pem'),
+   {
+      key: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/privkey.pem'),
     cert: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/cert.pem'),
     ca: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/chain.pem'),
     requestCert: false,
     rejectUnauthorized: false,
-  },
-  app
+   },
+   app
 );
 const io = require('socket.io')(server)
 const { v4: uuidV4 } = require('uuid')
@@ -40,12 +40,12 @@ app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
 mongoose.set('useUnifiedTopology', true);
 mongoose.connect('mongodb://localhost:27017/room_user_db', { useNewUrlParser: true });
 
-
 const db = mongoose.connection
 db.on('error', console.error)
 db.once('open', function(){
     // CONNECTED TO MONGODB SERVER
     console.log("Connected to MongoDB mongoose instance.")
+
 })
 app.set('view engine', 'ejs')
 app.use(express.static('public'))
@@ -113,6 +113,10 @@ app.get('/', (req, res) => {
   res.redirect('/home')
 })
 
+app.get('/newGes', (req, res) => {
+  res.render('newGes')
+})
+
 app.get('/accInfo', (req, res) => {
   if(req.user === undefined) res.redirect('/') 
   else res.render("accInfo",{name: req.user.name, email: req.user.email})
@@ -122,7 +126,8 @@ app.get('/:room', async(req, res) => {
   const room = await Room.findOne({roomId: req.params.room}, null, {})
   if(room !== null) {
       if(req.user === undefined) res.render('room', { roomId: req.params.room, name: ''})
-      else res.render('room', { roomId: req.params.room, name: req.user.name})
+
+      else res.render('room', { roomId: req.params.room, name: req.user.name, email:req.user.email})
   }
   else res.render("noPage",{message:"존재하지 않는 회의실 주소입니다"})
 })
@@ -182,6 +187,12 @@ io.on('connection', socket => {
   socket.on('sendMessage', function(data){ 
     data.name = data.user_name
     io.sockets.emit('updateMessage', data)
+  })
+
+  socket.on('add-ges', async(email,roomId,userId)=>{
+    var user = await Account.findOne({email: email},null,{})
+    var ret = user.customGes
+    io.sockets.in(roomId).emit('add-ges_script',ret,userId)
   })
 
   socket.on('displayConnect_server', (roomId, userId) => {

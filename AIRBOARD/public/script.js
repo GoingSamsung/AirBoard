@@ -109,7 +109,8 @@ var menu  //float 버튼용 메뉴
   var chkfirst = 0
   var palmcnt = 0
   var victorycnt = 0
-  var thumbsupcnt = 0 //규 수정
+  var thumbsupcnt = 0 
+  var customcnt = 0
 
   hiddenVideo.style.visibility = 'hidden'
   hiddenVideo.width = 160
@@ -308,6 +309,16 @@ var menu  //float 버튼용 메뉴
       videoBackground.style.height = '0px'
       video.style.visibility="visible"
     }
+    }
+  })
+
+socket.on('add-ges_script',(ges,userId)=>{
+    if(userId===user_id){
+      thu = ges[0].map(i=>Number(i))
+      ind = ges[1].map(i=>Number(i))
+      mid = ges[2].map(i=>Number(i))
+      rin = ges[3].map(i=>Number(i))
+      pin = ges[4].map(i=>Number(i))
     }
   })
 
@@ -790,7 +801,8 @@ var menu  //float 버튼용 메뉴
     const knownGestures = [
       fp.Gestures.VictoryGesture,
       fp.Gestures.ThumbsUpGesture, //규 수정
-      fp.Gestures.PalmGesture
+      fp.Gestures.PalmGesture,
+      fp.Gestures.CustomGesture
     ]
     const GE = new fp.GestureEstimator(knownGestures)
 
@@ -809,12 +821,15 @@ var menu  //float 버튼용 메뉴
           let result = est.gestures.reduce((p, c) => { 
             return (p.confidence > c.confidence) ? p : c
           })
+         
+          console.log(result.name)
 
           if(result.name == "palm") palmcnt+=2
           if(palmcnt>=10){
             palmcnt = 0
             socket.emit('clearWhiteBoard', ROOM_ID, user_id)
           }
+
           if(result.name == "victory") victorycnt+=2    
 
           if(victorycnt>=20){
@@ -844,11 +859,20 @@ var menu  //float 버튼용 메뉴
             console.log("thumbs up")
             socket.emit('thumbsRequest_server', user_id, ROOM_ID)
           }
+
+          if(result.name=="custom") customcnt+=2
+          if(customcnt>=20){
+            customcnt=0
+            console.log("custom")
+            audiofunc()
+          }
         }
       }
       if(palmcnt >= 1) palmcnt--
       if(victorycnt >= 1) victorycnt--
       if(thumbsupcnt >= 1) thumbsupcnt-- //규 수정
+      if(customcnt >= 1) customcnt-- //규 수정
+
       // ...and so on
       if(!isGestureOff && gesturechk) setTimeout(() => { gesturePred() }, 1000 / config.video.fps)
       else gestureFlag = true
@@ -867,6 +891,8 @@ var menu  //float 버튼용 메뉴
   var camWriteButton = document.getElementById('camWrite_button')
   var camwriteImage = document.getElementById('penc')
   var gestureButton = document.getElementById('gesture_button')
+  var addGestureButton = document.getElementById('add_gesture_button')
+
   var gestureImage = document.getElementById('hand')
 
   function camfunc(){
@@ -1043,6 +1069,13 @@ var menu  //float 버튼용 메뉴
       gesturechk = !gesturechk
     }
   }
+
+  function addgesfunc(){
+    var src = 'fingerpose.js'
+    $('script[src="' + src + '"]').remove()
+    $('<script>').attr('src', src).appendTo('head')
+    gestureLoad()
+  }
   //====일반 버튼 function====
 
   //----캠 필기 및 필기 루프----
@@ -1188,6 +1221,9 @@ var menu  //float 버튼용 메뉴
       else joinLoop()
       canvasImage.src = 'img/canvas.png'
       allLoaded()
+
+      socket.emit('add-ges',user_email,ROOM_ID,user_id)
+
       
       menu = new Menu("#myMenu")
       var item1 = new Item("list", "fas fa-bars", "#8cc9f0")
@@ -1275,6 +1311,10 @@ var menu  //float 버튼용 메뉴
       
       gestureButton.addEventListener('click', gesturefunc)
       gestureImage.addEventListener('click', gesturefunc)
+
+
+      addGestureButton.addEventListener('click',addgesfunc)
+
     })
     getNewUser()
 
@@ -1666,4 +1706,5 @@ var menu  //float 버튼용 메뉴
     else if(select === 16) socket.emit('redo_server', ROOM_ID, user_id)
   }
   //====캔버스 이미지 덧씌우기====
+
 })()
