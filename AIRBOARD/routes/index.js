@@ -167,7 +167,7 @@ router.post('/submitNewPassword', (req, res) => {
 
             console.log(accounts[0]);
 
-            res.send('<script type="text/javascript">alert("비밀번호가 변경되었습니다."); window.location="/login"; </script>');
+            res.send('<script type="text/javascript">alert("비밀번호가 변경되었습니다."); window.location="/home/login"; </script>');
         } else {
             res.send('<script type="text/javascript">alert("잘못된 접근입니다."); window.location="/home"; </script>');
         }
@@ -216,8 +216,8 @@ router.post('/signup', (req, res, next) => {
 
 router.post('/login', passport.authenticate('local', {
     successRedirect: '/',
-    failureRedirect: '/login',
-    failureFlash: true
+    failureRedirect: '/home/login',
+    failureFlash: true,
 
 }))
 
