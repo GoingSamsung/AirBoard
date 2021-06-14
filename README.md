@@ -104,6 +104,7 @@ npm run devStart
 
 ## Home - Before LogIn
 <img width="100%" src="media/before.png"/>
+
 로그인 전에는 3가지 메뉴가 있고, 각 메뉴의 기능은 다음과 같다.
 
 1. 회의 생성 : 회의를 생성한다. 만약 로그인을 하지 않았다면 회의를 만들 수 없다.
@@ -112,6 +113,7 @@ npm run devStart
 
 ## Home - After LogIn
 <img width="100%" src="media/after.png"/>
+
 로그인 후에는 4가지 메뉴가 있고, 각 메뉴의 기능은 다음과 같다.
 
 1. 회의 생성: 회의를 생성한다. 로그인을 한 후에는 회의를 생성할 수 있다.
