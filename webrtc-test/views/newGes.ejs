@@ -253,9 +253,26 @@
                         <option value="1">1</option>    
                     </select>
                 </label><br>
-                <button class='btn' type="submit">제스처 추가하기</button>
+                <button class='btn' type="submit" onclick="checkval()">제스처 추가하기</button>
+                <button class='btn' onclick='javascript:location.href="/home"'>제스처 추가하기</button>
             </form>
         </div>
     </center>
+    <script>
+        function checkval(){
+            var fingers=["Thumb","Index","Middle","Ring","Pinky"]
+            var arr=["Curl","CurlNum","Dir","DirNum"];
+            for(var i=0;i<4;i++){
+                for(var j=0;j<4;j++){
+                    var cur="."+fingers[i]+arr[j];
+                    console.log(cur)
+                    if($(cur+" option:selected").val()==""){
+                        alert("모든 옵션을 선택해 주세요")
+                        return false;
+                    }
+                }
+            }
+        }
+    </script>
   </body>
 </html>

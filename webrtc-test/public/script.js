@@ -110,6 +110,7 @@ var menu  //float 버튼용 메뉴
   var palmcnt = 0
   var victorycnt = 0
   var thumbsupcnt = 0 
+  var customcnt = 0
 
   hiddenVideo.style.visibility = 'hidden'
   hiddenVideo.width = 160
@@ -828,8 +829,8 @@ var menu  //float 버튼용 메뉴
             palmcnt = 0
             socket.emit('clearWhiteBoard', ROOM_ID, user_id)
           }
-          if(result.name == "victory") victorycnt+=2    
 
+          if(result.name == "victory") victorycnt+=2    
           if(victorycnt>=20){
             victorycnt = 0
             capture.width = canvas.width
@@ -851,17 +852,24 @@ var menu  //float 버튼용 메뉴
           
           //규 수정
           if(result.name=="thumbs_up") thumbsupcnt+=2
-
           if(thumbsupcnt>=10){
             thumbsupcnt = 0
             console.log("thumbs up")
             socket.emit('thumbsRequest_server', user_id, ROOM_ID)
+          }
+
+          if(result.name=="custom") customcnt+=2
+          if(customcnt>=10){
+            customcnt=0
+            console.log("custom")
+            audiofunc()
           }
         }
       }
       if(palmcnt >= 1) palmcnt--
       if(victorycnt >= 1) victorycnt--
       if(thumbsupcnt >= 1) thumbsupcnt-- //규 수정
+      if(customcnt >= 1) customcnt-- //규 수정
       // ...and so on
       if(!isGestureOff && gesturechk) setTimeout(() => { gesturePred() }, 1000 / config.video.fps)
       else gestureFlag = true
