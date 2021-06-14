@@ -85,12 +85,12 @@ router.get("/login", (req, res) => res.render("login", { message: req.flash("log
 
 router.get("/identify", (req, res) => res.render("identify"));
 
-router.get("/requestPasswordReset", (req, res) => {
+router.get('/requestPasswordReset', (req, res) => {
     Account.find({ email: req.query.email })
         .exec()
         .then((accounts) => {
             if (accounts.length === 1) {
-                const url = `https://${req.get('host')}/confirmEmail?key=${accounts[0].verificationKey}`;
+                const url = `${req.protocol}://${req.get('host')}/home/confirmEmail?key=${accounts[0].verificationKey}`;
                 const mailOption = {
                     from: 'ajou.goingsamsung@gmail.com',
                     to: accounts[0].email,
@@ -111,12 +111,54 @@ router.get("/requestPasswordReset", (req, res) => {
         })
 });
 
+router.get('/confirmEmail', function (req,res) {
+    Account.find({ verificationKey: req.query.key }).exec().then((accounts) => {
+        if (accounts.length == 1) {
+            res.send(`<script type="text/javascript">alert("비밀번호를 변경하세요."); window.location="/home/resetPassword?key=${req.query.key}"; </script>`)
+        } else {
+            res.send('<script type="text/javascript">alert("잘못된 접근입니다."); window.location="/home"; </script>')
+        }
+    })
+});
+
+router.get('/resetPassword', (req, res) => {
+    Account.find({ verificationKey: req.query.key }).exec().then((accounts) => {
+        if (accounts.length == 1) {
+            res.render("resetPassword", {account: accounts[0] });
+        } else {
+            res.send('<script type="text/javascript">alert("잘못된 접근입니다."); window.location="/home"; </script>');
+        }
+    });
+});
+
+router.post('/submitNewPassword', (req, res) => {
+    console.log(req.body);
+    Account.find({ email: req.body.email, verificationKey: req.body.verificationKey }).exec().then((accounts) => {
+        if (accounts.length == 1) {
+            const hexEncodedString = crypto.randomBytes(256).toString('hex').substr(100, 5);
+            const base64EncodedString = crypto.randomBytes(256).toString('base64').substr(50, 5);
+            const newVerificationKey = hexEncodedString + base64EncodedString;
+
+            accounts[0].password = crypto.createHash("sha512").update(req.body.password).digest("base64");
+            accounts[0].verificationKey = newVerificationKey;
+
+            accounts[0].save();
+
+            console.log(accounts[0]);
+
+            res.send('<script type="text/javascript">alert("비밀번호가 변경되었습니다."); window.location="/login"; </script>');
+        } else {
+            res.send('<script type="text/javascript">alert("잘못된 접근입니다."); window.location="/home"; </script>');
+        }
+    }); 
+})
+
 router.get('/logout', function (req, res) {
     req.logout()
     res.redirect('/') //로그아웃 후 '/'로 이동
 })
 
-router.post("/signup", (req, res, next) => {
+router.post('/signup', (req, res, next) => {
     if(req.body.email === '') res.send('<script type="text/javascript">alert("이메일을 입력해주세요."); window.location="/home/signup"; </script>')
     else if(req.body.password === '') res.send('<script type="text/javascript">alert("비밀번호를 입력해주세요."); window.location="/home/signup"; </script>')
     else if(req.body.name === '') res.send('<script type="text/javascript">alert("이름을 입력해주세요."); window.location="/home/signup"; </script>')
