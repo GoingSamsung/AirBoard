@@ -188,7 +188,7 @@ router.post('/signup', (req, res, next) => {
         .exec()
         .then(accounts => {
             if (accounts.length >= 1) {
-                res.send('<script type="text/javascript">alert("이미 존재하는 이메일입니다."); window.location="/signup"; </script>')
+                res.send('<script type="text/javascript">alert("이미 존재하는 이메일입니다."); window.location="/home/signup"; </script>')
             } else {
                 const hexEncodedString = crypto.randomBytes(256).toString('hex').substr(100, 5);
                 const base64EncodedString = crypto.randomBytes(256).toString('base64').substr(50, 5);
