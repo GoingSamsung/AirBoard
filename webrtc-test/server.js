@@ -2,16 +2,16 @@ const express = require('express')
 const app = express()
 const fs = require('fs')
 const https = require('https');
-const server = https.createServer({
-        key: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/privkey.pem'),
-        cert: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/cert.pem'),
-        ca: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/chain.pem'),
-        requestCert: false,
-        rejectUnauthorized: false,
-    },
-    app
+const server = https.createServer(
+  {
+    key: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/cert.pem'),
+    ca: fs.readFileSync('/etc/letsencrypt/live/airboard.ga/chain.pem'),
+    requestCert: false,
+    rejectUnauthorized: false,
+  },
+  app
 );
-
 const io = require('socket.io')(server)
 const { v4: uuidV4 } = require('uuid')
 const mongoose = require('mongoose')
@@ -36,6 +36,10 @@ var favicon = require('serve-favicon')
 var path = require('path')
 
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
+
+mongoose.set('useUnifiedTopology', true);
+mongoose.connect('mongodb://localhost:27017/room_user_db', { useNewUrlParser: true });
+
 
 const db = mongoose.connection
 db.on('error', console.error)
