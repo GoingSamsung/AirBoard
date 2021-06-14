@@ -103,10 +103,10 @@ npm run devStart
 
 
 ## Home
-<img width="500" height="250" src="media/home.PNG"/>
+<img width="100%" src="media/home.PNG"/>
 
 ## Room
-<img width="640" height="310" src="media/room.PNG"/>
+<img width="100%" src="media/room.PNG"/>
 
 ## License
 [Apache License 2.0](https://github.com/GoingSamsung/AirBoard/blob/master/LICENSE)
