@@ -859,7 +859,7 @@ var menu  //float 버튼용 메뉴
           }
 
           if(result.name=="custom") customcnt+=2
-          if(customcnt>=10){
+          if(customcnt>=20){
             customcnt=0
             console.log("custom")
             audiofunc()
