@@ -16,10 +16,15 @@ const accountSchema = new Schema({
         type: String,
         required: true,
     },
-
+  
     customGes: {
         type: Array,
         default: [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
+    },
+  
+    verificationKey: {
+        type: String,
+        required: true,
     }
 });
 

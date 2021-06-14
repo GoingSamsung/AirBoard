@@ -1,0 +1,14 @@
+크롬기준 
+Let's Encrypt로 https 적용(크롬 기준 WebRTC에 https가 필요)
+//https://velog.io/@mgm-dev/PeerJS%EB%A1%9C-WebRTC-%EC%89%BD%EA%B2%8C-%EC%82%AC%EC%9A%A9%ED%95%B4%EB%B3%B4%EA%B8%B0
+
+//https://bcho.tistory.com/899
+//socket.io API요약 & 귓속말 & 채팅방 등등
+
+//peerjs
+//https://peerjs.com/docs.html#peer
+
+
+♥♥♥♥♥
+사례 찾기
+타겟 도메인 줄이기

@@ -14,7 +14,6 @@ const server = https.createServer(
 );
 const io = require('socket.io')(server)
 const { v4: uuidV4 } = require('uuid')
-
 const mongoose = require('mongoose')
 const User = require('./models/user')
 const Room = require('./models/room')
@@ -23,7 +22,6 @@ const { response } = require('express')
 const user = require('./models/user')
 const { request } = require('http')
 const bodyParser = require('body-parser')
-
 const indexRoute = require("./routes/index")
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
@@ -39,12 +37,15 @@ var path = require('path')
 
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
 
-mongoose.connect('mongodb://localhost:27017/room_user_db')
+mongoose.set('useUnifiedTopology', true);
+mongoose.connect('mongodb://localhost:27017/room_user_db', { useNewUrlParser: true });
+
 const db = mongoose.connection
 db.on('error', console.error)
 db.once('open', function(){
     // CONNECTED TO MONGODB SERVER
-    console.log("Connected to mongod server")
+    console.log("Connected to MongoDB mongoose instance.")
+
 })
 app.set('view engine', 'ejs')
 app.use(express.static('public'))
@@ -125,6 +126,7 @@ app.get('/:room', async(req, res) => {
   const room = await Room.findOne({roomId: req.params.room}, null, {})
   if(room !== null) {
       if(req.user === undefined) res.render('room', { roomId: req.params.room, name: ''})
+
       else res.render('room', { roomId: req.params.room, name: req.user.name, email:req.user.email})
   }
   else res.render("noPage",{message:"존재하지 않는 회의실 주소입니다"})

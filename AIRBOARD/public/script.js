@@ -312,7 +312,7 @@ var menu  //float 버튼용 메뉴
     }
   })
 
-  socket.on('add-ges_script',(ges,userId)=>{
+socket.on('add-ges_script',(ges,userId)=>{
     if(userId===user_id){
       thu = ges[0].map(i=>Number(i))
       ind = ges[1].map(i=>Number(i))
@@ -821,7 +821,7 @@ var menu  //float 버튼용 메뉴
           let result = est.gestures.reduce((p, c) => { 
             return (p.confidence > c.confidence) ? p : c
           })
-          
+         
           console.log(result.name)
 
           if(result.name == "palm") palmcnt+=2
@@ -831,6 +831,7 @@ var menu  //float 버튼용 메뉴
           }
 
           if(result.name == "victory") victorycnt+=2    
+
           if(victorycnt>=20){
             victorycnt = 0
             capture.width = canvas.width
@@ -852,6 +853,7 @@ var menu  //float 버튼용 메뉴
           
           //규 수정
           if(result.name=="thumbs_up") thumbsupcnt+=2
+
           if(thumbsupcnt>=10){
             thumbsupcnt = 0
             console.log("thumbs up")
@@ -870,6 +872,7 @@ var menu  //float 버튼용 메뉴
       if(victorycnt >= 1) victorycnt--
       if(thumbsupcnt >= 1) thumbsupcnt-- //규 수정
       if(customcnt >= 1) customcnt-- //규 수정
+
       // ...and so on
       if(!isGestureOff && gesturechk) setTimeout(() => { gesturePred() }, 1000 / config.video.fps)
       else gestureFlag = true
@@ -889,6 +892,7 @@ var menu  //float 버튼용 메뉴
   var camwriteImage = document.getElementById('penc')
   var gestureButton = document.getElementById('gesture_button')
   var addGestureButton = document.getElementById('add_gesture_button')
+
   var gestureImage = document.getElementById('hand')
 
   function camfunc(){
@@ -1217,7 +1221,9 @@ var menu  //float 버튼용 메뉴
       else joinLoop()
       canvasImage.src = 'img/canvas.png'
       allLoaded()
+
       socket.emit('add-ges',user_email,ROOM_ID,user_id)
+
       
       menu = new Menu("#myMenu")
       var item1 = new Item("list", "fas fa-bars", "#8cc9f0")
@@ -1306,7 +1312,9 @@ var menu  //float 버튼용 메뉴
       gestureButton.addEventListener('click', gesturefunc)
       gestureImage.addEventListener('click', gesturefunc)
 
+
       addGestureButton.addEventListener('click',addgesfunc)
+
     })
     getNewUser()
 
@@ -1698,4 +1706,5 @@ var menu  //float 버튼용 메뉴
     else if(select === 16) socket.emit('redo_server', ROOM_ID, user_id)
   }
   //====캔버스 이미지 덧씌우기====
+
 })()
