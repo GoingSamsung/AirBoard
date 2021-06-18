@@ -10,10 +10,6 @@ const userdataSchema = new Schema({
         type: String,
         required: true,
     },
-    password: {
-        type: String,
-        required:true,
-    },
     purchase: {
         type: Boolean,
         default:false,
